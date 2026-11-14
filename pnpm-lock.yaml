@@ -42,6 +42,8 @@ importers:
         specifier: 4.1.12
         version: 4.1.12
 
+  packages/ui: {}
+
   tools/audit: {}
 
 packages:
