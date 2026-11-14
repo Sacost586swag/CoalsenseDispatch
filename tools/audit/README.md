@@ -25,6 +25,13 @@ instalado del mismo ámbito y versión; Python lee `License-Expression`, `Licens
 y clasificadores, y resuelve el clasificador BSD genérico desde el texto de la
 licencia instalado; un backend de construcción no instalado se evalúa con la
 licencia registrada en THIRD_PARTY.md.
+Si el backend está instalado pero sin licencia en sus metadatos, falla (el registro no
+lo rescata). Un paquete Python con marcador de plataforma (p. ej. `colorama` solo en
+win32) que no está instalado aquí requiere una entrada revisada en `uninstalled_python`
+de `approved_licenses.yaml` (`name`, `version` exacta, `license`, `reason`); sin ella
+falla. Varios hermanos npm instalados del mismo ámbito y versión se combinan con AND.
+Ejecute siempre con `uv run --locked` tras `uv sync --locked`; un Python de sistema lee
+metadatos de otro entorno.
 
 `approved_licenses.yaml` usa el subconjunto JSON de YAML, sin dependencias nuevas.
 `font_packages` contiene identificadores `npm:nombre` o `pypi:nombre` para autorizar

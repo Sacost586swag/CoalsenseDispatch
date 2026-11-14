@@ -5,5 +5,13 @@
   ],
   "comment_BlueOak-1.0.0": "OSI permissive, MIT-equivalent; approved by orchestrator 2026-11-14",
   "font_packages": [],
-  "exceptions": []
+  "exceptions": [],
+  "uninstalled_python": [
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "license": "BSD-3-Clause",
+      "reason": "Solo win32 (marcador de pytest en uv.lock); texto de licencia 0.4.6 revisado: BSD-3-Clause"
+    }
+  ]
 }

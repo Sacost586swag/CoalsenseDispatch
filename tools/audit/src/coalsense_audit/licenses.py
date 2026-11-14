@@ -112,11 +112,12 @@ def bsd_variant(dist: importlib.metadata.Distribution) -> str:
     return "UNKNOWN"
 
 
-def python_license(name: str, version: str) -> str:
+def python_license(name: str, version: str) -> str | None:
+    """License text; None only when the distribution is not installed at all."""
     try:
         dist = importlib.metadata.distribution(name)
     except importlib.metadata.PackageNotFoundError:
-        return ""
+        return None
     if dist.version != version:
         return ""
     expression = dist.metadata.get("License-Expression") or dist.metadata.get("License") or ""
@@ -173,10 +174,17 @@ def audit(root: Path) -> list[str]:
         licenses = set(policy["licenses"])
         fonts = set(policy["font_packages"])
         exceptions = policy["exceptions"]
+        uninstalled = policy.get("uninstalled_python", [])
         if not all(isinstance(x, str) for x in licenses | fonts):
             raise ValueError
+        keys = {"name", "version", "license", "reason"}
         for item in exceptions:
-            if set(item) != {"ecosystem", "name", "version", "license", "reason"}:
+            if set(item) != keys | {"ecosystem"}:
+                raise ValueError
+            if not all(isinstance(v, str) and v.strip() for v in item.values()):
+                raise ValueError
+        for item in uninstalled:
+            if set(item) != keys:
                 raise ValueError
             if not all(isinstance(v, str) and v.strip() for v in item.values()):
                 raise ValueError
@@ -214,10 +222,18 @@ def audit(root: Path) -> list[str]:
                 recorded = recorded_license(eco, name, version)
                 if recorded is None:
                     finding(
-                        path, line, "REGISTRO", "Dependencia directa sin registro de igual versión."
+                        path,
+                        line,
+                        "REGISTRO",
+                        f"{name}@{version}: dependencia directa sin registro de igual versión.",
                     )
                 elif not approved(recorded, allowed) and not exception:
-                    finding("THIRD_PARTY.md", 1, "REGISTRO", "Licencia registrada no aprobada.")
+                    finding(
+                        "THIRD_PARTY.md",
+                        1,
+                        "REGISTRO",
+                        f"{name}@{version}: licencia registrada no aprobada.",
+                    )
 
         source = "pnpm-lock.yaml"
         packages, importers = pnpm_inventory(root)
@@ -236,9 +252,9 @@ def audit(root: Path) -> list[str]:
             for path in store.glob(pattern):
                 data = json.loads(path.read_text(encoding="utf-8"))
                 installed[(data["name"], data["version"])] = npm_license(data)
-        # shortcut: an os/cpu-restricted package not installed here inherits the license of an
-        # installed os/cpu-restricted sibling of the same scope and version; upgrade to
-        # per-platform installs in CI if a vendor ever mixes licenses within one scope.
+        # shortcut: an os/cpu-restricted package not installed here takes the AND of the licenses
+        # of all installed os/cpu-restricted siblings of the same scope and version (strictest
+        # wins, same result on every platform); upgrade to per-platform installs if needed.
         restricted = {(n, v) for n, v, _, r in packages if r}
 
         def npm_evidence(name: str, version: str) -> str:
@@ -247,10 +263,14 @@ def audit(root: Path) -> list[str]:
             if (name, version) not in restricted or "/" not in name:
                 return ""
             scope = name.split("/")[0]
-            for n, v in sorted(restricted):
-                if v == version and n.startswith(scope + "/") and (n, v) in installed:
-                    return installed[(n, v)]
-            return ""
+            found = {
+                installed[(n, v)]
+                for n, v in restricted
+                if v == version and n.startswith(scope + "/") and (n, v) in installed
+            }
+            if len(found) == 1:
+                return next(iter(found))
+            return " AND ".join(f"({x})" for x in sorted(found))
 
         for name, version, line, _ in packages:
             check(
@@ -304,6 +324,15 @@ def audit(root: Path) -> list[str]:
                 if not match:
                     raise ValueError
                 build_requirements.append((match[1], match[2]))
+        refs: dict[str, list[bool]] = {}
+        for pkg in lock["package"]:
+            groups = [pkg.get("dependencies", [])]
+            groups += list(pkg.get("optional-dependencies", {}).values())
+            groups += list(pkg.get("dev-dependencies", {}).values())
+            for group in groups:
+                for dep in group:
+                    refs.setdefault(normalize(dep["name"]), []).append("marker" in dep)
+        gated = {n for n, marks in refs.items() if all(marks)}
         blocks = [m.start() for m in re.finditer(r"(?m)^\[\[package\]\]", lock_text)]
         for index, pkg in enumerate(lock["package"]):
             if "editable" in pkg.get("source", {}) or "virtual" in pkg.get("source", {}):
@@ -311,12 +340,34 @@ def audit(root: Path) -> list[str]:
             name, version = pkg["name"], pkg["version"]
             lic = pkg.get("license") or python_license(name, version)
             line = lock_text.count("\n", 0, blocks[index]) + 1
-            check("pypi", name, version, lic, (normalize(name), version) in direct_py, source, line)
+            if lic is None and normalize(name) in gated:
+                # Marker-gated and not installed here (e.g. win32 only): reviewed policy entry.
+                lic = next(
+                    (
+                        u["license"]
+                        for u in uninstalled
+                        if normalize(u["name"]) == normalize(name) and u["version"] == version
+                    ),
+                    None,
+                )
+                if lic is None:
+                    finding(
+                        source,
+                        line,
+                        "LICENCIA",
+                        f"{name}@{version}: paquete con marcador de plataforma no instalado "
+                        "y sin entrada en uninstalled_python.",
+                    )
+                    continue
+            direct = (normalize(name), version) in direct_py
+            check("pypi", name, version, lic or "", direct, source, line)
         if direct_py - {(normalize(p["name"]), p["version"]) for p in lock["package"]}:
             finding(source, 1, "INVENTARIO", "Dependencia directa ausente del lock.")
         for name, version in sorted(set(build_requirements)):
             # Build backends are isolated and usually not installed: fall back to the register.
-            evidence = python_license(name, version) or recorded_license("pypi", name, version)
+            evidence = python_license(name, version)
+            if evidence is None:  # only a missing distribution falls back to the register
+                evidence = recorded_license("pypi", name, version)
             check("pypi", name, version, evidence or "", True, "pyproject.toml", 1)
     except (OSError, ValueError, KeyError, TypeError, AttributeError, IndexError):
         finding(source, 1, "ENTRADA", "No se pudo leer o validar la entrada de auditoría.")

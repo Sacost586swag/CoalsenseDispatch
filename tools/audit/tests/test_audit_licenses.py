@@ -81,6 +81,8 @@ def test_wrong_registered_version(tree: Path) -> None:
         ("MIT OR", False),
         ("MIT WITH unknown", False),
         ("OFL-1.1", False),
+        ("LicenseRef-x", False),
+        ("MIT or Apache-2.0", False),
     ],
 )
 def test_expressions(expression: str, expected: bool) -> None:
@@ -291,3 +293,109 @@ def test_uninstalled_build_backend_uses_register(tree: Path) -> None:
         encoding="utf-8",
     )
     assert any("fixture_backend@3.0" in f for f in audit(tree))
+
+
+def _gated_tree(tree: Path) -> None:
+    root = (
+        '\n[[package]]\nname="fixture"\nversion="0"\nsource={virtual="."}\n'
+        'dependencies=[{name="gated-pkg",marker="sys_platform == \'win32\'"}]\n'
+        '\n[[package]]\nname="gated-pkg"\nversion="1.5"\n'
+        'source={registry="https://example.invalid"}\n'
+    )
+    lock = tree / "uv.lock"
+    lock.write_text(lock.read_text() + root)
+
+
+def _policy(tree: Path, entries: list[dict[str, str]]) -> None:
+    path = tree / "tools/audit/approved_licenses.yaml"
+    policy = json.loads(path.read_text())
+    policy["uninstalled_python"] = entries
+    path.write_text(json.dumps(policy))
+
+
+GATED_ENTRY = {
+    "name": "Gated_Pkg",
+    "version": "1.5",
+    "license": "MIT",
+    "reason": "Marcador win32; licencia revisada",
+}
+
+
+def test_marker_gated_uninstalled_package_needs_policy_entry(tree: Path) -> None:
+    _gated_tree(tree)
+    result = audit(tree)
+    assert len(result) == 1 and "gated-pkg@1.5" in result[0] and "uninstalled_python" in result[0]
+    _policy(tree, [GATED_ENTRY])
+    assert audit(tree) == []
+    _policy(tree, [{**GATED_ENTRY, "version": "9.9"}])
+    assert any("gated-pkg@1.5" in f for f in audit(tree))
+    _policy(tree, [{**GATED_ENTRY, "license": "GPL-3.0-only"}])
+    assert any("gated-pkg@1.5" in f and "GPL-3.0-only" in f for f in audit(tree))
+    _policy(tree, [{**GATED_ENTRY, "reason": ""}])
+    assert any("ENTRADA" in f for f in audit(tree))
+
+
+def test_ungated_uninstalled_package_ignores_policy_entry(tree: Path) -> None:
+    lock = tree / "uv.lock"
+    lock.write_text(lock.read_text().replace('license = "MIT"\n', ""))
+    _policy(tree, [{**GATED_ENTRY, "name": "indirect", "version": "2.0"}])
+    assert audit(tree) == ['uv.lock:2: LICENCIA: indirect@2.0: licencia "desconocida" no aprobada']
+
+
+def test_siblings_are_and_joined(tree: Path) -> None:
+    lock = tree / "pnpm-lock.yaml"
+
+    def add(plat: str, license_text: str | None) -> None:
+        entry = f"  '@scope/{plat}@1.0.0':\n    resolution: {{}}\n    os: [x]\nsnapshots: {{}}"
+        lock.write_text(lock.read_text().replace("snapshots: {}", entry))
+        if license_text is not None:
+            sibling = tree / f"node_modules/.pnpm/@scope+{plat}@1.0.0/node_modules/@scope/{plat}"
+            sibling.mkdir(parents=True)
+            (sibling / "package.json").write_text(
+                f'{{"name":"@scope/{plat}","version":"1.0.0","license":"{license_text}"}}',
+                encoding="utf-8",
+            )
+
+    add("a", "MIT")
+    add("b", "MIT OR GPL-3.0-only")
+    add("c", None)
+    assert audit(tree) == []
+    add("d", "GPL-3.0-only")
+    assert any("@scope/c@1.0.0" in f for f in audit(tree))
+
+
+def test_installed_backend_with_empty_license_does_not_use_register(
+    tree: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from email.message import Message
+    from types import SimpleNamespace
+
+    (tree / "pyproject.toml").write_text(
+        '[project]\nname="fixture"\n[build-system]\nrequires=["fixture_backend==3.0"]\n',
+        encoding="utf-8",
+    )
+    lock = tree / "uv.lock"
+    root = '\n[[package]]\nname="fixture"\nversion="0"\nsource={virtual="."}\n'
+    lock.write_text(lock.read_text() + root)
+    path = tree / "THIRD_PARTY.md"
+    row = "| fixture_backend | 3.0 | MIT | PyPI | prueba |\n"
+    path.write_text(path.read_text(encoding="utf-8") + row, encoding="utf-8")
+    assert audit(tree) == []
+    monkeypatch.setattr(
+        "importlib.metadata.distribution",
+        lambda name: SimpleNamespace(version="3.0", metadata=Message()),
+    )
+    assert any("fixture_backend@3.0" in f for f in audit(tree))
+
+
+def test_registry_finding_names_the_package(tree: Path) -> None:
+    (tree / "THIRD_PARTY.md").write_text("")
+    assert any("REGISTRO: example@1.0.0:" in f for f in audit(tree))
+
+
+@pytest.mark.parametrize(
+    "license_text", ["LicenseRef-custom", "SEE LICENSE IN LICENSE", "UNLICENSED"]
+)
+def test_npm_nonstandard_licenses_fail(tree: Path, license_text: str) -> None:
+    _write_npm_license(tree, f'"license":"{license_text}"')
+    assert any("LICENCIA: example@1.0.0" in f for f in audit(tree))
