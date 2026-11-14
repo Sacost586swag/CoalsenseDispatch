@@ -10,19 +10,22 @@
         "apps/companion/**/adapters/head_gesture.py",
         "apps/companion/**/adapters/gaze.py",
         "**/vision/**/*.py",
-        "**/vision.py",
-        "**/voice.py"
+        "apps/companion/**/vision.py",
+        "apps/companion/**/voice.py"
       ],
       "exclude": [],
       "allowlist": true,
       "forbid_dynamic": true,
+      "forbid_calls": true,
       "own_prefixes": ["coalsense_"],
       "allowed": [],
       "modules": [
         "socket", "_socket", "ssl", "_ssl", "http", "urllib", "ftplib", "smtplib", "poplib",
         "imaplib", "nntplib", "telnetlib", "smtpd", "asyncore", "asynchat", "socketserver",
         "xmlrpc", "asyncio", "selectors", "select", "webbrowser", "wsgiref",
-        "multiprocessing.connection", "multiprocessing.managers",
+        "logging.handlers", "logging.config", "xml.sax", "xml.dom.pulldom",
+        "subprocess", "ctypes", "_ctypes", "pkgutil", "runpy", "importlib.util", "multiprocessing",
+        "coalsense_orchestrator",
         "requests", "httpx", "aiohttp", "websockets"
       ]
     },

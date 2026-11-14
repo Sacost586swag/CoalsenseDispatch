@@ -13,7 +13,7 @@ from pathlib import Path
 
 POLICY = "tools/audit/forbidden_imports.yaml"
 REQUIRED = {"id", "paths", "exclude", "modules"}
-OPTIONAL = {"allowlist", "allowed", "own_prefixes", "forbid_dynamic"}
+OPTIONAL = {"allowlist", "allowed", "own_prefixes", "forbid_dynamic", "forbid_calls"}
 # Never source: tooling caches and environments. build/dist are pruned only at package roots.
 PRUNED = {
     ".git",
@@ -28,6 +28,14 @@ PRUNED = {
 ROOT_PRUNED = {"build", "dist"}
 ROOT_MARKERS = {"pyproject.toml", "package.json"}
 EXECUTORS = {"exec", "eval"}
+OS_MODULES = {"os", "posix", "nt"}
+
+
+def process_call(name: str) -> bool:
+    """os attributes that run programs or replace the process."""
+    return name in {"system", "popen", "startfile"} or name.startswith(
+        ("exec", "spawn", "posix_spawn")
+    )
 
 
 @dataclass(frozen=True)
@@ -40,6 +48,7 @@ class Rule:
     allowed: list[str] = field(default_factory=list)  # reviewed third-party modules
     own_prefixes: list[str] = field(default_factory=list)
     forbid_dynamic: bool = False  # flag non-literal dynamic imports and exec/eval
+    forbid_calls: bool = False  # flag os.system/popen/exec*/spawn* and friends
 
 
 def matches(path: str, pattern: str) -> bool:
@@ -86,7 +95,7 @@ def read_policy(root: Path) -> list[Rule]:
             for a in allowed
         ):
             raise ValueError
-        for flag in ("allowlist", "forbid_dynamic"):
+        for flag in ("allowlist", "forbid_dynamic", "forbid_calls"):
             if not isinstance(item.get(flag, False), bool):
                 raise ValueError
         rules.append(
@@ -99,6 +108,7 @@ def read_policy(root: Path) -> list[Rule]:
                 allowed=[a["module"] for a in allowed],
                 own_prefixes=item.get("own_prefixes", []),
                 forbid_dynamic=item.get("forbid_dynamic", False),
+                forbid_calls=item.get("forbid_calls", False),
             )
         )
     return rules
@@ -115,9 +125,11 @@ def package_parts(path: str) -> list[str]:
 
 
 def imports(tree: ast.AST, path: str) -> Iterator[tuple[int, str, str]]:
-    """Yield (line, module, kind): abs, rel (resolved relative) or dyn (not statically known)."""
+    """Yield (line, module, kind): abs, rel (resolved relative), dyn (not statically known)
+    or call (process execution)."""
     # Include straightforward importlib/builtins aliases without executing anything.
     libraries = {"importlib", "builtins", "__builtins__"}
+    oslibs = set(OS_MODULES)
     loaders = {"__import__"}
     nodes = list(ast.walk(tree))
     for node in nodes:
@@ -125,6 +137,7 @@ def imports(tree: ast.AST, path: str) -> Iterator[tuple[int, str, str]]:
             libraries.update(
                 a.asname or a.name for a in node.names if a.name in {"importlib", "builtins"}
             )
+            oslibs.update(a.asname or a.name for a in node.names if a.name in OS_MODULES)
         elif isinstance(node, ast.ImportFrom) and not node.level:
             wanted = {"importlib": "import_module", "builtins": "__import__"}.get(node.module or "")
             loaders.update(a.asname or a.name for a in node.names if a.name == wanted)
@@ -137,7 +150,15 @@ def imports(tree: ast.AST, path: str) -> Iterator[tuple[int, str, str]]:
             isinstance(node, ast.Attribute)
             and isinstance(node.value, ast.Name)
             and node.value.id in libraries
-            and node.attr in {"import_module", "__import__"}
+            and node.attr in {"import_module", "__import__", "exec", "eval"}
+        )
+
+    def os_attribute(node: ast.AST) -> bool:
+        return (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id in oslibs
+            and process_call(node.attr)
         )
 
     for node in nodes:
@@ -157,14 +178,21 @@ def imports(tree: ast.AST, path: str) -> Iterator[tuple[int, str, str]]:
                 for alias in node.names:
                     if alias.name != "*":
                         yield node.lineno, f"{base}.{alias.name}", kind
+            if node.module in OS_MODULES and not node.level:
+                for alias in node.names:
+                    if process_call(alias.name):
+                        yield node.lineno, "", "call"
         elif isinstance(node, ast.Call) and is_loader(node.func):
             argument = (
                 node.args[0]
                 if node.args
                 else next((kw.value for kw in node.keywords if kw.arg == "name"), None)
             )
+            name = (
+                node.func.id if isinstance(node.func, ast.Name) else getattr(node.func, "attr", "")
+            )
             if (
-                not (isinstance(node.func, ast.Name) and node.func.id in EXECUTORS)
+                name not in EXECUTORS
                 and isinstance(argument, ast.Constant)
                 and isinstance(argument.value, str)
                 and not argument.value.startswith(".")
@@ -172,11 +200,26 @@ def imports(tree: ast.AST, path: str) -> Iterator[tuple[int, str, str]]:
                 yield node.lineno, argument.value, "abs"
             else:
                 yield node.lineno, "", "dyn"
+        elif (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "getattr"
+            and node.args
+            and isinstance(node.args[0], ast.Name)
+            and node.args[0].id in libraries
+        ):  # getattr(builtins, name) reaches __import__/exec without naming them
+            yield node.lineno, "", "dyn"
+        elif isinstance(node, ast.Attribute) and os_attribute(node):
+            yield node.lineno, "", "call"
         elif is_loader(node) and id(node) not in callees:  # alias such as `f = __import__`
             yield getattr(node, "lineno", 1), "", "dyn"
 
 
 def verdict(rule: Rule, module: str, kind: str) -> str | None:
+    if kind == "call":
+        if not rule.forbid_calls:
+            return None
+        return "Llamada de ejecución o proceso prohibida en esta ubicación."
     if kind == "dyn":
         return "Importación dinámica no literal en esta ubicación." if rule.forbid_dynamic else None
     hit = next((m for m in rule.modules if module == m or module.startswith(m + ".")), None)

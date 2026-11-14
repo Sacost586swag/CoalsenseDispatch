@@ -340,3 +340,96 @@ def test_root_hidden_tooling_dirs_are_pruned_but_github_is_scanned(tree: Path) -
 def test_builtins_literal_import_is_checked(tree: Path) -> None:
     write(tree, "packages/common/run.py", 'import builtins\nbuiltins.__import__("httpx")\n')
     assert any("HTTP_SALIENTE" in f for f in audit(tree))
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "import logging.handlers",
+        "from logging import handlers",
+        "from logging.handlers import SocketHandler",
+        "import logging.config",
+        "import xml.sax",
+        "from xml.dom import pulldom",
+        "import xml.dom.pulldom",
+        "import subprocess",
+        "from subprocess import run",
+        "import ctypes",
+        "import pkgutil",
+        "import runpy",
+        "import importlib.util",
+        "from importlib import util",
+        "import multiprocessing",
+        "from multiprocessing import pool",
+        "import coalsense_orchestrator",
+        "from coalsense_orchestrator.gateway import client",
+        "import coalsense_orchestrator.persistence",
+    ],
+)
+def test_vision_voice_failclosed_modules(tree: Path, source: str) -> None:
+    write(tree, ADAPTER, source)
+    assert any(f"{ADAPTER}:1: RED_PRIVADA:" in f for f in audit(tree))
+
+
+def test_vision_voice_allows_plain_logging_and_xml_parsing(tree: Path) -> None:
+    write(tree, ADAPTER, "import logging\nimport xml.etree.ElementTree\nimport importlib\n")
+    assert audit(tree) == []
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "import os\nos.system('x')",
+        "import os\nos.popen('x')",
+        "import os\nos.execv(path, args)",
+        "import os\nos.execvp(path, args)",
+        "import os\nos.spawnl(0, path)",
+        "import os\nos.posix_spawn(path, args, env)",
+        "import os\nos.startfile(path)",
+        "import os as o\no.system('x')",
+        "import os\nrun = os.system",
+        "from os import system",
+        "from os import execvp as launch",
+        "from os import popen, getcwd",
+    ],
+)
+def test_process_calls_only_flagged_in_vision_voice(tree: Path, source: str) -> None:
+    write(tree, ADAPTER, source)
+    assert any("RED_PRIVADA: " in f and "proceso" in f for f in audit(tree))
+    write(tree, "packages/common/run.py", source)
+    assert not any("packages/common/run.py" in f for f in audit(tree))
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "import builtins\nbuiltins.exec(code)",
+        "import builtins\nbuiltins.exec('x = 1')",
+        "import builtins\nbuiltins.eval(code)",
+        "import builtins\ngetattr(builtins, name)",
+        "import builtins as b\ngetattr(b, 'ex' + 'ec')",
+        "getattr(__builtins__, name)",
+        "import importlib\ngetattr(importlib, name)",
+    ],
+)
+def test_builtins_indirection_is_flagged_in_vision_voice(tree: Path, source: str) -> None:
+    write(tree, ADAPTER, source)
+    assert any(f"{ADAPTER}:" in f and ": RED_PRIVADA: " in f for f in audit(tree))
+
+
+def test_harmless_os_use_is_allowed_in_vision_voice(tree: Path) -> None:
+    write(
+        tree,
+        ADAPTER,
+        "import os\nfrom os import path, getcwd\nos.getcwd()\nos.path.join('a')\nos.environ\n"
+        "getattr(self, name)\n",
+    )
+    assert audit(tree) == []
+
+
+def test_module_file_globs_are_scoped_to_companion(tree: Path) -> None:
+    write(tree, "packages/common/voice.py", "import ssl")
+    write(tree, "apps/orchestrator/src/x/vision.py", "import ssl")
+    assert audit(tree) == []
+    write(tree, "apps/companion/src/x/voice.py", "import ssl")
+    assert len(audit(tree)) == 1
