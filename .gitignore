@@ -1,0 +1,30 @@
+# Skills vendorizadas (se reinstalan desde skills-lock.json)
+.claude/skills/
+.agents/skills/
+.kiro/skills/
+# Estado local de plugins
+.remember/
+.claude/settings.local.json
+.taste-skill/
+.impeccable/config.local.json
+# Secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+# Node
+node_modules/
+.next/
+.turbo/
+dist/
+coverage/
+playwright-report/
+test-results/
