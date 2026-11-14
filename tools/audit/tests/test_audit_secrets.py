@@ -118,17 +118,72 @@ def test_invalid_policy(tree: Path, data: str) -> None:
     assert "private input" not in findings[0]
 
 
-def test_unreadable_file(tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    (tree / "locked.txt").write_text("clean", encoding="utf-8")
+def locked(monkeypatch: pytest.MonkeyPatch, name: str) -> None:
     original = Path.read_bytes
 
     def read(path: Path) -> bytes:
-        if path.name == "locked.txt":
+        if path.name == name:
             raise PermissionError("private input")
         return original(path)
 
     monkeypatch.setattr(Path, "read_bytes", read)
+
+
+def test_unreadable_text_file_fails(tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tree / "locked.txt").write_text("clean", encoding="utf-8")
+    (tree / "locked.bin").write_text("clean", encoding="utf-8")
+    locked(monkeypatch, "locked.txt")
+    locked(monkeypatch, "locked.bin")
+    findings, skipped = secrets.scan(tree)
+    assert findings == ["locked.txt:1: ILEGIBLE: Archivo de texto ilegible o no decodificable."]
+    assert skipped == 2
+    assert "private input" not in findings[0]
+
+
+def test_unreadable_text_file_exit_code(
+    tree: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(
+        secrets, "__file__", str(tree / "tools/audit/src/coalsense_audit/secrets.py")
+    )
+    (tree / "locked.yaml").write_text("clean", encoding="utf-8")
+    locked(monkeypatch, "locked.yaml")
+    assert secrets.main() == 1
+    captured = capsys.readouterr()
+    assert "locked.yaml:1: ILEGIBLE" in captured.out
+    assert "omitidos: 1 archivos (ilegibles o binarios)" in captured.err
+
+
+def test_undecodable_text_file_fails_binary_only_counts(tree: Path) -> None:
+    (tree / "latin.md").write_bytes(b"caf\xe9")
+    (tree / "image.dat").write_bytes(b"\x00\x01" + sample("AWS").encode())
+    findings, skipped = secrets.scan(tree)
+    assert findings == ["latin.md:1: ILEGIBLE: Archivo de texto ilegible o no decodificable."]
+    assert skipped == 2
+
+
+def test_unreadable_text_file_can_be_allowlisted(tree: Path) -> None:
+    (tree / "latin.md").write_bytes(b"caf\xe9")
+    (tree / secrets.POLICY).write_text(
+        json.dumps(
+            {"exceptions": [{"path": "latin.md", "rule": "ILEGIBLE", "reason": "Latin-1 heredado"}]}
+        ),
+        encoding="utf-8",
+    )
     assert secrets.audit(tree) == []
+
+
+@pytest.mark.parametrize("encoding", ["utf-16", "utf-16-be", "utf-8-sig"])
+def test_bom_encodings_are_scanned(tree: Path, encoding: str) -> None:
+    text = "JWT_SECRET=" + CRED + "\r\n"
+    data = text.encode(encoding)
+    if encoding == "utf-16-be":
+        data = b"\xfe\xff" + data
+    (tree / ".env.example").write_bytes(data)
+    assert secrets.scan(tree) == (
+        ["" + ".env.example:1: ASSIGNMENT: Posible secreto detectado."],
+        0,
+    )
 
 
 def test_git_failure(tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -181,3 +236,50 @@ def test_inventory_warning_is_not_printed(
     monkeypatch.setattr(subprocess, "run", result)
     assert secrets.audit(tree) == []
     assert capsys.readouterr() == ("", "")
+
+
+CRED = "Ab9Cd8Ef7Gh6Ij5Kl4Mn3"
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "DB_PASSWORD=" + CRED,
+        "SECRET_KEY=" + CRED,
+        "JWT_SECRET=" + CRED + "\r",
+        "access_token: " + CRED,
+        "client_secret = '" + CRED + "'",
+        "STRIPE_API_KEY=" + CRED,
+        "password: " + CRED + " # comment",
+        'password => "' + CRED + '"',
+        '{\\"password\\": \\"' + CRED + '\\"}',
+        '{"db_passwd": "' + CRED + '"}',
+        'export TOKEN="' + CRED + '"',
+    ],
+)
+def test_assignment_shapes(tree: Path, line: str) -> None:
+    (tree / "settings.example").write_text("x\n" + line, encoding="utf-8")
+    findings = secrets.audit(tree)
+    assert findings == ["settings.example:2: ASSIGNMENT: Posible secreto detectado."]
+    assert CRED not in findings[0]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "JWT_SECRET=<value>",
+        "JWT_SECRET=",
+        "DB_PASSWORD=${DB_PASSWORD}",
+        "DB_PASSWORD=changeme",
+        "API_KEY=xxxxxxxxxxxxxxxxxxxx",
+        "SECRET_KEY=example",
+        'password: ""',
+        "token = settings.access_token_value",
+        "password == '" + CRED + "'",
+        '"audit:secrets": "uv run --locked python -m coalsense_audit.secrets"',
+        "integrity: sha512-" + CRED + "==",
+    ],
+)
+def test_assignment_non_secrets(tree: Path, line: str) -> None:
+    (tree / "settings.example").write_text(line, encoding="utf-8")
+    assert secrets.audit(tree) == []

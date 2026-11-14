@@ -24,12 +24,41 @@ PATTERNS = {
         r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/:@]+:"
         r"(?P<value>[^\s@/]+)@"
     ),
+    # Name may be embedded (DB_PASSWORD, access_token); value quoted (also JSON-escaped) or bare.
     "ASSIGNMENT": (
-        r"""(?i)\b(?:password|secret|token|api_key)\b["']?\s*[:=]\s*"""
-        r"""(?P<quote>["'])(?P<value>[^\r\n]*?)(?P=quote)"""
+        r"""(?i)(?:password|passwd|secret|token|api[_-]?key|private[_-]?key)[A-Za-z0-9_]*"""
+        r"""\\?["']?[ \t]*(?:=>|[:=])(?!=)[ \t]*"""
+        r"""(?:\\?(?P<quote>["'])(?P<value>[^\r\n]{0,512}?)\\?(?P=quote)"""
+        r"""|(?P<bare>[^\s#"',;()\[\]<>{}]+))"""
     ),
 }
 RULES = {name: re.compile(pattern) for name, pattern in PATTERNS.items()}
+# Not a pattern: a text-extension file that cannot be read or decoded. Allowlistable like a rule.
+UNREADABLE = "ILEGIBLE"
+TEXT_SUFFIXES = {
+    *(".yaml", ".yml", ".json", ".toml", ".ini", ".cfg", ".py", ".ts", ".tsx"),
+    *(".js", ".md", ".txt", ".sh", ".ps1"),
+}
+# shortcut: assignment values with whitespace are prose/commands (misses passphrases).
+# shortcut: a bare value that is a plain identifier chain (no digits) is code, not a secret.
+IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z_.]*")
+
+
+def is_text_path(path: str) -> bool:
+    name = PurePosixPath(path).name.lower()
+    return name.startswith(".env") or PurePosixPath(name).suffix in TEXT_SUFFIXES
+
+
+def decode(raw: bytes) -> str | None:
+    """UTF-8 (with or without BOM) or BOM-marked UTF-16; None means binary or undecodable."""
+    try:
+        if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+            return raw.decode("utf-16")
+        if b"\0" in raw:
+            return None
+        return raw.decode("utf-8-sig")
+    except UnicodeError:
+        return None
 
 
 def placeholder(value: str) -> bool:
@@ -52,7 +81,7 @@ def read_policy(root: Path) -> set[tuple[str, str]]:
             raise ValueError
         path = item["path"]
         if (
-            item["rule"] not in RULES
+            item["rule"] not in {*RULES, UNREADABLE}
             or PurePosixPath(path).is_absolute()
             or any(p in {"", ".", ".."} for p in path.split("/"))
             or any(c in path for c in "\\:*?[]")
@@ -75,18 +104,22 @@ def inventory(root: Path) -> list[str]:
     )
 
 
-def audit(root: Path) -> list[str]:
+def scan(root: Path) -> tuple[list[str], int]:
+    """Return (findings, count of binary/unreadable files skipped)."""
     try:
         allowed = read_policy(root)
     except (OSError, ValueError, TypeError):
-        return [f"{POLICY}:1: ENTRADA: No se pudo leer o validar la política de secretos."]
+        return [f"{POLICY}:1: ENTRADA: No se pudo leer o validar la política de secretos."], 0
     try:
         paths = inventory(root)
     except (OSError, subprocess.SubprocessError):
-        return [".:1: ENTRADA: No se pudo obtener el inventario de Git."]
+        return [".:1: ENTRADA: No se pudo obtener el inventario de Git."], 0
     findings: set[str] = set()
+    skipped = 0
     for path in paths:
+        safe_path = path.encode("unicode_escape").decode("ascii")
         source = root / path
+        text = None
         try:
             # Do not follow links (including directory links) out of the inventory.
             # Only components below root: a symlinked checkout location is legitimate.
@@ -95,35 +128,51 @@ def audit(root: Path) -> list[str]:
                 for p in (source, *source.parents)[: len(source.parts) - len(root.parts)]
             ):
                 continue
-            if not source.resolve().is_relative_to(root.resolve()):
+            if not source.resolve().is_relative_to(root.resolve()) or source.is_dir():
                 continue
-            raw = source.read_bytes()
-        except OSError:
-            # Deleted tracked files and permission-locked paths are skipped gracefully.
-            continue
-        if b"\0" in raw:
-            continue
-        try:
-            text = raw.decode("utf-8-sig")
-        except UnicodeError:
+            text = decode(source.read_bytes())
+        except (FileNotFoundError, NotADirectoryError):
+            continue  # tracked file deleted from the working tree
+        except (OSError, ValueError):
+            pass  # permission-locked or odd path: counted below, never echoed
+        if text is None:
+            skipped += 1
+            if is_text_path(path) and (path, UNREADABLE) not in allowed:
+                findings.add(
+                    f"{safe_path}:1: {UNREADABLE}: Archivo de texto ilegible o no decodificable."
+                )
             continue
         for rule, pattern in RULES.items():
             if (path, rule) in allowed:
                 continue
             for match in pattern.finditer(text):
-                value = match.groupdict().get("value", match[0])
-                if placeholder(value) or (rule == "ASSIGNMENT" and len(value) < 16):
+                groups = match.groupdict()
+                value = groups.get("value") or groups.get("bare") or ""
+                if rule not in {"CONNECTION", "ASSIGNMENT"}:
+                    value = match[0]
+                if placeholder(value) or (
+                    rule == "ASSIGNMENT"
+                    and (
+                        len(value) < 16
+                        or re.search(r"\s", value)
+                        or (groups.get("bare") and IDENTIFIER.fullmatch(value))
+                    )
+                ):
                     continue
                 line = text.count("\n", 0, match.start()) + 1
-                safe_path = path.encode("unicode_escape").decode("ascii")
                 findings.add(f"{safe_path}:{line}: {rule}: Posible secreto detectado.")
-    return sorted(findings)
+    return sorted(findings), skipped
+
+
+def audit(root: Path) -> list[str]:
+    return scan(root)[0]
 
 
 def main() -> int:
-    findings = audit(Path(__file__).resolve().parents[4])
+    findings, skipped = scan(Path(__file__).resolve().parents[4])
     for finding in findings:
         print(finding)
+    print(f"omitidos: {skipped} archivos (ilegibles o binarios)", file=sys.stderr)
     return int(bool(findings))
 
 
