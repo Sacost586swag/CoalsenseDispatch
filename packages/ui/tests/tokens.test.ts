@@ -5,6 +5,12 @@ import {
   highContrast,
   reducedMotion,
   defineTheme,
+  color,
+  space,
+  font,
+  motion,
+  target,
+  type Theme,
   contrastRatio,
   relativeLuminance,
   toCssVariables,
@@ -125,4 +131,71 @@ test("text scaling, motion validation and generated CSS preferences", () => {
   }
   assert.match(toCssVariables(highContrast), /--border-width: 2px;/);
   assert.match(toCssVariables(reducedMotion), /--motion-duration: 0ms;/);
+});
+
+test("target.gap must be finite and at least 16", () => {
+  for (const gap of [0, 15.99, -1, NaN, Infinity]) {
+    assert.throws(
+      () => defineTheme({ ...defaultTheme, target: { ...defaultTheme.target, gap } }),
+      /target\.gap/,
+    );
+  }
+  assert.equal(
+    defineTheme({ ...defaultTheme, target: { min: 44, head: 64, gap: 20 } }).target.gap,
+    20,
+  );
+});
+
+test("base tokens and exported themes are deeply frozen (REQ-00-040 floor cannot be lowered)", () => {
+  for (const tokens of [color, space, font, motion, target]) assert.ok(Object.isFrozen(tokens));
+  for (const theme of [defaultTheme, highContrast, reducedMotion]) {
+    assert.ok(Object.isFrozen(theme));
+    for (const section of [
+      theme.color,
+      theme.space,
+      theme.font,
+      theme.motion,
+      theme.target,
+      theme.border,
+      theme.ring,
+    ]) {
+      assert.ok(Object.isFrozen(section));
+    }
+  }
+  // ESM is strict mode: writes to frozen objects throw instead of failing silently.
+  assert.throws(() => {
+    (defaultTheme.target as { min: number }).min = 10;
+  }, TypeError);
+  assert.throws(() => {
+    (target as { min: number }).min = 10;
+  }, TypeError);
+  assert.throws(() => {
+    (highContrast.target as { min: number }).min = 10;
+  }, TypeError);
+  assert.equal(defaultTheme.target.min, 44);
+  assert.equal(reducedMotion.target.min, 44);
+});
+
+test("defineTheme returns a frozen clone, not the caller's object", () => {
+  const input = {
+    ...defaultTheme,
+    target: { min: 44, head: 64, gap: 16 },
+    color: { ...defaultTheme.color },
+  };
+  const theme = defineTheme(input);
+  assert.notEqual(theme, input);
+  assert.notEqual(theme.target, input.target);
+  assert.ok(
+    Object.isFrozen(theme) && Object.isFrozen(theme.target) && Object.isFrozen(theme.color),
+  );
+  (input.target as { min: number }).min = 10; // input remains the caller's to mutate...
+  assert.equal(theme.target.min, 44); // ...but never affects the validated theme
+});
+
+test("toCssVariables accepts only themes validated by defineTheme", () => {
+  const plain: Theme = { ...defaultTheme, target: { min: 10, head: 64, gap: 16 } };
+  // @ts-expect-error an unvalidated structural Theme is not a ValidatedTheme
+  assert.throws(() => toCssVariables(plain), /validated|defineTheme/i);
+  const forged = { ...defaultTheme, target: { min: 10, head: 64, gap: 16 } };
+  assert.throws(() => toCssVariables(forged), /validated|defineTheme/i);
 });

@@ -1,5 +1,5 @@
 /** Semantic colors from MASTER.md's binding orchestrator decisions. */
-export const color = {
+export const color = Object.freeze({
   background: "#FAF7F2",
   foreground: "#1F1B16",
   secondaryText: "#57534E",
@@ -11,16 +11,25 @@ export const color = {
   ring: "#1D4ED8",
   stop: "#B91C1C",
   onStop: "#FFFFFF",
-} as const;
+} as const);
 
 /** CSS pixel values; targets use physical CSS px, typography uses rem. */
-export const space = { xs: 4, sm: 8, md: 24, lg: 32, xl: 48, "2xl": 64, "3xl": 96 } as const;
-export const font = {
+export const space = Object.freeze({
+  xs: 4,
+  sm: 8,
+  md: 24,
+  lg: 32,
+  xl: 48,
+  "2xl": 64,
+  "3xl": 96,
+} as const);
+export const font = Object.freeze({
   family: '"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif',
   base: 18,
   lineHeight: 1.5,
   regular: 400,
   bold: 700,
-} as const;
-export const motion = { property: "opacity", duration: 150 } as const;
-export const target = { min: 44, head: 64, gap: 16 } as const;
+} as const);
+export const motion = Object.freeze({ property: "opacity", duration: 150 } as const);
+/** Frozen: the 44 px floor (REQ-00-040) must not be lowered after import. */
+export const target = Object.freeze({ min: 44, head: 64, gap: 16 } as const);

@@ -1,10 +1,11 @@
-import { defineTheme, type Theme } from "./theme.ts";
+import { defineTheme, isValidatedTheme, type ValidatedTheme } from "./theme.ts";
 
 const kebab = (name: string): string => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
 /** Complete :root stylesheet. Insert after other theme styles; no browser API needed. */
-export function toCssVariables(theme: Theme): string {
-  defineTheme(theme);
+export function toCssVariables(theme: ValidatedTheme): string {
+  if (!isValidatedTheme(theme)) throw new TypeError("theme must come from defineTheme");
+  defineTheme(theme); // belt and braces: re-check floors
   const declarations: string[] = [];
   const add = (name: string, value: string | number): void => {
     declarations.push(`  --${name}: ${value};`);

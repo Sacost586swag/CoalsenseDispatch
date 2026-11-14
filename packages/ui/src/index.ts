@@ -1,5 +1,5 @@
 export { color, space, font, motion, target } from "./tokens/base.ts";
-export { defineTheme, type Theme, type TargetSize } from "./tokens/theme.ts";
+export { defineTheme, type Theme, type ValidatedTheme, type TargetSize } from "./tokens/theme.ts";
 export { relativeLuminance, contrastRatio } from "./tokens/contrast.ts";
 export { toCssVariables } from "./tokens/css.ts";
 export { defaultTheme, defaultTheme as default } from "./themes/default.ts";

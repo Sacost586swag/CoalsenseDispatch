@@ -1,4 +1,4 @@
-﻿# @coalsense/ui
+# @coalsense/ui
 
 Tokens y temas accesibles compartidos por la web y la WebView, sin dependencias.
 Valores vinculantes: sección «Decisiones del orquestador» de MASTER.md.
