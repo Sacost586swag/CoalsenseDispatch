@@ -43,4 +43,4 @@ def test_clean_checkout_installs_with_frozen_lockfiles(tmp_path: Path) -> None:
         assert (checkout / name).is_file(), f"{name} no está commiteado en HEAD"
 
     _run(["pnpm", "install", "--frozen-lockfile"], checkout)
-    _run(["uv", "sync", "--frozen"], checkout)
+    _run([X], checkout)

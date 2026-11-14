@@ -1,6 +1,6 @@
 # Dependencias de terceros
 
-Registro de cada dependencia **directa** del monorepo: versión fijada, licencia y origen. Solo se admiten licencias MIT, BSD, Apache-2.0, ISC y MPL-2.0. Las dependencias transitivas las cubre la auditoría de licencias de CI (T-00-0xx de `tools/audit`).
+Registro de cada dependencia **directa** del monorepo: versión fijada, licencia y origen. Solo se admiten licencias MIT, BSD, Apache-2.0, ISC y MPL-2.0. Las dependencias transitivas las cubre la auditoría de licencias de CI (T-00-003).
 
 Versiones fijadas exactas (sin `^` ni `~`) en `package.json` y `pyproject.toml`.
 
@@ -8,7 +8,7 @@ Versiones fijadas exactas (sin `^` ni `~`) en `package.json` y `pyproject.toml`.
 | --- | --- | --- | --- | --- |
 | turbo | 2.11.11 | MIT | npm: https://www.npmjs.com/package/turbo | Orquesta `lint`, `typecheck`, `test` y `build` en todo el monorepo (TypeScript y Python). |
 | typescript | 6.0.3 | Apache-2.0 | npm: https://www.npmjs.com/package/typescript | Compilador y verificación de tipos en modo `strict`. Se queda en 6.x porque `typescript-eslint` 8.72.2 exige `<6.1.0`. |
-| eslint | 10.15.0 | MIT | npm: https://www.npmjs.com/package/eslint | Lint de TypeScript. |
+| eslint | 10.14.0 | MIT | npm: https://www.npmjs.com/package/eslint | Lint de TypeScript. |
 | @eslint/js | 10.0.1 | MIT | npm: https://www.npmjs.com/package/@eslint/js | Reglas recomendadas de ESLint. |
 | typescript-eslint | 8.72.2 | MIT | npm: https://www.npmjs.com/package/typescript-eslint | Reglas de ESLint para TypeScript. |
 | prettier | 3.10.1 | MIT | npm: https://www.npmjs.com/package/prettier | Formato de TypeScript, JSON y Markdown. |
