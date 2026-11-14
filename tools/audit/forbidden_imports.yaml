@@ -1,0 +1,27 @@
+{
+  "rules": [
+    {
+      "id": "RED_PRIVADA",
+      "paths": [
+        "apps/companion/**/adapters/voice/**/*.py",
+        "apps/companion/**/adapters/head_gesture/**/*.py",
+        "apps/companion/**/adapters/gaze/**/*.py",
+        "**/vision/**/*.py"
+      ],
+      "exclude": [],
+      "modules": ["socket", "http", "urllib", "requests", "httpx", "aiohttp", "websockets"]
+    },
+    {
+      "id": "BD_AGENTES",
+      "paths": ["apps/orchestrator/**/agents/**/*.py"],
+      "exclude": [],
+      "modules": ["psycopg", "psycopg2", "asyncpg", "sqlalchemy", "coalsense_orchestrator.persistence"]
+    },
+    {
+      "id": "HTTP_SALIENTE",
+      "paths": ["**/*.py"],
+      "exclude": ["apps/orchestrator/**/gateway/**/*.py", "**/tests/**/*.py", "tools/audit/**/*.py"],
+      "modules": ["requests", "httpx", "aiohttp", "urllib.request", "http.client", "websockets"]
+    }
+  ]
+}
