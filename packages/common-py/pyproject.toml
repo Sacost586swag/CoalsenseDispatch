@@ -3,7 +3,7 @@ name = "coalsense-common"
 version = "0.0.0"
 description = "Configuración, errores, ids, registros e indicadores de función compartidos."
 requires-python = "==3.12.*"
-dependencies = []
+dependencies = ["pydantic==2.12.3"]
 
 [build-system]
 requires = ["uv_build==0.12.13"]

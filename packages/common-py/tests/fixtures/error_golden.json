@@ -1,0 +1,6 @@
+{
+  "code": "SERVICE_UNAVAILABLE",
+  "message_es": "El servicio no está disponible en este momento.",
+  "recoverable": true,
+  "next_actions": ["Intenta de nuevo en unos minutos."]
+}

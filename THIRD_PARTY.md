@@ -17,3 +17,5 @@ Versiones fijadas exactas (sin `^` ni `~`) en `package.json` y `pyproject.toml`.
 | mypy | 2.4.1 | MIT | PyPI: https://pypi.org/project/mypy/ | Verificación de tipos de Python en modo `strict`. |
 | pytest | 9.2.0 | MIT | PyPI: https://pypi.org/project/pytest/ | Pruebas de Python. |
 | uv_build | 0.12.13 | MIT OR Apache-2.0 | PyPI: https://pypi.org/project/uv-build/ | Backend de construcción de los paquetes Python del workspace de uv. |
+| pydantic | 2.12.3 | MIT | PyPI: https://pypi.org/project/pydantic/2.12.3/ | Esquemas de configuración y protección de secretos con SecretStr. |
+| zod | 4.1.12 | MIT | npm: https://www.npmjs.com/package/zod/v/4.1.12 | Esquemas de configuración TypeScript. |
