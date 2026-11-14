@@ -1,8 +1,9 @@
 {
   "licenses": [
     "MIT", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "Apache-2.0", "ISC",
-    "MPL-2.0", "Python-2.0", "PSF-2.0"
+    "MPL-2.0", "Python-2.0", "PSF-2.0", "BlueOak-1.0.0"
   ],
+  "comment_BlueOak-1.0.0": "OSI permissive, MIT-equivalent; approved by orchestrator 2026-11-14",
   "font_packages": [],
   "exceptions": []
 }
