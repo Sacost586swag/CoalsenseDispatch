@@ -30,6 +30,8 @@
 ├─ packages/
 │  ├─ intents/                  JSON Schema + tipos generados (Python y TypeScript)
 │  ├─ safety/                   reglas de crisis, mensajes fijos y límites (Python y TypeScript)
+│  ├─ common-py/                configuración, errores, ids, registros e indicadores de función (Python)
+│  ├─ common-ts/                lo mismo para TypeScript
 │  └─ ui/                       design system accesible
 ├─ tools/audit/                 auditorías de CI (licencias, esquema, importaciones, trazabilidad)
 ├─ infra/                       docker-compose: PostgreSQL + pgvector, Redis, n8n (opcional)
