@@ -6,22 +6,42 @@
         "apps/companion/**/adapters/voice/**/*.py",
         "apps/companion/**/adapters/head_gesture/**/*.py",
         "apps/companion/**/adapters/gaze/**/*.py",
-        "**/vision/**/*.py"
+        "apps/companion/**/adapters/voice.py",
+        "apps/companion/**/adapters/head_gesture.py",
+        "apps/companion/**/adapters/gaze.py",
+        "**/vision/**/*.py",
+        "**/vision.py",
+        "**/voice.py"
       ],
       "exclude": [],
-      "modules": ["socket", "http", "urllib", "requests", "httpx", "aiohttp", "websockets"]
+      "allowlist": true,
+      "forbid_dynamic": true,
+      "own_prefixes": ["coalsense_"],
+      "allowed": [],
+      "modules": [
+        "socket", "_socket", "ssl", "_ssl", "http", "urllib", "ftplib", "smtplib", "poplib",
+        "imaplib", "nntplib", "telnetlib", "smtpd", "asyncore", "asynchat", "socketserver",
+        "xmlrpc", "asyncio", "selectors", "select", "webbrowser", "wsgiref",
+        "multiprocessing.connection", "multiprocessing.managers",
+        "requests", "httpx", "aiohttp", "websockets"
+      ]
     },
     {
       "id": "BD_AGENTES",
       "paths": ["apps/orchestrator/**/agents/**/*.py"],
       "exclude": [],
+      "forbid_dynamic": true,
       "modules": ["psycopg", "psycopg2", "asyncpg", "sqlalchemy", "coalsense_orchestrator.persistence"]
     },
     {
       "id": "HTTP_SALIENTE",
       "paths": ["**/*.py"],
       "exclude": ["apps/orchestrator/**/gateway/**/*.py", "**/tests/**/*.py", "tools/audit/**/*.py"],
-      "modules": ["requests", "httpx", "aiohttp", "urllib.request", "http.client", "websockets"]
+      "forbid_dynamic": true,
+      "modules": [
+        "requests", "httpx", "aiohttp", "urllib.request", "http.client", "websockets",
+        "urllib3", "httpcore", "grpc", "websocket", "pycurl", "socket"
+      ]
     }
   ]
 }
