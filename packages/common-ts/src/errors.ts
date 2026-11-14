@@ -1,10 +1,12 @@
-export class AppError {
+export class AppError extends Error {
   code: string;
   message_es: string;
   recoverable: boolean;
   next_actions: string[];
 
   constructor(code: string, message_es: string, recoverable: boolean, next_actions: string[]) {
+    super(message_es);
+    this.name = "AppError";
     this.code = code;
     this.message_es = message_es;
     this.recoverable = recoverable;

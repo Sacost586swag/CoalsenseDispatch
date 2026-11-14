@@ -81,6 +81,60 @@ test("errores de configuración no revelan valores", () => {
   );
 });
 
+test("el mensaje de ConfigError nombra variables, no valores", () => {
+  assert.throws(
+    () => loadConfig(schema, { TOKEN: "fake-test-token" }),
+    (error) => {
+      assert.ok(error instanceof ConfigError);
+      assert.match(error.message, /faltan: PORT/);
+      assert.ok(!error.message.includes("fake-test-token"));
+      return true;
+    },
+  );
+  assert.throws(
+    () => loadConfig(schema, { PORT: "8000", TOKEN: "bad" }),
+    (error) => {
+      assert.ok(error instanceof ConfigError);
+      assert.match(error.message, /inválidas: TOKEN/);
+      assert.ok(!error.message.includes("bad") && !error.message.includes("8000"));
+      return true;
+    },
+  );
+  assert.throws(
+    () =>
+      loadConfig(
+        z.object({
+          X: z.string().transform(() => {
+            throw new TypeError("no es un error de esquema");
+          }),
+        }),
+        { X: "1" },
+      ),
+    TypeError,
+  );
+});
+
+test("AppError se puede lanzar y capturar", () => {
+  const golden = JSON.parse(
+    readFileSync(
+      new URL("../../common-py/tests/fixtures/error_golden.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.throws(
+    () => {
+      throw new AppError(golden.code, golden.message_es, golden.recoverable, golden.next_actions);
+    },
+    (error) => {
+      assert.ok(error instanceof Error && error instanceof AppError);
+      assert.equal(error.name, "AppError");
+      assert.equal(error.message, golden.message_es);
+      assert.deepEqual(error.toJSON(), golden);
+      return true;
+    },
+  );
+});
+
 test("error común coincide con el fixture compartido", () => {
   const golden = JSON.parse(
     readFileSync(

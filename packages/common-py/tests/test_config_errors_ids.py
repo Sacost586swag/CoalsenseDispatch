@@ -56,6 +56,40 @@ def test_config_failure_is_safe(env):
     assert env["TOKEN"] not in output
 
 
+def test_config_error_names_variables_not_values():
+    with pytest.raises(ConfigError) as missing:
+        load_config(Settings, {"TOKEN": "fake-test-token"})
+    assert "PORT" in str(missing.value)
+    assert "fake-test-token" not in str(missing.value)
+    with pytest.raises(ConfigError) as invalid:
+        load_config(Settings, {"PORT": "8000", "TOKEN": "bad"})
+    assert "TOKEN" in str(invalid.value)
+    assert "bad" not in str(invalid.value)
+    assert "8000" not in str(invalid.value)
+
+
+def test_config_non_validation_errors_propagate():
+    class Boom(BaseModel):
+        X: int
+
+        @field_validator("X")
+        @classmethod
+        def boom(cls, value: int) -> int:
+            raise TypeError("no es un error de esquema")
+
+    with pytest.raises(TypeError):
+        load_config(Boom, {"X": "1"})
+
+
+def test_app_error_is_raisable():
+    golden = json.loads((Path(__file__).parent / "fixtures/error_golden.json").read_text("utf-8"))
+    with pytest.raises(AppError) as caught:
+        raise AppError(**golden)
+    assert isinstance(caught.value, Exception)
+    assert str(caught.value) == golden["message_es"]
+    assert caught.value.to_dict() == golden
+
+
 def test_error_golden():
     golden = json.loads((Path(__file__).parent / "fixtures/error_golden.json").read_text("utf-8"))
     assert AppError(**golden).to_dict() == golden
