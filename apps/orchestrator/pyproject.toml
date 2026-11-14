@@ -1,0 +1,10 @@
+[project]
+name = "coalsense-orchestrator"
+version = "0.0.0"
+description = "Orquestador FastAPI: gateway, políticas, agentes, memoria y bitácora."
+requires-python = "==3.12.*"
+dependencies = []
+
+[build-system]
+requires = ["uv_build==0.12.13"]
+build-backend = "uv_build"

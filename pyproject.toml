@@ -1,0 +1,45 @@
+# Workspace de uv. La raíz depende de todos los miembros para que `uv sync`
+# instale todo el monorepo; no se empaqueta (`package = false`).
+[project]
+name = "coalsense-dispatch"
+version = "0.0.0"
+requires-python = "==3.12.*"
+dependencies = [
+    "coalsense-audit",
+    "coalsense-common",
+    "coalsense-companion",
+    "coalsense-orchestrator",
+]
+
+[dependency-groups]
+dev = [
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "ruff==0.17.5",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["apps/companion", "apps/orchestrator", "packages/common-py", "tools/audit"]
+
+[tool.uv.sources]
+coalsense-audit = { workspace = true }
+coalsense-common = { workspace = true }
+coalsense-companion = { workspace = true }
+coalsense-orchestrator = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+strict = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --import-mode=importlib"
+markers = ["integration: necesita red y herramientas externas (pnpm, uv, git)"]

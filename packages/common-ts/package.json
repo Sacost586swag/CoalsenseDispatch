@@ -1,0 +1,12 @@
+{
+  "name": "@coalsense/common-ts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . && prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "build": "tsc --noEmit false --outDir dist"
+  }
+}

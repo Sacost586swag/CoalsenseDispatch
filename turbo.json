@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "lint": {},
+    "typecheck": {},
+    "test": { "passThroughEnv": ["COALSENSE_SKIP_NETWORK_TESTS"] },
+    "build": { "outputs": ["dist/**"] }
+  }
+}

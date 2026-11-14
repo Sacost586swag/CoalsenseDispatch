@@ -28,3 +28,6 @@ dist/
 coverage/
 playwright-report/
 test-results/
+
+# Salidas de compilación de TypeScript
+*.tsbuildinfo

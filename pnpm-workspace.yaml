@@ -1,0 +1,6 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+minimumReleaseAgeExclude:
+  - eslint@10.15.0
