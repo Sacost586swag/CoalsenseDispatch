@@ -7,6 +7,7 @@
     "typecheck": "uv run --locked mypy src",
     "test": "uv run --locked pytest",
     "audit:licenses": "uv run --locked python -m coalsense_audit.licenses",
-    "audit:imports": "uv run --locked python -m coalsense_audit.imports"
+    "audit:imports": "uv run --locked python -m coalsense_audit.imports",
+    "audit:secrets": "uv run --locked python -m coalsense_audit.secrets"
   }
 }
