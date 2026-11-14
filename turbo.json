@@ -9,6 +9,8 @@
     "pnpm-lock.yaml"
   ],
   "tasks": {
+    "audit": { "dependsOn": ["audit:licenses"], "cache": false },
+    "audit:licenses": { "cache": false },
     "lint": {},
     "typecheck": {},
     "test": { "passThroughEnv": ["COALSENSE_SKIP_NETWORK_TESTS"] },

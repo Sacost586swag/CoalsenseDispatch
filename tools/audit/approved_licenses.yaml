@@ -1,0 +1,8 @@
+{
+  "licenses": [
+    "MIT", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "Apache-2.0", "ISC",
+    "MPL-2.0", "Python-2.0", "PSF-2.0"
+  ],
+  "font_packages": [],
+  "exceptions": []
+}
