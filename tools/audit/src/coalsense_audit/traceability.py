@@ -2,7 +2,8 @@
 
 The glossary check enforces tools/audit/glossary_forbidden.yaml, a reviewed subset
 of GLOSARIO.md's "No usar" column (each entry: term, canonical, reason; generic or
-contextual terms are listed under "excluded" with the rule). Every listed term must
+contextual terms are listed under "excluded" with the rule; "exceptions" waive one
+kept term in one exact file path, with a reason). Every listed term must
 still appear in that column, so the list cannot drift. glossary_terms() extracts
 the column: parenthesized explanations are removed before comma splitting and a
 quoted term at the start of an item supplies the term. Match whole words (an
@@ -220,7 +221,7 @@ def mask(source: str) -> str:
     )
 
 
-def forbidden_terms(root: Path) -> list[str]:
+def forbidden_terms(root: Path) -> tuple[list[str], set[tuple[str, str]]]:
     data = json.loads((root / POLICY).read_text(encoding="utf-8"))
     listed = data["forbidden"] if isinstance(data, dict) else None
     if not isinstance(listed, list) or not listed:
@@ -240,13 +241,23 @@ def forbidden_terms(root: Path) -> list[str]:
                 f"{POLICY.as_posix()}: «{fields[0]}» no está en «No usar» de GLOSARIO.md"
             )
         terms.append(term)
-    return sorted(set(terms))
+    exceptions: set[tuple[str, str]] = set()
+    for item in data.get("exceptions", []):
+        fields = [
+            str(item.get(k) or "").strip() if isinstance(item, dict) else ""
+            for k in ("path", "term", "reason")
+        ]
+        if not all(fields) or normalize(fields[1]) not in terms:
+            raise ValueError(f"{POLICY.as_posix()}: excepción sin path, reason o término listado")
+        exceptions.add((fields[0], normalize(fields[1])))
+    return sorted(set(terms)), exceptions
 
 
 def glossary(root: Path) -> list[str]:
+    terms, exceptions = forbidden_terms(root)
     patterns = [
         (t, re.compile(r"(?<!\w)" + r"\s+".join(map(re.escape, t.split())) + r"(?:e?s)?(?!\w)"))
-        for t in forbidden_terms(root)
+        for t in terms
     ]
     findings = []
     for base in (SPECS, Path(".kiro/steering")):
@@ -254,10 +265,13 @@ def glossary(root: Path) -> list[str]:
             if path.stem.casefold() == "glosario":
                 continue
             source = normalize(mask(path.read_text(encoding="utf-8")))
+            rel = path.relative_to(root).as_posix()
             for term, pattern in patterns:
+                if (rel, term) in exceptions:  # reviewed exception: exact path + term only
+                    continue
                 for match in pattern.finditer(source):
                     line = source.count("\n", 0, match.start()) + 1
-                    findings.append(f"{path.relative_to(root).as_posix()}:{line}:{term}")
+                    findings.append(f"{rel}:{line}:{term}")
     return sorted(set(findings))
 
 

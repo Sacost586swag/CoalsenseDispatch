@@ -17,7 +17,6 @@
   {"term": "output final", "canonical": "propuesta", "reason": "Resultado de un agente sin efecto externo hasta la aprobación."},
   {"term": "insignia", "canonical": "logro", "reason": "El logro solo suma; no hay gamificación."},
   {"term": "badge", "canonical": "logro", "reason": "El logro solo suma; no hay gamificación."},
-  {"term": "racha", "canonical": "logro", "reason": "El logro solo suma; sin rachas ni pérdidas."},
   {"term": "modo autónomo", "canonical": "dial de autonomía", "reason": "Solo la persona sube el dial; no existe un modo autónomo."},
   {"term": "nivel de automatización", "canonical": "dial de autonomía", "reason": "Ajuste por tipo de tarea."},
   {"term": "nivel de IA", "canonical": "nivel de autonomía", "reason": "Valor del dial: N0, N1 o N2."},
@@ -57,6 +56,11 @@
 "excluded":[
   {"rule": "a", "reason": "Término canónico del glosario o usado en su sentido canónico en otra fila.", "terms": ["acción", "comando", "evento", "modalidad", "sustituto", "pulsador", "pausada", "revertir"]},
   {"rule": "b", "reason": "Palabra común del español o término técnico cuya prohibición rige solo en un sentido concreto; la coincidencia literal da falsos positivos.", "terms": ["acceso", "paso", "rol", "flujo", "modo", "permiso", "producto", "integración", "auditoría", "historial", "instrucción", "orden", "meta", "objetivo", "reglas de negocio", "reglas de seguridad", "dispositivo", "plazo", "puntos", "token", "términos", "aceptación", "diagnóstico", "atrás", "botón", "conector", "hover", "parar", "pipeline", "proxy", "script", "setup", "urgente", "familiar", "ok", "cancelada", "tutorial", "demo", "configuración inicial", "sandbox", "mock", "sample", "macro", "hints", "etiquetas", "grid", "malla", "barrido", "fijación", "input", "driver", "plugin", "plugins", "workflow", "loop", "frontend", "backoffice", "marketplace", "guardia", "app de escritorio"]},
-  {"rule": "c", "reason": "La celda de «No usar» lleva aclaración entre paréntesis o comillas: la prohibición es contextual.", "terms": ["tarea", "trabajo", "cliente", "cancelar", "asistente", "bot", "debounce", "confirmación", "emergencia", "log", "skill", "expresión", "sensibilidad", "transcripción", "contexto", "usarlo como sinónimo de cuidador/a"]}
+  {"rule": "c", "reason": "La celda de «No usar» lleva aclaración entre paréntesis o comillas: la prohibición es contextual.", "terms": ["tarea", "trabajo", "cliente", "cancelar", "asistente", "bot", "debounce", "confirmación", "emergencia", "log", "skill", "expresión", "sensibilidad", "transcripción", "contexto", "usarlo como sinónimo de cuidador/a"]},
+  {"rule": "b", "reason": "solo aparece en frases prohibitivas («sin rachas»); el uso positivo lo cubre la revisión de copy de la UI", "terms": ["racha"]}
+],
+"exceptions":[
+  {"path": ".kiro/specs/01-capa-de-entrada/tasks.md", "term": "usuario", "reason": "cuenta de usuario de Windows en una ACL, no la persona"},
+  {"path": ".kiro/specs/07-privacidad-y-datos/tasks.md", "term": "admin", "reason": "nombre técnico de un rol de base de datos"}
 ]
 }

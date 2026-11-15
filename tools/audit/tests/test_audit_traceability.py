@@ -17,8 +17,13 @@ from coalsense_audit.traceability import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-def policy(*terms: str) -> str:
-    return json.dumps({"forbidden": [{"term": t, "canonical": "c", "reason": "r"} for t in terms]})
+def policy(*terms: str, exceptions: list[dict[str, str]] | None = None) -> str:
+    return json.dumps(
+        {
+            "forbidden": [{"term": t, "canonical": "c", "reason": "r"} for t in terms],
+            "exceptions": exceptions or [],
+        }
+    )
 
 
 def put(root: Path, name: str, value: str) -> Path:
@@ -137,12 +142,48 @@ def test_policy_must_be_honest(tree: Path, bad: str) -> None:
 
 
 def test_real_policy_is_subset_of_glosario() -> None:
-    listed = forbidden_terms(REPO_ROOT)
+    listed, exceptions = forbidden_terms(REPO_ROOT)
     data = json.loads((REPO_ROOT / "tools/audit/glossary_forbidden.yaml").read_text("utf-8"))
     column = set(glossary_terms((REPO_ROOT / ".kiro/specs/GLOSARIO.md").read_text("utf-8")))
     excluded = {normalize(t) for group in data["excluded"] for t in group["terms"]}
     assert listed and not excluded - column
     assert not excluded & set(listed)
+    assert exceptions and {t for _, t in exceptions} <= set(listed)
+    assert all((REPO_ROOT / path).is_file() for path, _ in exceptions)
+    assert glossary(REPO_ROOT) == []
+
+
+def test_exception_waives_exact_path_and_term_only(tree: Path) -> None:
+    waived = {"path": ".kiro/specs/a.md", "term": "Usuario", "reason": "cuenta de Windows"}
+    put(
+        tree,
+        "tools/audit/glossary_forbidden.yaml",
+        policy("usuario", "modo autónomo", exceptions=[waived]),
+    )
+    put(tree, ".kiro/specs/a.md", "usuario y modo autónomo\n")
+    put(tree, ".kiro/specs/sub/a.md", "usuario\n")
+    put(tree, ".kiro/specs/b.md", "usuario\n")
+    assert glossary(tree) == [
+        ".kiro/specs/a.md:1:modo autonomo",
+        ".kiro/specs/b.md:1:usuario",
+        ".kiro/specs/sub/a.md:1:usuario",
+    ]
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"path": "x.md", "term": "modo autónomo", "reason": "r"},  # not in the kept list
+        {"path": "x.md", "term": "usuario", "reason": ""},
+        {"path": "", "term": "usuario", "reason": "r"},
+        "x.md",
+    ],
+)
+def test_exceptions_must_be_reviewed(tree: Path, bad: object) -> None:
+    raw = json.loads(policy("usuario"))
+    raw["exceptions"] = [bad]
+    put(tree, "tools/audit/glossary_forbidden.yaml", json.dumps(raw))
+    assert any("ENTRADA:" in f for f in audit(tree))
 
 
 def test_glossary_scope_quotes_fences_and_lines(tree: Path) -> None:
