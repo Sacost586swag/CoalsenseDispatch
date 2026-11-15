@@ -283,3 +283,30 @@ def test_assignment_shapes(tree: Path, line: str) -> None:
 def test_assignment_non_secrets(tree: Path, line: str) -> None:
     (tree / "settings.example").write_text(line, encoding="utf-8")
     assert secrets.audit(tree) == []
+
+
+@pytest.mark.parametrize("separator", ["=", ": "])
+@pytest.mark.parametrize("name", ["API_KEY", "api_key"])
+def test_bare_letters_only_key(tree: Path, name: str, separator: str) -> None:
+    key = "AbCdEfGhIjKlMnOpQrStUvWxYzAbCdEf"
+    (tree / "settings.example").write_text(name + separator + key, encoding="utf-8")
+    assert secrets.audit(tree) == ["settings.example:1: ASSIGNMENT: Posible secreto detectado."]
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "LOG_LEVEL=information_disclosure_mode",
+        "token_mode: information-disclosure-mode",
+        "SECRET_NAME=SOME_LONG_CONSTANT_NAME_HERE",
+        "TOKEN_URL=https://example.com/oauth/token",
+        "api_key=%API_KEY_FROM_ENVIRONMENT%",
+        "api_key=$API_KEY_FROM_ENVIRONMENT",
+        "password=settings::load_password_value",
+        "token=os.environ.get_token_value",
+        "secret=read_file_contents_and_strip_it",
+    ],
+)
+def test_bare_references_are_not_secrets(tree: Path, line: str) -> None:
+    (tree / "settings.example").write_text(line, encoding="utf-8")
+    assert secrets.audit(tree) == []

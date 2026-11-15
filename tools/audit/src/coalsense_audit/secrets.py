@@ -1,9 +1,11 @@
 """Offline Git inventory secret audit; policy uses the JSON subset of YAML."""
 
 import json
+import math
 import re
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path, PurePosixPath
 
 POLICY = "tools/audit/secrets_allowlist.yaml"
@@ -40,8 +42,18 @@ TEXT_SUFFIXES = {
     *(".js", ".md", ".txt", ".sh", ".ps1"),
 }
 # shortcut: assignment values with whitespace are prose/commands (misses passphrases).
-# shortcut: a bare value that is a plain identifier chain (no digits) is code, not a secret.
-IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z_.]*")
+# shortcut: bare (unquoted) values are secrets only if high-entropy and not a reference,
+# path/URL/call or lowercase/UPPER word identifier (misses all-lowercase letter-only keys).
+WORDS = re.compile(r"(?:[a-z]+(?:[_-][a-z]+)*|[A-Z]+(?:_[A-Z]+)*)")
+
+
+def bare_secret(value: str) -> bool:
+    if value[0] in "$%" or any(c in value for c in "./(") or "::" in value:
+        return False
+    if WORDS.fullmatch(value) or not (any(c.isdigit() for c in value) or value != value.lower()):
+        return False
+    counts = Counter(value)
+    return -sum(n / len(value) * math.log2(n / len(value)) for n in counts.values()) >= 3.5
 
 
 def is_text_path(path: str) -> bool:
@@ -155,7 +167,7 @@ def scan(root: Path) -> tuple[list[str], int]:
                     and (
                         len(value) < 16
                         or re.search(r"\s", value)
-                        or (groups.get("bare") and IDENTIFIER.fullmatch(value))
+                        or (groups.get("bare") and not bare_secret(value))
                     )
                 ):
                     continue
