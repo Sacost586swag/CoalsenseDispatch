@@ -287,16 +287,18 @@ def audit(root: Path) -> list[str]:
             return " AND ".join(f"({x})" for x in sorted(found))
 
         # Optional platform package not installed here: reviewed uninstalled_npm entry supplies it.
+        # The policy lists every platform variant of the lock; installed ones use real metadata.
         npm_entries = {(e["name"], e["version"]): e["license"] for e in uninstalled_npm}
+        if len(npm_entries) != len(uninstalled_npm):
+            raise ValueError  # duplicate name@version: the last one would silently win
         in_lock = {(n, v) for n, v, _, _ in packages}
         for key in sorted(npm_entries):
-            if key not in in_lock or key in installed or key not in gated_js:
+            if key not in in_lock:
                 finding(
                     "tools/audit/approved_licenses.yaml",
                     1,
                     "POLITICA",
-                    f"{key[0]}@{key[1]}: entrada de uninstalled_npm obsoleta "
-                    "(ausente del lock, instalada o sin restricción de plataforma).",
+                    f"{key[0]}@{key[1]}: entrada de uninstalled_npm obsoleta (ausente del lock).",
                 )
         for name, version, line, _ in packages:
             npm_text = npm_evidence(name, version)

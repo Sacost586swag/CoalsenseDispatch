@@ -29,10 +29,10 @@ Si el backend está instalado pero sin licencia en sus metadatos, falla (el regi
 lo rescata). Un paquete Python con marcador de plataforma (p. ej. `colorama` solo en
 win32) que no está instalado aquí requiere una entrada revisada en `uninstalled_python`
 de `approved_licenses.yaml` (`name`, `version` exacta, `license`, `reason`); sin ella
-falla. Igual para npm con `uninstalled_npm` (mismos campos): solo se usa si el paquete está en
-pnpm-lock.yaml con `os`/`cpu`/`libc` o como `optional` en `snapshots` y no está instalado aquí; la
-licencia de la entrada debe estar aprobada, una entrada obsoleta (ausente del lock, instalada o sin
-restricción) falla con `POLITICA`, y un paquete instalado siempre usa sus metadatos reales. Varios hermanos npm instalados del mismo ámbito y versión se combinan con AND.
+falla. Igual para npm con `uninstalled_npm` (mismos campos, sin duplicados): debe listar TODAS las variantes
+de plataforma del lock (`os`/`cpu`/`libc` o `optional` en `snapshots`) para que la misma política valga en
+cualquier host; si el paquete está instalado se usan sus metadatos reales y la entrada se ignora; la licencia
+de la entrada debe estar aprobada; una entrada cuyo nombre@versión no está en el lock falla con `POLITICA`. Varios hermanos npm instalados del mismo ámbito y versión se combinan con AND.
 Ejecute siempre con `uv run --locked` tras `uv sync --locked`; un Python de sistema lee
 metadatos de otro entorno.
 

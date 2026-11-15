@@ -443,8 +443,10 @@ def test_uninstalled_npm_entry_license_must_be_approved(tree: Path) -> None:
     _npm_gated(tree)
     _npm_policy(tree, [{**NPM_ENTRY, "license": "GPL-3.0-only"}])
     assert any("plat@1.0.0" in f and "GPL-3.0-only" in f for f in audit(tree))
-    _npm_policy(tree, [{**NPM_ENTRY, "version": "9.9.9"}])
-    assert any("plat@1.0.0" in f and "uninstalled_npm" in f for f in audit(tree))
+    _npm_policy(tree, [{**NPM_ENTRY, "version": "9.9.9"}])  # version bump: old entry is stale
+    result = audit(tree)
+    assert any("POLITICA" in f and "plat@9.9.9" in f for f in result)
+    assert any("LICENCIA" in f and "plat@1.0.0" in f and "uninstalled_npm" in f for f in result)
     _npm_policy(tree, [{**NPM_ENTRY, "reason": ""}])
     assert any("ENTRADA" in f for f in audit(tree))
 
@@ -455,9 +457,9 @@ def test_uninstalled_npm_stale_entries_fail(tree: Path) -> None:
     _npm_policy(tree, [NPM_ENTRY, ghost])
     result = audit(tree)
     assert len(result) == 1 and "POLITICA" in result[0] and "ghost@1.0.0" in result[0]
-    # in the lock but neither platform-constrained nor optional: also stale
-    _npm_policy(tree, [NPM_ENTRY, {**NPM_ENTRY, "name": "example"}])
-    assert any("POLITICA" in f and "example@1.0.0" in f for f in audit(tree))
+    # present in the lock (even installed or unconstrained): not stale, simply unused
+    _npm_policy(tree, [NPM_ENTRY, {**NPM_ENTRY, "name": "example", "license": "GPL-3.0-only"}])
+    assert audit(tree) == []
 
 
 def test_installed_npm_package_ignores_policy_entry(tree: Path) -> None:
@@ -470,4 +472,26 @@ def test_installed_npm_package_ignores_policy_entry(tree: Path) -> None:
     _npm_policy(tree, [NPM_ENTRY])
     result = audit(tree)
     assert any("LICENCIA" in f and "plat@1.0.0" in f and "GPL-3.0-only" in f for f in result)
-    assert any("POLITICA" in f and "plat@1.0.0" in f for f in result)
+    assert not any("POLITICA" in f for f in result)
+
+
+def test_uninstalled_npm_duplicate_entries_fail(tree: Path) -> None:
+    _npm_gated(tree)
+    _npm_policy(tree, [NPM_ENTRY, {**NPM_ENTRY, "license": "GPL-3.0-only"}])
+    assert any("ENTRADA" in f for f in audit(tree))
+
+
+def test_same_policy_passes_on_linux_and_windows_hosts(tree: Path) -> None:
+    lock = tree / "pnpm-lock.yaml"
+    for plat, os_name in (("linux", "linux"), ("win", "win32")):
+        entry = f"  'pf-{plat}@1.0.0':\n    resolution: {{}}\n    os: [{os_name}]\nsnapshots: {{}}"
+        lock.write_text(lock.read_text().replace("snapshots: {}", entry))
+    _npm_policy(tree, [{**NPM_ENTRY, "name": "pf-linux"}, {**NPM_ENTRY, "name": "pf-win"}])
+    assert audit(tree) == []  # neither installed
+    for host in ("linux", "win"):  # one variant installed with its real metadata
+        pkg = tree / f"node_modules/.pnpm/pf-{host}@1.0.0/node_modules/pf-{host}"
+        pkg.mkdir(parents=True)
+        (pkg / "package.json").write_text(
+            f'{{"name":"pf-{host}","version":"1.0.0","license":"MIT"}}', encoding="utf-8"
+        )
+        assert audit(tree) == []

@@ -28,106 +28,244 @@
   ],
   "uninstalled_npm": [
     {
-      "name": "fsevents",
-      "version": "2.3.3",
-      "license": "MIT",
-      "reason": "Solo darwin (os en pnpm-lock.yaml); licencia MIT verificada con npm view fsevents@2.3.3 license 2026-11-15"
-    },
-    {
-      "name": "tslib",
-      "version": "2.9.1",
-      "license": "0BSD",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia 0BSD verificada con npm view tslib@2.9.1 license 2026-11-15"
-    },
-    {
       "name": "@emnapi/core",
       "version": "2.0.0-beta.2",
       "license": "MIT",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/core@2.0.0-beta.2 license 2026-11-15"
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @emnapi/core@2.0.0-beta.2 license 2026-11-15"
     },
     {
       "name": "@emnapi/runtime",
       "version": "2.0.0-beta.2",
       "license": "MIT",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/runtime@2.0.0-beta.2 license 2026-11-15"
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @emnapi/runtime@2.0.0-beta.2 license 2026-11-15"
     },
     {
       "name": "@emnapi/wasi-threads",
       "version": "2.2.0",
       "license": "MIT",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/wasi-threads@2.2.0 license 2026-11-15"
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @emnapi/wasi-threads@2.2.0 license 2026-11-15"
     },
     {
       "name": "@napi-rs/wasm-runtime",
       "version": "1.2.6",
       "license": "MIT",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @napi-rs/wasm-runtime@1.2.6 license 2026-11-15"
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @napi-rs/wasm-runtime@1.2.6 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-android-arm-eabi",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-android-arm-eabi@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-android-arm64",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-android-arm64@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-darwin-arm64",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-darwin-arm64@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-darwin-x64",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-darwin-x64@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-freebsd-x64",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-freebsd-x64@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm-gnueabihf",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-arm-gnueabihf@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-gnu",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-arm64-gnu@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-musl",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-arm64-musl@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-ppc64-gnu",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-ppc64-gnu@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-s390x-gnu",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-s390x-gnu@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-gnu",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-x64-gnu@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-musl",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-linux-x64-musl@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-openharmony-arm64",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-openharmony-arm64@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-wasm32-wasi",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-wasm32-wasi@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-win32-arm64-msvc",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-win32-arm64-msvc@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@rolldown/binding-win32-x64-msvc",
+      "version": "1.2.19",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @rolldown/binding-win32-x64-msvc@1.2.19 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/darwin-64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/darwin-64@2.11.11 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/darwin-arm64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/darwin-arm64@2.11.11 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/linux-64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/linux-64@2.11.11 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/linux-arm64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/linux-arm64@2.11.11 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/windows-64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/windows-64@2.11.11 license 2026-11-15"
+    },
+    {
+      "name": "@turbo/windows-arm64",
+      "version": "2.11.11",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @turbo/windows-arm64@2.11.11 license 2026-11-15"
     },
     {
       "name": "@tybys/wasm-util",
       "version": "0.10.4",
       "license": "MIT",
-      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @tybys/wasm-util@0.10.4 license 2026-11-15"
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view @tybys/wasm-util@0.10.4 license 2026-11-15"
+    },
+    {
+      "name": "fsevents",
+      "version": "2.3.3",
+      "license": "MIT",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MIT verificada con npm view fsevents@2.3.3 license 2026-11-15"
     },
     {
       "name": "lightningcss-android-arm64",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-android-arm64@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-android-arm64@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-darwin-arm64",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-darwin-arm64@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-darwin-arm64@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-darwin-x64",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-darwin-x64@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-darwin-x64@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-freebsd-x64",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-freebsd-x64@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-freebsd-x64@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-linux-arm-gnueabihf",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm-gnueabihf@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm-gnueabihf@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-linux-arm64-gnu",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-gnu@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-gnu@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-linux-arm64-musl",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-musl@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-musl@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-linux-x64-gnu",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-gnu@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-gnu@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-linux-x64-musl",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-musl@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-musl@1.33.0 license 2026-11-15"
     },
     {
       "name": "lightningcss-win32-arm64-msvc",
       "version": "1.33.0",
       "license": "MPL-2.0",
-      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-win32-arm64-msvc@1.33.0 license 2026-11-15"
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-win32-arm64-msvc@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma (os/cpu/libc en pnpm-lock.yaml), puede no estar instalado según el host; licencia MPL-2.0 verificada con npm view lightningcss-win32-x64-msvc@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "tslib",
+      "version": "2.9.1",
+      "license": "0BSD",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml), puede no estar instalado según el host; licencia 0BSD verificada con npm view tslib@2.9.1 license 2026-11-15"
     }
   ]
 }
