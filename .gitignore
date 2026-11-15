@@ -31,3 +31,9 @@ test-results/
 
 # Salidas de compilación de TypeScript
 *.tsbuildinfo
+
+# Temporales bloqueados por ACL creados por el sandbox de Codex (borrar a mano)
+/.audit-test-*/
+/.ci-t00-*-tmp-*/
+/.traceability-test-tmp/
+/.*-test-tmp*/
