@@ -26,6 +26,10 @@ MATRIX_STAGES = ["install", "lint", "typecheck", "test"]
 FILTERED = ["lint", "typecheck", "test"]
 UNFILTERED = {"audit": "audit", "accessibility": "test:a11y", "integration": "test:integration"}
 SHA_PIN = re.compile(r"[\w-]+/[\w-]+@[0-9a-f]{40}")
+JQ_FILTER = (
+    """failed=$(jq -r 'to_entries[] | select(.value.result != "success") """
+    """| "\\(.key)=\\(.value.result)"' <<< "$NEEDS")"""
+)
 pytestmark = pytest.mark.integration
 
 
@@ -151,8 +155,9 @@ def _validate(config: dict[Any, Any]) -> None:
     gate, summary = final["steps"]
     assert "if" not in gate
     assert gate["env"] == {"NEEDS": "${{ toJSON(needs) }}"}
-    assert '.value.result != "success"' in gate["run"]
-    assert '"\\(.key)=\\(.value.result)"' in gate["run"]  # names each failed stage
+    # Pins the whole filter: any result other than success fails, naming each stage.
+    assert JQ_FILTER in gate["run"]
+    assert 'if [[ -n "$failed" ]]' in gate["run"]
     assert "exit 1" in gate["run"]
     assert summary["if"] == "${{ always() }}"
     assert summary["env"] == {"STARTED": "${{ needs.start.outputs.started }}"}
@@ -248,6 +253,25 @@ def test_setup_action_rejects_regressions(
         _validate_setup(_load(candidate))
 
 
+@pytest.mark.parametrize(
+    "old, new",
+    [
+        ('!= "success"', '== "failure"'),  # skipped/cancelled would slip through
+        ('<<< "$NEEDS"', '<<< "{}"'),
+        (r'"\(.key)=\(.value.result)"', r'"\(.value.result)"'),  # stage name dropped
+    ],
+)
+def test_ci_rejects_weakened_gate_filter(tmp_path: Path, old: str, new: str) -> None:
+    config = _load(WORKFLOW)
+    gate = config["jobs"]["required"]["steps"][0]
+    assert old in gate["run"]
+    gate["run"] = gate["run"].replace(old, new)
+    candidate = tmp_path / "ci.yml"
+    candidate.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with pytest.raises(AssertionError):
+        _validate(_load(candidate))
+
+
 def test_ci_rejects_missing_stage(tmp_path: Path) -> None:
     config = _load(WORKFLOW)
     del config["jobs"]["audit"]
@@ -264,11 +288,11 @@ def test_ci_rejects_duplicate_keys(tmp_path: Path) -> None:
         _load(candidate)
 
 
-def _run_require_tasks(plan: str) -> subprocess.CompletedProcess[str]:
+def _run_require_tasks(task: str, plan: str) -> subprocess.CompletedProcess[str]:
     node = shutil.which("node")
     assert node, "node is required to exercise require-tasks.mjs"
     return subprocess.run(
-        [node, str(REQUIRE_TASKS), "test:a11y"],
+        [node, str(REQUIRE_TASKS), task],
         input=plan,
         capture_output=True,
         text=True,
@@ -276,15 +300,31 @@ def _run_require_tasks(plan: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _plan(*entries: tuple[str, str]) -> str:
+    return json.dumps({"tasks": [{"task": task, "command": cmd} for task, cmd in entries]})
+
+
+A11Y = "test:a11y"
+BUILD = ("build", "tsc -b")
+NONE = "<NONEXISTENT>"
+
+
 @pytest.mark.parametrize(
-    ("plan", "code"),
+    ("task", "plan", "code"),
     [
-        ('{"tasks": [{"command": "vitest run"}]}', 0),
-        ('{"tasks": [{"command": "<NONEXISTENT>"}, {"command": "pnpm test"}]}', 0),
-        ('{"tasks": []}', 1),  # task defined in turbo.json, no package implements it
-        ('{"tasks": [{"command": "<NONEXISTENT>"}]}', 1),
-        ("not json", 1),
+        (A11Y, _plan((A11Y, "playwright test")), 0),
+        (A11Y, _plan((A11Y, NONE), (A11Y, "vitest run")), 0),
+        (A11Y, _plan(BUILD, (A11Y, "vitest run")), 0),
+        ("audit", _plan(("audit", NONE), ("audit:copy", "uv run copy")), 0),
+        (A11Y, '{"tasks": []}', 1),  # defined in turbo.json, no package implements it
+        (A11Y, _plan((A11Y, NONE)), 1),
+        (A11Y, _plan(BUILD), 1),  # only ^build dependencies: nothing was tested
+        (A11Y, _plan(BUILD, (A11Y, NONE)), 1),
+        (A11Y, _plan(("audit:copy", "uv run copy")), 1),  # audit:* only counts for audit
+        ("audit", _plan(("audit", NONE), BUILD), 1),
+        ("audit", _plan(("audit:copy", NONE)), 1),
+        (A11Y, "not json", 1),
     ],
 )
-def test_require_tasks_fails_on_empty_stage(plan: str, code: int) -> None:
-    assert _run_require_tasks(plan).returncode == code
+def test_require_tasks_counts_only_the_requested_task(task: str, plan: str, code: int) -> None:
+    assert _run_require_tasks(task, plan).returncode == code
