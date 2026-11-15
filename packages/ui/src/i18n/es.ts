@@ -1,0 +1,20 @@
+// Spec 00 / AX-11: base text only. Each screen supplies actions and available functions.
+export const es = {
+  "stop.label": "Alto",
+  "undo.label": "Deshacer",
+  "approval.approve.label": "Aprobar",
+  "approval.reject.label": "Rechazar",
+  "approval.defer.label": "Decidir después",
+  "state.loading.label": "Cargando",
+  "state.loading.message": "Se está cargando la información.",
+  "state.empty.label": "Vacío",
+  "state.empty.message": "No hay información para mostrar.",
+  "state.error.label": "Error",
+  "state.error.message": "No se pudo completar la acción.",
+  "state.offline.label": "Sin conexión",
+  "state.offline.message": "No hay conexión.",
+  "state.calibrationFailed.label": "Calibración fallida",
+  "state.calibrationFailed.message": "El equipo no pudo completar la calibración.",
+  "state.modalityNotDetected.label": "Modalidad no detectada",
+  "state.modalityNotDetected.message": "El equipo no detectó la modalidad de entrada.",
+} as const;

@@ -9,7 +9,11 @@
     "pnpm-lock.yaml"
   ],
   "tasks": {
-    "audit": { "dependsOn": ["audit:licenses", "audit:imports", "audit:secrets"], "cache": false },
+    "audit": {
+      "dependsOn": ["audit:licenses", "audit:imports", "audit:secrets", "audit:copy"],
+      "cache": false
+    },
+    "audit:copy": { "cache": false },
     "audit:licenses": { "cache": false },
     "audit:imports": { "cache": false },
     "audit:secrets": { "cache": false },

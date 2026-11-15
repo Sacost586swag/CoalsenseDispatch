@@ -5,3 +5,4 @@ export { toCssVariables } from "./tokens/css.ts";
 export { defaultTheme, defaultTheme as default } from "./themes/default.ts";
 export { highContrast } from "./themes/high-contrast.ts";
 export { reducedMotion } from "./themes/reduced-motion.ts";
+export { es } from "./i18n/es.ts";
