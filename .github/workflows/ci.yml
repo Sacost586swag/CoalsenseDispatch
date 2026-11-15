@@ -1,0 +1,420 @@
+# JSON subset of YAML; only full-line YAML comments are allowed (stdlib test parser).
+# Configure all stage checks and CI required as required checks in branch protection.
+# Accessibility/integration intentionally fail until their Turbo tasks exist.
+{
+  "name": "CI",
+  "on": {
+    "pull_request": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "ci-${{ github.workflow }}-${{ github.event.pull_request.number }}",
+    "cancel-in-progress": true
+  },
+  "defaults": {
+    "run": {
+      "shell": "bash"
+    }
+  },
+  "jobs": {
+    "start": {
+      "name": "Start pipeline timer",
+      "runs-on": "ubuntu-latest",
+      "outputs": {
+        "started": "${{ steps.clock.outputs.started }}"
+      },
+      "steps": [
+        {
+          "id": "clock",
+          "run": "echo \"started=$(date +%s)\" >> \"$GITHUB_OUTPUT\""
+        }
+      ]
+    },
+    "install": {
+      "name": "install",
+      "needs": [
+        "start"
+      ],
+      "runs-on": "${{ matrix.os }}",
+      "timeout-minutes": 15,
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "os": [
+            "ubuntu-latest",
+            "windows-latest"
+          ]
+        }
+      },
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        }
+      ]
+    },
+    "lint": {
+      "name": "lint",
+      "needs": [
+        "install"
+      ],
+      "runs-on": "${{ matrix.os }}",
+      "timeout-minutes": 15,
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "os": [
+            "ubuntu-latest",
+            "windows-latest"
+          ]
+        }
+      },
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Verify affected-package baseline",
+          "run": "git rev-parse --verify origin/main"
+        },
+        {
+          "name": "Run lint",
+          "run": "pnpm turbo run lint --filter=...[origin/main]"
+        }
+      ]
+    },
+    "typecheck": {
+      "name": "typecheck",
+      "needs": [
+        "lint"
+      ],
+      "runs-on": "${{ matrix.os }}",
+      "timeout-minutes": 15,
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "os": [
+            "ubuntu-latest",
+            "windows-latest"
+          ]
+        }
+      },
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Verify affected-package baseline",
+          "run": "git rev-parse --verify origin/main"
+        },
+        {
+          "name": "Run typecheck",
+          "run": "pnpm turbo run typecheck --filter=...[origin/main]"
+        }
+      ]
+    },
+    "test": {
+      "name": "test",
+      "needs": [
+        "typecheck"
+      ],
+      "runs-on": "${{ matrix.os }}",
+      "timeout-minutes": 15,
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "os": [
+            "ubuntu-latest",
+            "windows-latest"
+          ]
+        }
+      },
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Verify affected-package baseline",
+          "run": "git rev-parse --verify origin/main"
+        },
+        {
+          "name": "Run test",
+          "run": "pnpm turbo run test --filter=...[origin/main]"
+        }
+      ]
+    },
+    "audit": {
+      "name": "audit",
+      "needs": [
+        "test"
+      ],
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Audit all packages",
+          "run": "pnpm turbo run audit"
+        }
+      ]
+    },
+    "accessibility": {
+      "name": "accessibility",
+      "needs": [
+        "audit"
+      ],
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Required accessibility (placeholder until task implementation)",
+          "run": "pnpm turbo run test:a11y"
+        }
+      ]
+    },
+    "integration": {
+      "name": "integration",
+      "needs": [
+        "accessibility"
+      ],
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "steps": [
+        {
+          # v4.2.2 (SHA verificado con git ls-remote refs/tags/v4.2.2)
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          # v4.4.0 (SHA verificado con git ls-remote refs/tags/v4.4.0)
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "24"
+          }
+        },
+        {
+          # v5.6.0 (SHA verificado con git ls-remote refs/tags/v5.6.0)
+          "uses": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "name": "Install pinned package managers",
+          "run": "npm install --global pnpm@11.21.0\npython -m pip install uv==0.12.13"
+        },
+        {
+          "name": "Install frozen dependencies",
+          "run": "pnpm install --frozen-lockfile\nuv sync --locked"
+        },
+        {
+          "name": "Required integration (placeholder until task implementation)",
+          "run": "pnpm turbo run test:integration"
+        }
+      ]
+    },
+    "required": {
+      "name": "CI required",
+      "needs": [
+        "start",
+        "install",
+        "lint",
+        "typecheck",
+        "test",
+        "audit",
+        "accessibility",
+        "integration"
+      ],
+      "if": "${{ always() }}",
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "name": "Require every stage to succeed",
+          "env": {
+            "RESULTS": "${{ join(needs.*.result, ',') }}"
+          },
+          "run": "IFS=',' read -ra results <<< \"$RESULTS\"\nfor result in \"${results[@]}\"; do\n  if [[ \"$result\" != \"success\" ]]; then\n    echo \"Required stage did not succeed: $result\"\n    exit 1\n  fi\ndone"
+        },
+        {
+          "name": "Record total pipeline duration",
+          "if": "${{ always() }}",
+          "env": {
+            "STARTED": "${{ needs.start.outputs.started }}"
+          },
+          "run": "if [[ \"$STARTED\" =~ ^[0-9]+$ ]]; then\n  elapsed=$(( $(date +%s) - STARTED ))\n  echo \"Total pipeline duration: ${elapsed}s (target: 900s; from timer start, includes stage queue time).\" >> \"$GITHUB_STEP_SUMMARY\"\nelse\n  echo \"Total pipeline duration unavailable: timer job did not complete.\" >> \"$GITHUB_STEP_SUMMARY\"\nfi"
+        }
+      ]
+    }
+  }
+}
