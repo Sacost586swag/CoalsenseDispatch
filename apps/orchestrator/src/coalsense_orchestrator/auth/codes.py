@@ -6,6 +6,11 @@ otro o por exceder `MAX_ATTEMPTS` intentos. Solo se guarda el HMAC-SHA256 del c�
 Las esperas crecientes se llevan por (correo, IP) y por IP, no por correo solo: un tercero que
 conoce el correo no puede dejar a la persona esperando desde otra red. Solo hay topes por hora
 contra la inundación de correos, y siempre se deslizan (nunca bloqueo permanente).
+
+Riesgo residual R1 (decisión del operador pendiente): quien conoce el correo puede, desde otra
+IP, pedir un código nuevo (lo que invalida el vigente de la persona, REQ-00-021) y agotar el
+tope de 10 pedidos por hora de ese correo (máximo una hora de espera). La recuperación por una
+persona de apoyo autorizada (REQ-00-025) es la salida y aún no existe.
 """
 
 import hmac
@@ -53,10 +58,9 @@ def normalize_email(raw: str) -> str | None:
 
 
 def mask_email(email: str) -> str:
-    """p***@e***.org: orienta a quien confirma sin revelar el correo."""
+    """p***@e***: orienta a quien confirma; no deja ver el dominio completo ni su terminación."""
     local, _, domain = email.partition("@")
-    host, _, tld = domain.rpartition(".")
-    return f"{local[:1]}***@{host[:1]}***.{tld}"
+    return f"{local[:1]}***@{domain[:1]}***"
 
 
 def lookup(key: bytes, domain: str, value: str) -> str:

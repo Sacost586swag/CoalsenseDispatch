@@ -139,8 +139,14 @@ class Env:
             "/auth/pairing/claim", json={"code": code}, headers={"x-account": account}
         )
 
-    def companion(self, action: str, ref: str = REF) -> Response:
-        return self.api.post(f"/auth/pairing/{action}", json={"client_ref": ref})
+    def companion(self, action: str, ref: str = REF, claim_id: str | None = None) -> Response:
+        body = {"client_ref": ref} | ({"claim_id": claim_id} if claim_id else {})
+        return self.api.post(f"/auth/pairing/{action}", json=body)
+
+    def pending(self, ref: str = REF) -> str:
+        """El companion consulta qué solicitud espera y devuelve su `claim_id`."""
+        claim_id: str = self.companion("status", ref).json()["claim_id"]
+        return claim_id
 
 
 @pytest.fixture
@@ -410,21 +416,22 @@ def test_pairing_binds_only_after_the_companion_confirms(env: Env) -> None:
     devices_before = len(env.repo.devices)
     code = env.start_pairing()
     assert len(code) == 6 and set(code) <= set(PAIRING_ALPHABET)
-    assert env.companion("status").json() == {"state": "waiting", "hint": None}
+    waiting = {"state": "waiting", "hint": None, "claim_id": None}
+    assert env.companion("status").json() == waiting
     claimed = env.claim(account, code.lower())  # dictado en minúsculas
     assert claimed.status_code == 202 and claimed.json() == {"status": "pending"}
     assert len(env.repo.devices) == devices_before  # reclamar no crea el dispositivo
     state = env.companion("status").json()
-    assert state["state"] == "claimed" and state["hint"] == "p***@e***.org"
+    assert state["state"] == "claimed" and state["hint"] == "p***@e***"  # sin dominio completo
     assert EMAIL.lower() not in repr(state)
-    confirmed = env.companion("confirm")
+    confirmed = env.companion("confirm", claim_id=state["claim_id"])
     assert confirmed.status_code == 200
     device = env.repo.devices[confirmed.json()["device_id"]]
     assert device.account_id == account and device.label == "Companion sala"
     assert ("auth.device.paired", "ok") in [(e.event, e.result) for e in env.audit.events]
     env.clock.advance(CAP_S)
     assert_error(env.claim(account, code), 400, "auth.code.gone")  # un solo uso
-    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+    assert_error(env.companion("confirm", claim_id=state["claim_id"]), 400, "auth.code.gone")
 
 
 def test_attacker_claim_then_victim_rejects_leaves_no_device(env: Env) -> None:
@@ -433,32 +440,88 @@ def test_attacker_claim_then_victim_rejects_leaves_no_device(env: Env) -> None:
     devices_before = set(env.repo.devices)
     code = env.start_pairing()
     assert env.claim(attacker, code).status_code == 202
-    assert env.companion("status").json()["hint"] == "a***@e***.org"  # la víctima lo ve
-    assert env.companion("reject").status_code == 200
+    state = env.companion("status").json()
+    assert state["hint"] == "a***@e***"  # la víctima lo ve y dice que no
+    assert env.companion("reject", claim_id=state["claim_id"]).status_code == 200
     assert set(env.repo.devices) == devices_before
     env.clock.advance(CAP_S)
     assert_error(env.claim(attacker, code), 400, "auth.code.gone")
-    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+    assert_error(env.companion("confirm", claim_id=state["claim_id"]), 400, "auth.code.gone")
     assert ("auth.pairing.rejected", "ok") in [(e.event, e.result) for e in env.audit.events]
+
+
+def test_first_claim_wins_and_the_person_cannot_be_raced(env: Env) -> None:
+    """N1: sin límite de tiempo, nadie puede colarse entre la pista y la confirmación."""
+    person = env.login()["account_id"]
+    env.clock.advance(CAP_S)
+    attacker = env.login("atacante@ejemplo.org")["account_id"]
+    env.clock.advance(CAP_S)
+    code = env.start_pairing()
+    assert env.claim(person, code).status_code == 202
+    claim_id = env.pending()
+    env.clock.advance(3600)  # la persona tarda lo que necesite
+    assert_error(env.claim(attacker, code), 409, "auth.pairing.busy")
+    assert_error(env.claim(attacker, code), 429, "auth.rate_limited")  # y le cuesta espera
+    assert env.pending() == claim_id and env.companion("status").json()["hint"] == "p***@e***"
+    confirmed = env.companion("confirm", claim_id=claim_id)
+    assert confirmed.status_code == 200
+    assert env.repo.devices[confirmed.json()["device_id"]].account_id == person
+
+
+def test_confirm_and_reject_need_the_current_claim_id(env: Env) -> None:
+    account = env.login()["account_id"]
+    code = env.start_pairing()
+    env.claim(account, code)
+    devices_before = set(env.repo.devices)
+    for action in ("confirm", "reject"):
+        stale = env.companion(action, claim_id="019e0000-0000-7000-8000-000000000000")
+        assert_error(stale, 409, "auth.pairing.claim_mismatch")
+        assert_error(env.companion(action), 400, "auth.request.invalid")  # sin claim_id
+    assert set(env.repo.devices) == devices_before
+    assert env.companion("confirm", claim_id=env.pending()).status_code == 200  # sigue vigente
 
 
 def test_confirm_needs_a_claim_and_a_known_client_ref(env: Env) -> None:
     env.start_pairing()
-    assert_error(env.companion("confirm"), 409, "auth.pairing.not_claimed")
-    unknown = env.companion("confirm", ref="otra-ref-" + "y" * 40)
+    assert_error(env.companion("confirm", claim_id="x"), 409, "auth.pairing.not_claimed")
+    other = "otra-ref-" + "y" * 40
+    unknown = env.companion("confirm", ref=other, claim_id="x")
     assert_error(unknown, 400, "auth.code.gone")
-    assert_error(env.companion("reject", ref="otra-ref-" + "y" * 40), 429, "auth.rate_limited")
+    assert_error(env.companion("reject", ref=other, claim_id="x"), 429, "auth.rate_limited")
+
+
+def test_polling_status_of_a_finished_code_is_not_a_failure(env: Env) -> None:
+    account = env.login()["account_id"]
+    code = env.start_pairing()
+    env.claim(account, code)
+    env.companion("confirm", claim_id=env.pending())
+    for _ in range(4):  # el companion sigue consultando el estado
+        assert_error(env.companion("status"), 400, "auth.code.gone")
+    # y otro companion en la misma IP no recibe espera por eso
+    other = "otra-ref-" + "z" * 40
+    env.clock.advance(5)  # solo la espera propia de pedir códigos seguidos
+    assert env.start_pairing(other)
+    assert env.companion("status", other).json()["state"] == "waiting"
+
+
+def test_client_ref_must_be_a_long_url_safe_secret(env: Env) -> None:
+    for weak in ("corto", "a" * 42, "a" * 129, "con espacios " + "a" * 40, "ñ" * 50):
+        body = {"client_ref": weak, "device_label": "Companion"}
+        response = env.api.post("/auth/pairing/start", json=body)
+        assert_error(response, 400, "auth.request.invalid")
 
 
 def test_pairing_claim_budget_invalidates_the_code(env: Env) -> None:
     account = env.login()["account_id"]
     code = env.start_pairing()
-    for _ in range(MAX_CLAIMS):
-        assert env.claim(account, code).status_code == 202
+    assert env.claim(account, code).status_code == 202
+    for _ in range(MAX_CLAIMS - 1):  # los reclamos con uno pendiente también gastan el cupo
         env.clock.advance(CAP_S)
+        assert_error(env.claim(account, code), 409, "auth.pairing.busy")
+    env.clock.advance(CAP_S)
     assert_error(env.claim(account, code), 400, "auth.code.gone")
     env.clock.advance(CAP_S)
-    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+    assert_error(env.companion("confirm", claim_id="x"), 400, "auth.code.gone")
 
 
 def test_client_ref_is_stored_only_as_hmac(env: Env) -> None:
@@ -472,7 +535,7 @@ def test_pairing_code_never_expires_by_time(env: Env) -> None:
     env.clock.advance(5 * 365 * 24 * 3600)
     assert env.claim(account, code).status_code == 202
     env.clock.advance(5 * 365 * 24 * 3600)
-    assert env.companion("confirm").status_code == 200
+    assert env.companion("confirm", claim_id=env.pending()).status_code == 200
 
 
 def test_pairing_new_code_from_same_companion_invalidates_old(env: Env) -> None:
@@ -669,8 +732,7 @@ def test_audit_and_logs_never_hold_codes_hashes_or_emails(
     account = env.login()["account_id"]
     pairing_code = env.start_pairing()
     env.claim(account, pairing_code)
-    env.companion("status")
-    env.companion("confirm")
+    env.companion("confirm", claim_id=env.pending())
     env.sender.fail = True
     env.clock.advance(CAP_S)
     env.request()

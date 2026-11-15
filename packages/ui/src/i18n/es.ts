@@ -38,6 +38,8 @@ export const es = {
   "auth.next.signIn": "Ingresa a tu cuenta y vuelve a intentar.",
   "auth.next.retry": "Inténtalo de nuevo en un momento.",
   "auth.pairing.notClaimed.message": "Todavía no hay una cuenta que quiera vincular este equipo.",
+  "auth.pairing.busy.message": "Este equipo ya espera la respuesta de otra cuenta.",
+  "auth.pairing.claimMismatch.message": "Esa solicitud ya no es la vigente.",
   "banner.dismiss.label": "Descartar",
   "status.info.label": "Información",
   "status.success.label": "Listo",

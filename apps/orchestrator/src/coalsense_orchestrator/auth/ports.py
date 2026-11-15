@@ -67,7 +67,9 @@ class Account:
     role: str
     email_ciphertext: bytes
     email_lookup: str
-    email_hint: str  # correo enmascarado (p***@e***.org): lo ve quien confirma un emparejamiento
+    # Pista del correo (p***@e***) que ve quien confirma un emparejamiento. Es un dato derivado
+    # del correo: se borra junto con la cuenta (exportación y borrado, spec 07).
+    email_hint: str
     language: str
     created_at: str
 
@@ -91,7 +93,8 @@ class CodeRecord:
     code_hash: str
     created_at: str
     attempts: int = 0
-    claims: int = 0  # reclamos válidos de un código de emparejamiento
+    claims: int = 0  # reclamos recibidos de un código de emparejamiento (gastan su cupo)
+    claim_id: str | None = None  # id del reclamo pendiente: solo el companion lo conoce
     used_at: str | None = None
     invalidated_at: str | None = None
     account_id: str | None = None

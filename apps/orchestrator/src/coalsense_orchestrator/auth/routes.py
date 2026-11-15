@@ -39,13 +39,21 @@ class VerifyCode(_Body):
     device_label: str = Field(min_length=1, max_length=80)
 
 
+# Secreto del companion: alto en entropía (>= 43 caracteres base64url = 256 bits) y seguro en URL.
+CLIENT_REF = r"^[A-Za-z0-9_-]{43,128}$"
+
+
 class StartPairing(_Body):
-    client_ref: str = Field(min_length=32, max_length=128)  # secreto del companion
+    client_ref: str = Field(pattern=CLIENT_REF)
     device_label: str = Field(min_length=1, max_length=80)
 
 
 class CompanionRef(_Body):
-    client_ref: str = Field(min_length=32, max_length=128)
+    client_ref: str = Field(pattern=CLIENT_REF)
+
+
+class CompanionDecision(CompanionRef):
+    claim_id: str = Field(min_length=1, max_length=64)
 
 
 class ClaimPairing(_Body):
@@ -192,17 +200,17 @@ def create_app(
 
     @app.post("/auth/pairing/status")
     def pairing_status(body: CompanionRef, request: Request) -> dict[str, str | None]:
-        state, hint = pairing.status(body.client_ref, client_ip(request, trusted))
-        return {"state": state, "hint": hint}
+        state, hint, claim_id = pairing.status(body.client_ref, client_ip(request, trusted))
+        return {"state": state, "hint": hint, "claim_id": claim_id}
 
     @app.post("/auth/pairing/confirm")
-    def confirm_pairing(body: CompanionRef, request: Request) -> dict[str, str]:
-        device = pairing.confirm(body.client_ref, client_ip(request, trusted))
+    def confirm_pairing(body: CompanionDecision, request: Request) -> dict[str, str]:
+        device = pairing.confirm(body.client_ref, body.claim_id, client_ip(request, trusted))
         return {"device_id": device.id}
 
     @app.post("/auth/pairing/reject")
-    def reject_pairing(body: CompanionRef, request: Request) -> dict[str, bool]:
-        pairing.reject(body.client_ref, client_ip(request, trusted))
+    def reject_pairing(body: CompanionDecision, request: Request) -> dict[str, bool]:
+        pairing.reject(body.client_ref, body.claim_id, client_ip(request, trusted))
         return {"rejected": True}
 
     @app.post("/auth/devices/{device_id}/revoke")

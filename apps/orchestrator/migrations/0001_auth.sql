@@ -9,6 +9,7 @@ create table account (
     role             text not null check (role in ('person', 'caregiver', 'operator', 'company')),
     email_ciphertext bytea not null,
     email_lookup     text not null unique,
+    -- Pista del correo (p***@e***). Dato derivado del correo: se borra con la cuenta (spec 07).
     email_hint       text not null,
     language         text not null default 'es',
     created_at       timestamptz not null
@@ -29,7 +30,8 @@ create index device_account_idx on device (account_id);
 -- subject_lookup: HMAC del correo (email) o del identificador del companion (device).
 -- account_id: en kind = 'email' se llena al usar el código; en kind = 'device' lo llena el
 -- reclamo (claim) y el dispositivo solo se crea cuando el companion confirma.
--- claims: reclamos válidos del código de emparejamiento (tope en la aplicación).
+-- claims: reclamos recibidos del código de emparejamiento (tope en la aplicación).
+-- claim_id: identifica el reclamo pendiente; el companion debe enviarlo para confirmar o rechazar.
 create table pairing_code (
     id             uuid primary key,
     kind           text not null check (kind in ('email', 'device')),
@@ -38,6 +40,7 @@ create table pairing_code (
     code_hash      text not null,
     attempts       integer not null default 0,
     claims         integer not null default 0,
+    claim_id       uuid,
     device_label   text,
     created_at     timestamptz not null,
     used_at        timestamptz,

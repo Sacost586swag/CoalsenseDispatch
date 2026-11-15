@@ -20,6 +20,8 @@ CATALOG_KEYS = (
     "auth.device.notFound.message",
     "auth.send.failed.message",
     "auth.pairing.notClaimed.message",
+    "auth.pairing.busy.message",
+    "auth.pairing.claimMismatch.message",
     "auth.next.retryAfterWait",
     "auth.next.requestNewCode",
     "auth.next.checkCode",
@@ -95,6 +97,16 @@ def device_not_found() -> AuthError:
 def pairing_not_claimed() -> AuthError:
     return _error(
         "auth.pairing.not_claimed", "auth.pairing.notClaimed.message", "auth.next.retry", 409
+    )
+
+
+def pairing_busy() -> AuthError:
+    return _error("auth.pairing.busy", "auth.pairing.busy.message", "auth.next.requestNewCode", 409)
+
+
+def claim_mismatch() -> AuthError:
+    return _error(
+        "auth.pairing.claim_mismatch", "auth.pairing.claimMismatch.message", "auth.next.retry", 409
     )
 
 
