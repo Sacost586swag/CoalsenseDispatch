@@ -6,7 +6,54 @@ import process from "node:process";
 const input = JSON.parse(readFileSync(0, "utf8"));
 const findings = [];
 const catalog = [];
-const attributes = new Set(["aria-label", "title", "placeholder", "alt"]);
+// Intrinsic tags (<input>): attributes a person can read or hear.
+const intrinsicAttributes = new Set([
+  "aria-label",
+  "aria-description",
+  "aria-roledescription",
+  "aria-valuetext",
+  "label",
+  "alt",
+  "title",
+  "placeholder",
+]);
+// Component tags (<Button>): any string prop is copy unless it is technical.
+// shortcut: allowlist by name, grow it when a real technical prop is flagged.
+const technicalProps = new Set([
+  "id",
+  "key",
+  "ref",
+  "className",
+  "style",
+  "href",
+  "src",
+  "type",
+  "name",
+  "role",
+  "variant",
+  "size",
+  "as",
+  "target",
+  "rel",
+  "method",
+  "autoComplete",
+  "inputMode",
+  "lang",
+  "dir",
+  "htmlFor",
+  "value",
+  "testId",
+]);
+const visibleAria = new Set([
+  "aria-label",
+  "aria-description",
+  "aria-roledescription",
+  "aria-valuetext",
+]);
+const isTechnical = (name) =>
+  technicalProps.has(name) ||
+  name.startsWith("data-") ||
+  (name.startsWith("aria-") && !visibleAria.has(name));
 
 function unwrap(node) {
   while (
@@ -30,7 +77,8 @@ const entities =
 const hasLetters = (text) => /\p{L}/u.test(text.replace(entities, ""));
 
 // True when an expression can render a fixed string with letters (also through
-// template literals with substitutions, ?:, &&, ||, ?? and +).
+// template literals with substitutions, ?:, &&, ||, ?? and +). Conditions are
+// not copy: only the branch of ?: and the right side of && can render.
 function visible(node) {
   node = unwrap(node);
   if (!node) return false;
@@ -38,7 +86,16 @@ function visible(node) {
   if (ts.isTemplateExpression(node))
     return hasLetters(node.head.text) || node.templateSpans.some((s) => hasLetters(s.literal.text));
   if (ts.isConditionalExpression(node)) return visible(node.whenTrue) || visible(node.whenFalse);
-  if (ts.isBinaryExpression(node)) return visible(node.left) || visible(node.right);
+  if (ts.isBinaryExpression(node)) {
+    const op = node.operatorToken.kind;
+    if (op === ts.SyntaxKind.AmpersandAmpersandToken) return visible(node.right);
+    if (
+      op === ts.SyntaxKind.BarBarToken ||
+      op === ts.SyntaxKind.QuestionQuestionToken ||
+      op === ts.SyntaxKind.PlusToken
+    )
+      return visible(node.left) || visible(node.right);
+  }
   return false;
 }
 
@@ -99,11 +156,22 @@ for (const file of input) {
     ) {
       report(node, "CADENA_VISIBLE: Usar el catálogo es.");
     }
-    if (ts.isJsxAttribute(node) && attributes.has(node.name.getText(source))) {
+    if (ts.isJsxAttribute(node)) {
+      const name = node.name.getText(source);
+      const tag = node.parent.parent.tagName.getText(source);
+      const component = /^[A-Z]/.test(tag) || tag.includes(".");
       const value = node.initializer;
-      if (value && (literal(value) || (ts.isJsxExpression(value) && visible(value.expression)))) {
-        report(node, "CADENA_VISIBLE: Usar el catálogo es para el atributo.");
-      }
+      // Intrinsic attributes keep the strict rule: even "" is a fixed literal.
+      const copy = component
+        ? !isTechnical(name) &&
+          value &&
+          (ts.isStringLiteral(value)
+            ? hasLetters(value.text)
+            : ts.isJsxExpression(value) && visible(value.expression))
+        : intrinsicAttributes.has(name) &&
+          value &&
+          (literal(value) || (ts.isJsxExpression(value) && visible(value.expression)));
+      if (copy) report(node, "CADENA_VISIBLE: Usar el catálogo es para el atributo.");
     }
     ts.forEachChild(node, visit);
   }

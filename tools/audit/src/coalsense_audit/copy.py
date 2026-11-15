@@ -87,7 +87,7 @@ def audit(root: Path) -> list[str]:
         )
     except (OSError, UnicodeError):
         findings.append(f"{TS_CATALOG}:1: ENTRADA: No se pudo leer el catálogo.")
-    # Walk only the two specified source roots; inaccessible directories are skipped.
+    # Walk only the two specified source roots; unreadable files are findings (fail closed).
     for base in ("apps/web/src", "packages/ui/src"):
         for directory, dirs, names in os.walk(root / base, followlinks=False):
             dirs[:] = sorted(
@@ -108,7 +108,8 @@ def audit(root: Path) -> list[str]:
                         }
                     )
                 except (OSError, UnicodeError):
-                    continue
+                    rel = path.relative_to(root).as_posix()
+                    findings.append(f"{rel}:1: ENTRADA: No se pudo leer el archivo.")
     try:
         result = subprocess.run(
             ["node", str(Path(__file__).with_name("copy_ast.mjs"))],
