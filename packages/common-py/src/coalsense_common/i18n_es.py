@@ -18,7 +18,9 @@ es: dict[str, str] = {
     "state.calibrationFailed.message": "El equipo no pudo completar la calibración.",
     "state.modalityNotDetected.label": "Modalidad no detectada",
     "state.modalityNotDetected.message": "El equipo no detectó la modalidad de entrada.",
-    "auth.rateLimited.message": "Hay varios intentos seguidos. Espera {wait} y vuelve a intentar. Tu acceso no se pierde.",
+    "auth.rateLimited.message": (
+        "Hay varios intentos seguidos. Espera {wait} y vuelve a intentar. Tu acceso no se pierde."
+    ),
     "auth.wait.second": "1 segundo",
     "auth.wait.seconds": "{n} segundos",
     "auth.wait.minute": "1 minuto",

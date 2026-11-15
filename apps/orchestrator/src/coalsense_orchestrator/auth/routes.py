@@ -1,6 +1,14 @@
-"""Rutas HTTP de autenticación. TLS obligatorio (REQ-00-026); errores en el formato común."""
+"""Rutas HTTP de autenticación. TLS obligatorio (REQ-00-026); errores en el formato común.
 
-from collections.abc import Awaitable, Callable
+Detrás de un proxy, la confianza en `X-Forwarded-Proto` y `X-Forwarded-For` viene solo de
+`trusted_proxies` (IP o rangos CIDR). No ejecutar uvicorn con `--proxy-headers`: reescribiría
+el esquema y el cliente con otra lista de confianza (`--forwarded-allow-ips`) y las dos podrían
+discrepar. Usar `--no-proxy-headers`.
+"""
+
+import logging
+from collections.abc import Awaitable, Callable, Iterable
+from ipaddress import IPv4Network, IPv6Network, ip_address, ip_network
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request, Response
@@ -14,6 +22,7 @@ from .errors import AuthError, generic, request_invalid, session_required, tls_r
 from .pairing import PairingService
 
 HSTS = "max-age=63072000; includeSubDomains"
+log = logging.getLogger("coalsense.auth")
 
 
 class _Body(BaseModel):
@@ -31,12 +40,53 @@ class VerifyCode(_Body):
 
 
 class StartPairing(_Body):
-    client_ref: str = Field(min_length=16, max_length=128)
+    client_ref: str = Field(min_length=32, max_length=128)  # secreto del companion
     device_label: str = Field(min_length=1, max_length=80)
+
+
+class CompanionRef(_Body):
+    client_ref: str = Field(min_length=32, max_length=128)
 
 
 class ClaimPairing(_Body):
     code: str = Field(max_length=32)
+
+
+class TrustedProxies:
+    """Proxies de confianza: direcciones, rangos CIDR o (solo pruebas) nombres literales."""
+
+    def __init__(self, entries: Iterable[str]) -> None:
+        self._networks: list[IPv4Network | IPv6Network] = []
+        self._names: set[str] = set()
+        for entry in entries:
+            try:
+                self._networks.append(ip_network(entry, strict=False))
+            except ValueError:
+                self._names.add(entry)
+
+    def __contains__(self, host: str) -> bool:
+        if host in self._names:
+            return True
+        try:
+            address = ip_address(host)
+        except ValueError:
+            return False
+        return any(
+            address in network for network in self._networks if network.version == address.version
+        )
+
+
+def normalize_ip(raw: str) -> str:
+    """Una red IPv6 /64 cuenta como un solo cliente; IPv4 mapeada se reduce a IPv4."""
+    try:
+        address = ip_address(raw)
+    except ValueError:
+        return raw
+    if address.version == 4:
+        return str(address)
+    if address.ipv4_mapped:
+        return str(address.ipv4_mapped)
+    return str(ip_network(f"{address}/64", strict=False))
 
 
 def _no_session(request: Request) -> str:
@@ -47,22 +97,25 @@ def _peer(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def client_ip(request: Request, trusted: frozenset[str]) -> str:
+def client_ip(request: Request, trusted: TrustedProxies) -> str:
     """IP real: recorre `X-Forwarded-For` de derecha a izquierda solo por proxies de confianza."""
     ip = _peer(request)
     if ip in trusted:
-        for hop in reversed(request.headers.get("x-forwarded-for", "").split(",")):
+        for hop in reversed(",".join(request.headers.getlist("x-forwarded-for")).split(",")):
             ip = hop.strip() or ip
             if ip not in trusted:
                 break
-    return ip
+    return normalize_ip(ip)
 
 
-def _is_https(request: Request, trusted: frozenset[str]) -> bool:
+def _is_https(request: Request, trusted: TrustedProxies) -> bool:
     if request.url.scheme == "https":
         return True
-    forwarded = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
-    return _peer(request) in trusted and forwarded == "https"
+    if _peer(request) not in trusted:
+        return False
+    # Vale el último valor: lo añadió el proxy de confianza; el cliente solo controla los previos.
+    values = ",".join(request.headers.getlist("x-forwarded-proto")).split(",")
+    return values[-1].strip().lower() == "https"
 
 
 def _json(error: AuthError) -> JSONResponse:
@@ -70,14 +123,21 @@ def _json(error: AuthError) -> JSONResponse:
     return JSONResponse(error.to_dict(), status_code=error.status, headers=headers)
 
 
+def _log_error(request: Request, event: str, status: int) -> None:
+    # Clave `route` (plantilla), nunca `path`: el depurador de registros descarta `path`.
+    route = getattr(request.scope.get("route"), "path", "-")
+    log.warning(event, extra={"route": route, "status": status})
+
+
 def create_app(
     emails: EmailCodeService,
     pairing: PairingService,
     *,
-    trusted_proxies: frozenset[str] = frozenset(),
+    trusted_proxies: Iterable[str] = frozenset(),
     current_account: Callable[[Request], str] = _no_session,
 ) -> FastAPI:
     """`current_account` devuelve el id de la cuenta con sesión abierta; la sesión es T-00-011."""
+    trusted = TrustedProxies(trusted_proxies)
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     account = Annotated[str, Depends(current_account)]
 
@@ -85,7 +145,7 @@ def create_app(
     async def require_tls(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
-        if not _is_https(request, trusted_proxies):
+        if not _is_https(request, trusted):
             return _json(tls_required())
         response = await call_next(request)
         response.headers["Strict-Transport-Security"] = HSTS
@@ -105,30 +165,45 @@ def create_app(
 
     @app.exception_handler(Exception)
     async def unexpected(request: Request, error: Exception) -> JSONResponse:
+        _log_error(request, "auth.http.unexpected", 500)  # sin el error: podría traer datos
         return _json(generic(500))
 
     @app.post("/auth/code/request", status_code=202)
     def request_code(body: RequestCode, request: Request) -> dict[str, bool]:
-        emails.request(body.email, client_ip(request, trusted_proxies))
+        emails.request(body.email, client_ip(request, trusted))
         return {"requested": True}
 
     @app.post("/auth/code/verify")
     def verify_code(body: VerifyCode, request: Request) -> dict[str, str | bool]:
         who, device, created = emails.verify(
-            body.email, body.code, body.device_label, client_ip(request, trusted_proxies)
+            body.email, body.code, body.device_label, client_ip(request, trusted)
         )
         return {"account_id": who.id, "device_id": device.id, "created": created}
 
     @app.post("/auth/pairing/start", status_code=201)
     def start_pairing(body: StartPairing, request: Request) -> dict[str, str]:
-        ip = client_ip(request, trusted_proxies)
-        code = pairing.start(body.client_ref, body.device_label, ip)
+        code = pairing.start(body.client_ref, body.device_label, client_ip(request, trusted))
         return {"code": code}
 
-    @app.post("/auth/pairing/claim")
+    @app.post("/auth/pairing/claim", status_code=202)
     def claim_pairing(body: ClaimPairing, request: Request, account_id: account) -> dict[str, str]:
-        device = pairing.claim(account_id, body.code, client_ip(request, trusted_proxies))
+        pairing.claim(account_id, body.code, client_ip(request, trusted))
+        return {"status": "pending"}
+
+    @app.post("/auth/pairing/status")
+    def pairing_status(body: CompanionRef, request: Request) -> dict[str, str | None]:
+        state, hint = pairing.status(body.client_ref, client_ip(request, trusted))
+        return {"state": state, "hint": hint}
+
+    @app.post("/auth/pairing/confirm")
+    def confirm_pairing(body: CompanionRef, request: Request) -> dict[str, str]:
+        device = pairing.confirm(body.client_ref, client_ip(request, trusted))
         return {"device_id": device.id}
+
+    @app.post("/auth/pairing/reject")
+    def reject_pairing(body: CompanionRef, request: Request) -> dict[str, bool]:
+        pairing.reject(body.client_ref, client_ip(request, trusted))
+        return {"rejected": True}
 
     @app.post("/auth/devices/{device_id}/revoke")
     def revoke_device(device_id: str, account_id: account) -> dict[str, bool]:

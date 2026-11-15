@@ -1,5 +1,6 @@
 """Espera creciente por clave (cuenta, IP). Nunca bloqueo permanente (REQ-00-025)."""
 
+from collections import deque
 from math import ceil
 
 from .ports import Clock
@@ -18,6 +19,7 @@ class RateLimiter:
         self._cap_s = cap_s
         self._base_s = base_s
         self._state: dict[str, tuple[int, float]] = {}  # clave -> (fallos seguidos, libre desde)
+        self._events: dict[str, deque[float]] = {}  # presupuestos por ventana deslizante
 
     def retry_after(self, *keys: str) -> int:
         now = self._clock.monotonic_s()
@@ -35,6 +37,21 @@ class RateLimiter:
             self._state[key] = (count, now + wait)
         if len(self._state) > 10_000:
             self._state = {k: v for k, v in self._state.items() if now < v[1] + self._cap_s}
+
+    def window_wait(self, key: str, limit: int, window_s: int) -> int:
+        """Segundos hasta que la ventana vuelva a tener cupo; 0 si hay cupo. Siempre se desliza."""
+        now = self._clock.monotonic_s()
+        events = self._events.get(key)
+        while events and events[0] <= now - window_s:
+            events.popleft()
+        if not events:
+            self._events.pop(key, None)
+            return 0
+        return ceil(round(events[0] + window_s - now, 6)) if len(events) >= limit else 0
+
+    def window_hit(self, key: str, limit: int) -> None:
+        events = self._events.setdefault(key, deque(maxlen=limit))
+        events.append(self._clock.monotonic_s())
 
     def reset(self, *keys: str) -> None:
         for key in keys:

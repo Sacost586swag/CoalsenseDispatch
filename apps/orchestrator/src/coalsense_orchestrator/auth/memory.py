@@ -20,6 +20,9 @@ class InMemoryAuthRepository:
     def get_account_by_lookup(self, lookup: str) -> Account | None:
         return next((a for a in self.accounts.values() if a.email_lookup == lookup), None)
 
+    def get_account(self, account_id: str) -> Account | None:
+        return self.accounts.get(account_id)
+
     def add_account(self, account: Account) -> None:
         self.accounts[account.id] = account
 

@@ -14,6 +14,7 @@ from coalsense_common import ConfigError, load_config
 from coalsense_common.i18n_es import es
 from coalsense_orchestrator.auth import errors
 from coalsense_orchestrator.auth.codes import (
+    MAIL_CAP_PER_HOUR,
     MAX_ATTEMPTS,
     PAIRING_ALPHABET,
     EmailCodeService,
@@ -24,9 +25,12 @@ from coalsense_orchestrator.auth.codes import (
     normalize_email_code,
     normalize_pairing_code,
 )
+from coalsense_orchestrator.auth.codes import (
+    lookup as lookup_of,
+)
 from coalsense_orchestrator.auth.config import AuthSettings
 from coalsense_orchestrator.auth.memory import InMemoryAuditSink, InMemoryAuthRepository
-from coalsense_orchestrator.auth.pairing import PairingService
+from coalsense_orchestrator.auth.pairing import MAX_CLAIMS, PairingService
 from coalsense_orchestrator.auth.ports import AuthDeps, CodeRecord
 from coalsense_orchestrator.auth.rate_limit import RateLimiter
 from coalsense_orchestrator.auth.routes import create_app
@@ -38,6 +42,7 @@ KEY = b"k" * 32
 EMAIL = "Persona@Ejemplo.org"
 ERROR_KEYS = {"code", "message_es", "recoverable", "next_actions"}
 CAP_S = 900
+REF = "ref-secreta-del-companion-" + "x" * 24  # lo genera el companion; solo viaja a la API
 
 
 class FakeClock:
@@ -121,7 +126,7 @@ class Env:
         body: dict[str, str] = response.json()
         return body
 
-    def start_pairing(self, ref: str = "c" * 20) -> str:
+    def start_pairing(self, ref: str = REF) -> str:
         response = self.api.post(
             "/auth/pairing/start", json={"client_ref": ref, "device_label": "Companion sala"}
         )
@@ -133,6 +138,9 @@ class Env:
         return self.api.post(
             "/auth/pairing/claim", json={"code": code}, headers={"x-account": account}
         )
+
+    def companion(self, action: str, ref: str = REF) -> Response:
+        return self.api.post(f"/auth/pairing/{action}", json={"client_ref": ref})
 
 
 @pytest.fixture
@@ -333,27 +341,138 @@ def test_requests_are_throttled_but_do_not_block_verification(env: Env) -> None:
     assert env.verify(env.sender.last).status_code == 200
 
 
+# --- I1: un tercero no puede dejar a la persona en espera ----------------------------------
+
+
+def test_third_party_on_another_ip_cannot_delay_the_person(env: Env) -> None:
+    attacker, person = "6.6.6.6", "1.1.1.1"
+    for _ in range(8):  # el atacante insiste con el correo de la persona hasta una espera larga
+        env.request(ip=attacker)
+        env.verify("000000", ip=attacker)
+        env.clock.advance(CAP_S)
+    env.request(ip=attacker)
+    env.verify("000000", ip=attacker)
+    assert_error(env.verify("000000", ip=attacker), 429, "auth.rate_limited")
+    assert env.request(ip=attacker) == 429
+    assert env.request(ip=person) == 202  # la persona entra sin esperar
+    assert env.verify(env.sender.last, ip=person).status_code == 200
+
+
+def test_waits_are_keyed_by_ipv6_64_prefix(env: Env) -> None:
+    env.verify("000000", ip="2001:db8:1:2::1")
+    same_network = env.verify("000000", ip="2001:db8:1:2:ffff::9")
+    assert_error(same_network, 429, "auth.rate_limited")
+    other_network = env.verify("000000", ip="2001:db8:1:3::1")
+    assert_error(other_network, 400, "auth.code.gone")  # otra red /64: sin espera
+
+
+def test_shared_ip_resets_on_success_for_that_email(env: Env) -> None:
+    ip = "3.3.3.3"
+    env.request(ip=ip)
+    code = env.sender.last
+    assert_error(env.verify(wrong_code(code), ip=ip), 400, "auth.code.invalid")
+    env.clock.advance(2)
+    assert env.verify(code, ip=ip).status_code == 200
+    env.clock.advance(CAP_S)
+    env.request(ip=ip)
+    assert_error(env.verify("999999", ip=ip), 400, "auth.code.invalid")
+    blocked = env.verify("999999", ip=ip)
+    assert blocked.headers["retry-after"] == "2"  # la cuenta de fallos volvió a empezar
+
+
+def test_many_successful_logins_from_one_ip_do_not_build_a_long_wait(env: Env) -> None:
+    for number in range(12):  # residencia o consultorio detrás de una misma IP
+        email = f"persona{number}@ejemplo.org"
+        assert env.request(email, ip="4.4.4.4") == 202
+        assert env.verify(env.sender.last, email, ip="4.4.4.4").status_code == 200
+        env.clock.advance(1)
+    assert env.request("otra@ejemplo.org", ip="4.4.4.4") == 202
+
+
+def test_account_wide_cap_limits_mail_flooding_but_slides(env: Env) -> None:
+    for number in range(MAIL_CAP_PER_HOUR):
+        assert env.request(ip=f"10.0.0.{number + 1}") == 202
+        env.clock.advance(5)
+    flood = env.api.post(
+        "/auth/code/request", json={"email": EMAIL}, headers={"x-forwarded-for": "10.9.9.9"}
+    )
+    assert_error(flood, 429, "auth.rate_limited")
+    assert 0 < int(flood.headers["retry-after"]) <= 3600
+    env.clock.advance(3600)
+    assert env.request(ip="10.9.9.9") == 202  # nunca permanente
+
+
 # --- emparejamiento de dispositivo ---------------------------------------------------------
 
 
-def test_pairing_binds_device_to_claiming_account(env: Env) -> None:
+def test_pairing_binds_only_after_the_companion_confirms(env: Env) -> None:
     account = env.login()["account_id"]
+    devices_before = len(env.repo.devices)
     code = env.start_pairing()
     assert len(code) == 6 and set(code) <= set(PAIRING_ALPHABET)
-    response = env.claim(account, code.lower())  # dictado en minúsculas
-    assert response.status_code == 200
-    device = env.repo.devices[response.json()["device_id"]]
+    assert env.companion("status").json() == {"state": "waiting", "hint": None}
+    claimed = env.claim(account, code.lower())  # dictado en minúsculas
+    assert claimed.status_code == 202 and claimed.json() == {"status": "pending"}
+    assert len(env.repo.devices) == devices_before  # reclamar no crea el dispositivo
+    state = env.companion("status").json()
+    assert state["state"] == "claimed" and state["hint"] == "p***@e***.org"
+    assert EMAIL.lower() not in repr(state)
+    confirmed = env.companion("confirm")
+    assert confirmed.status_code == 200
+    device = env.repo.devices[confirmed.json()["device_id"]]
     assert device.account_id == account and device.label == "Companion sala"
     assert ("auth.device.paired", "ok") in [(e.event, e.result) for e in env.audit.events]
     env.clock.advance(CAP_S)
     assert_error(env.claim(account, code), 400, "auth.code.gone")  # un solo uso
+    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+
+
+def test_attacker_claim_then_victim_rejects_leaves_no_device(env: Env) -> None:
+    attacker = env.login("atacante@ejemplo.org")["account_id"]
+    env.clock.advance(CAP_S)
+    devices_before = set(env.repo.devices)
+    code = env.start_pairing()
+    assert env.claim(attacker, code).status_code == 202
+    assert env.companion("status").json()["hint"] == "a***@e***.org"  # la víctima lo ve
+    assert env.companion("reject").status_code == 200
+    assert set(env.repo.devices) == devices_before
+    env.clock.advance(CAP_S)
+    assert_error(env.claim(attacker, code), 400, "auth.code.gone")
+    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+    assert ("auth.pairing.rejected", "ok") in [(e.event, e.result) for e in env.audit.events]
+
+
+def test_confirm_needs_a_claim_and_a_known_client_ref(env: Env) -> None:
+    env.start_pairing()
+    assert_error(env.companion("confirm"), 409, "auth.pairing.not_claimed")
+    unknown = env.companion("confirm", ref="otra-ref-" + "y" * 40)
+    assert_error(unknown, 400, "auth.code.gone")
+    assert_error(env.companion("reject", ref="otra-ref-" + "y" * 40), 429, "auth.rate_limited")
+
+
+def test_pairing_claim_budget_invalidates_the_code(env: Env) -> None:
+    account = env.login()["account_id"]
+    code = env.start_pairing()
+    for _ in range(MAX_CLAIMS):
+        assert env.claim(account, code).status_code == 202
+        env.clock.advance(CAP_S)
+    assert_error(env.claim(account, code), 400, "auth.code.gone")
+    env.clock.advance(CAP_S)
+    assert_error(env.companion("confirm"), 400, "auth.code.gone")
+
+
+def test_client_ref_is_stored_only_as_hmac(env: Env) -> None:
+    env.start_pairing()
+    assert REF not in repr(env.repo.codes)
 
 
 def test_pairing_code_never_expires_by_time(env: Env) -> None:
     account = env.login()["account_id"]
     code = env.start_pairing()
     env.clock.advance(5 * 365 * 24 * 3600)
-    assert env.claim(account, code).status_code == 200
+    assert env.claim(account, code).status_code == 202
+    env.clock.advance(5 * 365 * 24 * 3600)
+    assert env.companion("confirm").status_code == 200
 
 
 def test_pairing_new_code_from_same_companion_invalidates_old(env: Env) -> None:
@@ -364,7 +483,7 @@ def test_pairing_new_code_from_same_companion_invalidates_old(env: Env) -> None:
     assert old != new
     assert_error(env.claim(account, old), 400, "auth.code.gone")
     env.clock.advance(CAP_S)
-    assert env.claim(account, new).status_code == 200
+    assert env.claim(account, new).status_code == 202
 
 
 def test_pairing_wrong_codes_wait_and_recover(env: Env) -> None:
@@ -373,7 +492,7 @@ def test_pairing_wrong_codes_wait_and_recover(env: Env) -> None:
     assert_error(env.claim(account, "AAAAAA"), 400, "auth.code.gone")
     assert_error(env.claim(account, code), 429, "auth.rate_limited")
     env.clock.advance(2)
-    assert env.claim(account, code).status_code == 200
+    assert env.claim(account, code).status_code == 202
 
 
 def test_pairing_requires_a_signed_in_account(env: Env) -> None:
@@ -393,9 +512,15 @@ def test_revoke_device_audits_and_checks_owner(env: Env) -> None:
     mine = {"x-account": login["account_id"]}
     assert env.api.post(path, headers=mine).status_code == 200
     assert env.repo.devices[login["device_id"]].revoked_at is not None
-    event = next(e for e in env.audit.events if e.event == "auth.device.revoked")
+    event = next(
+        e for e in env.audit.events if (e.event, e.result) == ("auth.device.revoked", "ok")
+    )
     assert event.account_id == login["account_id"] and event.device_id == login["device_id"]
     assert_error(env.api.post(path, headers=mine), 404, "auth.device.not_found")
+    failed = [
+        e for e in env.audit.events if (e.event, e.result) == ("auth.device.revoked", "failed")
+    ]
+    assert len(failed) == 2 and failed[0].account_id == "otra-cuenta"  # M6: también se registra
 
 
 # --- REQ-00-026: TLS -----------------------------------------------------------------------
@@ -420,6 +545,33 @@ def test_forwarded_proto_only_from_trusted_proxy(env: Env) -> None:
     assert_error(refused, 400, "auth.tls.required")
 
 
+def test_forwarded_proto_uses_the_rightmost_value(env: Env) -> None:
+    """I3: el cliente puede anteponer "https"; vale lo que añadió el último proxy."""
+    http = TestClient(env.app, base_url="http://testserver")
+    body = {"email": EMAIL}
+    forged = http.post(
+        "/auth/code/request", json=body, headers={"x-forwarded-proto": "https, http"}
+    )
+    assert_error(forged, 400, "auth.tls.required")
+    env.clock.advance(CAP_S)
+    honest = http.post(
+        "/auth/code/request", json=body, headers={"x-forwarded-proto": "http, https"}
+    )
+    assert honest.status_code == 202
+
+
+def test_trusted_proxies_accept_cidr_ranges(env: Env) -> None:
+    app = create_app(env.emails, env.pairing, trusted_proxies=frozenset({"10.0.0.0/8"}))
+    inside = TestClient(app, base_url="http://testserver", client=("10.1.2.3", 50000))
+    outside = TestClient(app, base_url="http://testserver", client=("11.1.2.3", 50000))
+    headers = {"x-forwarded-proto": "https"}
+    assert (
+        inside.post("/auth/code/request", json={"email": EMAIL}, headers=headers).status_code == 202
+    )
+    refused = outside.post("/auth/code/request", json={"email": EMAIL}, headers=headers)
+    assert_error(refused, 400, "auth.tls.required")
+
+
 def test_https_responses_send_hsts(env: Env) -> None:
     response = env.api.post("/auth/code/request", json={"email": EMAIL})
     assert "max-age" in response.headers["strict-transport-security"]
@@ -435,6 +587,65 @@ def test_validation_and_unknown_routes_use_common_format_without_echo(env: Env) 
     assert_error(env.api.get("/auth/nada"), 404, "http.404")
     incomplete = env.api.post("/auth/code/verify", json={"email": EMAIL})
     assert_error(incomplete, 400, "auth.request.invalid")
+
+
+def test_accented_messages_reach_the_person_as_real_utf8(env: Env) -> None:
+    env.request()
+    response = env.verify(wrong_code(env.sender.last))
+    assert response.json()["message_es"] == "Ese código no coincide."
+    assert response.json()["next_actions"] == ["Revisa el código e inténtalo de nuevo."]
+    assert "Ã" not in response.text
+    http = TestClient(env.app, base_url="http://testserver")
+    refused = http.post("/auth/code/request", json={"email": EMAIL})
+    assert refused.json()["message_es"] == "Esta conexión no es segura."
+
+
+def test_unexpected_errors_log_the_route_not_the_path(
+    env: Env, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level(logging.DEBUG)
+
+    def boom(*_: object) -> None:
+        raise RuntimeError(f"fallo con {EMAIL}")
+
+    env.emails.request = boom  # type: ignore[method-assign]
+    quiet = TestClient(env.app, base_url="https://testserver", raise_server_exceptions=False)
+    response = quiet.post("/auth/code/request", json={"email": EMAIL})
+    assert_error(response, 500, "http.500")
+    routes = [r for r in caplog.records if getattr(r, "route", None)]
+    assert routes and routes[0].route == "/auth/code/request"  # type: ignore[attr-defined]
+    assert not any(hasattr(r, "path") for r in caplog.records)
+    assert EMAIL not in caplog.text
+
+
+def test_deps_repr_never_shows_the_key(env: Env) -> None:
+    assert KEY.decode() not in repr(env.deps) and "kkkkkkkk" not in repr(env.deps)
+
+
+def test_failed_account_creation_does_not_burn_the_code(env: Env) -> None:
+    """M2: si falla crear la cuenta, el código sigue sirviendo (se consume al final)."""
+
+    class FlakyVault(FakeVault):
+        broken = True
+
+        def seal(self, email: str) -> bytes:
+            if self.broken:
+                raise RuntimeError("bóveda caída")
+            return super().seal(email)
+
+    vault = FlakyVault()
+    env.emails = EmailCodeService(env.deps, env.sender, vault)
+    env.api = TestClient(
+        create_app(env.emails, env.pairing, trusted_proxies=frozenset({"testclient"})),
+        base_url="https://testserver",
+        raise_server_exceptions=False,
+    )
+    env.request()
+    code = env.sender.last
+    assert env.verify(code).status_code == 500
+    assert not env.repo.accounts and not env.repo.devices
+    vault.broken = False
+    assert env.verify(code).status_code == 200
 
 
 def test_every_message_key_is_in_the_catalog() -> None:
@@ -458,11 +669,15 @@ def test_audit_and_logs_never_hold_codes_hashes_or_emails(
     account = env.login()["account_id"]
     pairing_code = env.start_pairing()
     env.claim(account, pairing_code)
+    env.companion("status")
+    env.companion("confirm")
     env.sender.fail = True
     env.clock.advance(CAP_S)
     env.request()
     lookup = email_lookup(KEY, EMAIL)
-    plain = {first, wrong_code(first), pairing_code, EMAIL, EMAIL.lower(), lookup}
+    plain = {first, wrong_code(first), pairing_code, EMAIL, EMAIL.lower(), lookup, REF}
+    plain.add(env.repo.accounts[account].email_hint)
+    plain.add(lookup_of(KEY, "client", REF))
     plain |= {code for _, code in env.sender.sent}
     hashed = {hash_code(KEY, "email", lookup, c) for c in plain}
     hashed.add(hash_code(KEY, "device", "", pairing_code))
@@ -490,6 +705,12 @@ def test_config_requires_a_long_secret_and_never_prints_it() -> None:
         AuthSettings, {"AUTH_HMAC_KEY": "z" * 40, "AUTH_TRUSTED_PROXIES": "10.0.0.1, 10.0.0.2"}
     )
     assert "zzzz" not in repr(good) and good.proxies == frozenset({"10.0.0.1", "10.0.0.2"})
+    cidr = load_config(
+        AuthSettings, {"AUTH_HMAC_KEY": "z" * 40, "AUTH_TRUSTED_PROXIES": "10.0.0.0/8"}
+    )
+    assert cidr.proxies == frozenset({"10.0.0.0/8"})
+    with pytest.raises(ConfigError):  # un proxy mal escrito no se acepta en silencio
+        load_config(AuthSettings, {"AUTH_HMAC_KEY": "z" * 40, "AUTH_TRUSTED_PROXIES": "proxy-raro"})
 
 
 def test_migration_has_no_expiry_and_no_plain_email() -> None:

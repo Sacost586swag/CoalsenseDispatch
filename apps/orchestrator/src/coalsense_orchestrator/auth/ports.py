@@ -67,6 +67,7 @@ class Account:
     role: str
     email_ciphertext: bytes
     email_lookup: str
+    email_hint: str  # correo enmascarado (p***@e***.org): lo ve quien confirma un emparejamiento
     language: str
     created_at: str
 
@@ -90,6 +91,7 @@ class CodeRecord:
     code_hash: str
     created_at: str
     attempts: int = 0
+    claims: int = 0  # reclamos válidos de un código de emparejamiento
     used_at: str | None = None
     invalidated_at: str | None = None
     account_id: str | None = None
@@ -98,6 +100,8 @@ class CodeRecord:
 
 class AuthRepository(Protocol):
     def get_account_by_lookup(self, lookup: str) -> Account | None: ...
+
+    def get_account(self, account_id: str) -> Account | None: ...
 
     def add_account(self, account: Account) -> None: ...
 
@@ -124,7 +128,7 @@ class AuthDeps:
     audit: AuditSink
     clock: Clock
     limiter: RateLimiter
-    key: bytes
+    key: bytes = field(repr=False)
     # Un solo candado para los servicios en memoria; con PostgreSQL lo reemplaza la transacción.
     lock: threading.RLock = field(default_factory=threading.RLock)
 
@@ -139,7 +143,12 @@ class AuthDeps:
         log.info("evento=%s resultado=%s", event, result)
 
     def guard(self, event: str, *keys: str) -> None:
-        wait = self.limiter.retry_after(*keys)
+        self._raise_if(event, self.limiter.retry_after(*keys))
+
+    def guard_window(self, event: str, key: str, limit: int, window_s: int) -> None:
+        self._raise_if(event, self.limiter.window_wait(key, limit, window_s))
+
+    def _raise_if(self, event: str, wait: int) -> None:
         if wait:
             self.emit(event, "throttled")
             raise throttled(wait)

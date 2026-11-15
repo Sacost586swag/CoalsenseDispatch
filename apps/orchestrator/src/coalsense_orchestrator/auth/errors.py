@@ -19,6 +19,7 @@ CATALOG_KEYS = (
     "auth.session.required.message",
     "auth.device.notFound.message",
     "auth.send.failed.message",
+    "auth.pairing.notClaimed.message",
     "auth.next.retryAfterWait",
     "auth.next.requestNewCode",
     "auth.next.checkCode",
@@ -88,6 +89,12 @@ def session_required() -> AuthError:
 def device_not_found() -> AuthError:
     return _error(
         "auth.device.not_found", "auth.device.notFound.message", "auth.next.checkData", 404
+    )
+
+
+def pairing_not_claimed() -> AuthError:
+    return _error(
+        "auth.pairing.not_claimed", "auth.pairing.notClaimed.message", "auth.next.retry", 409
     )
 
 

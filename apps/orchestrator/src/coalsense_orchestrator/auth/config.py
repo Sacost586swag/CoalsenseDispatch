@@ -1,11 +1,13 @@
 """Configuración de autenticación: clave HMAC como secreto, nunca en código ni en logs."""
 
+from ipaddress import ip_network
+
 from pydantic import BaseModel, SecretStr, field_validator
 
 
 class AuthSettings(BaseModel):
     AUTH_HMAC_KEY: SecretStr
-    # Direcciones de proxies de confianza, separadas por coma. Solo ellos pueden fijar
+    # IP o rangos CIDR de proxies de confianza, separados por coma. Solo ellos pueden fijar
     # `X-Forwarded-Proto` y `X-Forwarded-For`.
     AUTH_TRUSTED_PROXIES: str = ""
 
@@ -14,6 +16,14 @@ class AuthSettings(BaseModel):
     def _long_enough(cls, value: SecretStr) -> SecretStr:
         if len(value.get_secret_value()) < 32:
             raise ValueError("La clave es demasiado corta.")
+        return value
+
+    @field_validator("AUTH_TRUSTED_PROXIES")
+    @classmethod
+    def _valid_proxies(cls, value: str) -> str:
+        for entry in value.split(","):
+            if entry.strip():
+                ip_network(entry.strip(), strict=False)  # ValueError si no es IP ni CIDR
         return value
 
     @property

@@ -2,6 +2,10 @@
 
 Ningún código vence por tiempo (REQ-00-021, P-00-3): solo se invalidan por uso, por generar
 otro o por exceder `MAX_ATTEMPTS` intentos. Solo se guarda el HMAC-SHA256 del código.
+
+Las esperas crecientes se llevan por (correo, IP) y por IP, no por correo solo: un tercero que
+conoce el correo no puede dejar a la persona esperando desde otra red. Solo hay topes por hora
+contra la inundación de correos, y siempre se deslizan (nunca bloqueo permanente).
 """
 
 import hmac
@@ -16,6 +20,9 @@ from .ports import Account, AuthDeps, CodeRecord, CodeSender, Device, EmailVault
 MAX_ATTEMPTS = 5  # [SUPUESTO] por código
 EMAIL_CODE_DIGITS = 6  # [SUPUESTO]
 PAIRING_CODE_LENGTH = 6  # [SUPUESTO]
+MAIL_CAP_PER_HOUR = 10  # [SUPUESTO] pedidos por correo, desde cualquier IP (contra inundación)
+IP_REQUESTS_PER_HOUR = 30  # [SUPUESTO] pedidos por IP; una residencia entera cabe holgada
+HOUR_S = 3600
 # Sin 0, O, 1 ni I: se dictan por voz sin ambigüedad.
 PAIRING_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
 
@@ -43,6 +50,13 @@ def normalize_pairing_code(raw: str) -> str:
 def normalize_email(raw: str) -> str | None:
     email = raw.strip().lower()
     return email if len(email) <= 254 and _EMAIL.fullmatch(email) else None
+
+
+def mask_email(email: str) -> str:
+    """p***@e***.org: orienta a quien confirma sin revelar el correo."""
+    local, _, domain = email.partition("@")
+    host, _, tld = domain.rpartition(".")
+    return f"{local[:1]}***@{host[:1]}***.{tld}"
 
 
 def lookup(key: bytes, domain: str, value: str) -> str:
@@ -73,10 +87,16 @@ class EmailCodeService:
         if normalized is None:
             raise request_invalid()
         subject = email_lookup(d.key, normalized)
-        keys = (f"req:email:{subject}", f"req:ip:{ip}")
+        key = f"req:{subject}:{ip}"
+        mail, mail_ip = f"mail:{subject}", f"mail-ip:{ip}"
+        event = "auth.code.requested"
         with d.lock:
-            d.guard("auth.code.requested", *keys)
-            d.limiter.fail(*keys)  # cada pedido cuenta: evita saturar el correo de alguien
+            d.guard(event, key)
+            d.guard_window(event, mail, MAIL_CAP_PER_HOUR, HOUR_S)
+            d.guard_window(event, mail_ip, IP_REQUESTS_PER_HOUR, HOUR_S)
+            d.limiter.fail(key)  # cada pedido cuenta: la misma persona espera unos segundos
+            d.limiter.window_hit(mail, MAIL_CAP_PER_HOUR)
+            d.limiter.window_hit(mail_ip, IP_REQUESTS_PER_HOUR)
             code = new_email_code()
             d.repo.save_code(
                 CodeRecord(
@@ -90,9 +110,9 @@ class EmailCodeService:
         try:
             self.sender.send_code(normalized, code)
         except Exception:
-            d.emit("auth.code.requested", "error")
+            d.emit(event, "error")
             raise send_failed() from None  # sin detalle: podría traer el correo o el código
-        d.emit("auth.code.requested", "ok")
+        d.emit(event, "ok")
 
     def verify(
         self, email: str, code: str, device_label: str, ip: str
@@ -102,7 +122,7 @@ class EmailCodeService:
         if normalized is None:
             raise request_invalid()
         subject = email_lookup(d.key, normalized)
-        keys = (f"ver:email:{subject}", f"ver:ip:{ip}")
+        keys = (f"ver:{subject}:{ip}", f"ver:ip:{ip}")
         with d.lock:
             d.guard("auth.login", *keys)
             record = d.repo.active_code("email", subject)
@@ -118,24 +138,28 @@ class EmailCodeService:
                 d.repo.update_code(record)
                 raise code_gone() if record.invalidated_at else code_invalid()
             now = d.clock.now_iso()
-            record.used_at = now
-            d.limiter.reset(keys[0])  # la IP no se limpia: otra persona podría compartirla
             account = d.repo.get_account_by_lookup(subject)
             created = account is None
             if account is None:
                 account = Account(
                     id=new_id(),
                     role="person",
-                    email_ciphertext=self.vault.seal(normalized),
+                    email_ciphertext=self.vault.seal(normalized),  # si falla, el código sigue
                     email_lookup=subject,
+                    email_hint=mask_email(normalized),
                     language="es",
                     created_at=now,
                 )
+            device = Device(new_id(), account.id, device_label, now)
+            # El código se consume al final: nada de lo anterior lo deja gastado sin ingreso.
+            if created:
                 d.repo.add_account(account)
-                d.emit("auth.account.created", "ok", account.id)
+            d.repo.add_device(device)
+            record.used_at = now
             record.account_id = account.id
             d.repo.update_code(record)
-            device = Device(new_id(), account.id, device_label, now)
-            d.repo.add_device(device)
+            d.limiter.reset(keys[0])  # solo (correo, IP): la espera por IP no la limpia nadie
+            if created:
+                d.emit("auth.account.created", "ok", account.id)
             d.emit("auth.login", "ok", account.id, device.id)
             return account, device, created
