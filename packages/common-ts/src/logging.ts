@@ -13,6 +13,7 @@ const contentKeys = [
   "audio",
   "video",
   "landmarks",
+  "path", // also covers file_path/filePath; user file names are content (REQ-00-010)
 ];
 const omitted = "[omitido]";
 const levels = { DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50 };
@@ -30,6 +31,26 @@ function event(value: unknown): string {
     : omitted;
 }
 
+/** Lowercase and drop separators so file_name, file-name and fileName all match. */
+const norm = (key: string) => key.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+function errorType(error: Error): string {
+  try {
+    return event(Object.getPrototypeOf(error)?.constructor?.name);
+  } catch {
+    return omitted;
+  }
+}
+
+// The tag check also catches native errors whose prototype was set to null.
+function isError(value: unknown): value is Error {
+  try {
+    return value instanceof Error || Object.prototype.toString.call(value) === "[object Error]";
+  } catch {
+    return false;
+  }
+}
+
 function scrub(
   value: unknown,
   keys: readonly string[],
@@ -37,9 +58,9 @@ function scrub(
   depth = 0,
 ): unknown {
   if (depth >= 16) return omitted;
-  if (value instanceof Error) {
+  if (isError(value)) {
     return {
-      type: event(Object.getPrototypeOf(value).constructor.name),
+      type: errorType(value),
       id: newId(),
       ...(value instanceof AppError ? { code: event(value.code) } : {}),
     };
@@ -56,10 +77,26 @@ function scrub(
     return omitted;
   seen.add(value);
   try {
-    if (Array.isArray(value)) return value.map((item) => scrub(item, keys, seen, depth + 1));
+    if (Array.isArray(value)) {
+      // Index descriptors, not map(): no accessor invocation and no species constructor.
+      const items: unknown[] = [];
+      for (let i = 0; i < value.length; i++) {
+        const descriptor = Object.getOwnPropertyDescriptor(value, i);
+        items.push(
+          descriptor && "value" in descriptor
+            ? scrub(descriptor.value, keys, seen, depth + 1)
+            : omitted,
+        );
+      }
+      return items;
+    }
     const result: Record<string, unknown> = Object.create(null);
     for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
-      if (Array.from(key).length > 64 || keys.some((part) => key.toLowerCase().includes(part)))
+      if (
+        !descriptor.enumerable ||
+        Array.from(key).length > 64 ||
+        keys.some((part) => norm(key).includes(part))
+      )
         continue;
       result[key] =
         "value" in descriptor ? scrub(descriptor.value, keys, seen, depth + 1) : omitted;
@@ -72,7 +109,8 @@ function scrub(
 
 /** Messages must be constant event identifiers; put technical metadata in extra. */
 export function createLogger(name: string, opts: LoggerOptions = {}) {
-  const keys = [...contentKeys, ...(opts.contentKeys ?? []).map((key) => key.toLowerCase())];
+  // An empty key would match everything, so it is dropped.
+  const keys = [...contentKeys, ...(opts.contentKeys ?? []).map(norm).filter(Boolean)];
   const threshold = levels[opts.level ?? "INFO"];
   const sink =
     opts.sink ??

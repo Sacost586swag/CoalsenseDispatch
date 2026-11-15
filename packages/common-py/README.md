@@ -34,3 +34,21 @@ are omitted. Input containers are not mutated.
 Exceptions emit only type and a fresh correlation id, plus the safe `AppError`
 code. Exception messages, chained exceptions, cached exception text and stack
 traces are never formatted. No dependencies were added.
+
+Scrubbing runs on the package handler (so records propagated from child loggers
+such as `coalsense.auth.sub` are covered), on the package loggers, and inside
+the JSON formatter itself, which scrubs any record that skipped the filters.
+Scrubbing is idempotent. Key matching ignores case and separators, so
+`file_name`, `file-name` and `fileName` all match `filename`; `path` is also a
+default content key (`file_path`, `attachment_path`). User file names are
+content. Source-code metadata on the record (`pathname`, `filename`, `module`,
+`funcName`, `lineno`) is not content: it is preserved for other formatters, but
+the JSON line does not emit it. Keys are applied only to `extra`, never to
+standard record attributes.
+
+`configure_logging` keys accumulate: calling it again without `content_keys`
+(or with fewer) never forgets earlier custom keys, so a later caller cannot
+silently weaken scrubbing; empty keys are ignored. Out of scope: loggers not
+created with `get_logger`, third-party loggers and `logging.captureWarnings`
+write through the root logger and our handler never sees them. Only a handler
+with this package's formatter scrubs such records.

@@ -32,3 +32,10 @@ use marked keys, never keys themselves, logger names, event ids or error codes.
 Errors anywhere in metadata emit only their type and a fresh correlation id,
 plus safe `AppError.code`; messages, causes and stacks are excluded. No new
 dependencies. Python exposes the equivalent policy through stdlib logging.
+
+Key matching ignores case and separators (`file_name`, `file-name`, `fileName`
+all match `filename`); `path` is a default content key. User file names are
+content. Only own enumerable data properties are read: Map, Set, Symbol keys and
+values, class instances (prototype `toJSON` is never called), getters, array
+accessor items and non-enumerable fields (`stack`, `message`) are omitted or
+skipped, including errors with a null prototype.
