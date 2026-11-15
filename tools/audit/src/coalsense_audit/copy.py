@@ -87,9 +87,23 @@ def audit(root: Path) -> list[str]:
         )
     except (OSError, UnicodeError):
         findings.append(f"{TS_CATALOG}:1: ENTRADA: No se pudo leer el catálogo.")
-    # Walk only the two specified source roots; unreadable files are findings (fail closed).
+
+    # Walk only the two specified source roots. A missing root is fine (not built yet);
+    # an existing but unreadable directory or file is a finding (fail closed).
+    def unreadable(error: OSError) -> None:
+        name = Path(error.filename).relative_to(root).as_posix() if error.filename else "?"
+        findings.append(f"{name}:1: ENTRADA: No se pudo leer el directorio.")
+
+    def skipped(path: Path) -> None:
+        print(f"omitido (enlace simbólico): {path.relative_to(root).as_posix()}", file=sys.stderr)
+
     for base in ("apps/web/src", "packages/ui/src"):
-        for directory, dirs, names in os.walk(root / base, followlinks=False):
+        if not (root / base).exists():
+            continue
+        for directory, dirs, names in os.walk(root / base, onerror=unreadable, followlinks=False):
+            for d in dirs:
+                if (Path(directory) / d).is_symlink():
+                    skipped(Path(directory) / d)
             dirs[:] = sorted(
                 d
                 for d in dirs
@@ -97,7 +111,10 @@ def audit(root: Path) -> list[str]:
             )
             for name in sorted(names):
                 path = Path(directory) / name
-                if path.suffix != ".tsx" or path.is_symlink():
+                if path.suffix != ".tsx":
+                    continue
+                if path.is_symlink():
+                    skipped(path)
                     continue
                 try:
                     files.append(

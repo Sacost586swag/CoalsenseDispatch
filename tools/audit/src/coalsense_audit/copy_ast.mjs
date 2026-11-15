@@ -12,6 +12,7 @@ const intrinsicAttributes = new Set([
   "aria-description",
   "aria-roledescription",
   "aria-valuetext",
+  "aria-placeholder",
   "label",
   "alt",
   "title",
@@ -28,7 +29,6 @@ const technicalProps = new Set([
   "href",
   "src",
   "type",
-  "name",
   "role",
   "variant",
   "size",
@@ -41,7 +41,6 @@ const technicalProps = new Set([
   "lang",
   "dir",
   "htmlFor",
-  "value",
   "testId",
 ]);
 const visibleAria = new Set([
@@ -49,7 +48,12 @@ const visibleAria = new Set([
   "aria-description",
   "aria-roledescription",
   "aria-valuetext",
+  "aria-placeholder",
 ]);
+// `name` and `value` are technical only as identifier-like literals ("send", "ready_2"):
+// lowercase ASCII, no spaces. <Stat value="Alto" /> or <Avatar name="Juan Pérez" /> is copy.
+const identifierProps = new Set(["name", "value"]);
+const identifier = /^[a-z][a-z0-9_-]*$/;
 const isTechnical = (name) =>
   technicalProps.has(name) ||
   name.startsWith("data-") ||
@@ -164,6 +168,12 @@ for (const file of input) {
       // Intrinsic attributes keep the strict rule: even "" is a fixed literal.
       const copy = component
         ? !isTechnical(name) &&
+          !(
+            identifierProps.has(name) &&
+            value &&
+            ts.isStringLiteral(value) &&
+            identifier.test(value.text)
+          ) &&
           value &&
           (ts.isStringLiteral(value)
             ? hasLetters(value.text)

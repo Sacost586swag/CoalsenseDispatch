@@ -58,6 +58,19 @@ def test_seed_catalogs_match_and_pass(tree: Path) -> None:
         "diagnostican",
         "diagnostica",
         "mejorar tu depresión",
+        "curativo",
+        "curativa",
+        "curativos",
+        "curativas",
+        "curado",
+        "curada",
+        "curados",
+        "curadas",
+        "curarte",
+        "diagnosticado",
+        "diagnosticada",
+        "diagnosticados",
+        "diagnosticadas",
     ],
 )
 def test_forbidden_words(tree: Path, path: str, word: str) -> None:
@@ -109,6 +122,12 @@ def test_no_false_positive_inside_words(tree: Path, word: str) -> None:
         '<input aria-valuetext="Enviar" />',
         '<option label="Enviar" />',
         '<Button aria-label="Enviar" />',
+        '<Stat value="Alto" />',
+        '<Avatar name="Juan Pérez" />',
+        '<Avatar name="Ana" />',
+        '<Stat value="dos palabras" />',
+        "<Stat value={`Alto`} />",
+        '<input aria-placeholder="Enviar" />',
     ],
 )
 def test_visible_strings(tree: Path, base: str, jsx: str) -> None:
@@ -134,7 +153,8 @@ export const view = <div className="layout" data-testid="view">
   {count > 1 && <Many />}
   {a - "x"}
   <Button id="send" className="primary" variant="solid" size="sm" type="button" data-x="Enviar"
-    aria-labelledby="titulo" role="button" value="enviar" testId="send" label={es["stop.label"]} />
+    aria-labelledby="titulo" role="button" value="enviar"
+    name="send_2" testId="send" label={es["stop.label"]} />
 </div>;
 """,
     )
@@ -165,6 +185,36 @@ def test_word_boundaries_and_comments(tree: Path) -> None:
         )
         write(tree, path, source)
     assert audit(tree) == []
+
+
+def test_unreadable_directory_fails_closed(tree: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    (tree / "apps/web/src").mkdir(parents=True)
+    real_walk = copy.os.walk
+
+    def walk(top: Path, onerror=None, **kw):  # type: ignore[no-untyped-def]
+        if Path(top).name == "src" and "web" in Path(top).parts:
+            onerror(PermissionError(13, "denied", str(Path(top) / "sub")))
+            return iter(())
+        return real_walk(top, onerror=onerror, **kw)
+
+    monkeypatch.setattr(copy.os, "walk", walk)
+    assert any("apps/web/src/sub:" in f and "ENTRADA" in f for f in audit(tree))
+
+
+def test_missing_source_roots_are_fine(tree: Path) -> None:
+    assert not (tree / "apps/web/src").exists()
+    assert audit(tree) == []
+
+
+def test_symlinks_are_reported_on_stderr(tree: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    (tree / "apps/web/src").mkdir(parents=True)
+    (tree / "outside.tsx").write_text("const v = <b>Enviar</b>;", encoding="utf-8")
+    try:
+        (tree / "apps/web/src/link.tsx").symlink_to(tree / "outside.tsx")
+    except OSError:
+        pytest.skip("symlinks not permitted here")
+    assert audit(tree) == []
+    assert "apps/web/src/link.tsx" in capsys.readouterr().err
 
 
 def test_unreadable_tsx_fails_closed(tree: Path) -> None:
