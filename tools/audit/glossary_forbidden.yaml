@@ -60,7 +60,7 @@
   {"rule": "b", "reason": "solo aparece en frases prohibitivas («sin rachas»); el uso positivo lo cubre la revisión de copy de la UI", "terms": ["racha"]}
 ],
 "exceptions":[
-  {"path": ".kiro/specs/01-capa-de-entrada/tasks.md", "term": "usuario", "reason": "cuenta de usuario de Windows en una ACL, no la persona"},
-  {"path": ".kiro/specs/07-privacidad-y-datos/tasks.md", "term": "admin", "reason": "nombre técnico de un rol de base de datos"}
+  {"path": ".kiro/specs/01-capa-de-entrada/tasks.md", "term": "usuario", "text": "ACL al usuario actual", "reason": "cuenta de usuario de Windows en una ACL, no la persona"},
+  {"path": ".kiro/specs/07-privacidad-y-datos/tasks.md", "term": "admin", "text": "un acceso con rol admin", "reason": "nombre técnico de un rol de base de datos"}
 ]
 }

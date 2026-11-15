@@ -17,10 +17,15 @@ from coalsense_audit.traceability import (
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
-def policy(*terms: str, exceptions: list[dict[str, str]] | None = None) -> str:
+def policy(
+    *terms: str,
+    exclude: tuple[str, ...] = ("tarea",),
+    exceptions: list[dict[str, str]] | None = None,
+) -> str:
     return json.dumps(
         {
             "forbidden": [{"term": t, "canonical": "c", "reason": "r"} for t in terms],
+            "excluded": [{"rule": "b", "reason": "r", "terms": list(exclude)}],
             "exceptions": exceptions or [],
         }
     )
@@ -122,7 +127,11 @@ def test_glossary_extraction_and_curated_subset(tree: Path) -> None:
     )
     put(tree, ".kiro/specs/GLOSARIO.md", source)
     assert glossary_terms(source) == ["cancelar", "cliente", "modo autonomo"]
-    put(tree, "tools/audit/glossary_forbidden.yaml", policy("modo autónomo"))
+    put(
+        tree,
+        "tools/audit/glossary_forbidden.yaml",
+        policy("modo autónomo", exclude=("cancelar", "cliente")),
+    )
     put(tree, ".kiro/steering/policy.md", "CANCELAR, cliente y MODO AUTONOMO.\n")
     assert glossary(tree) == [".kiro/steering/policy.md:1:modo autonomo"]
 
@@ -134,53 +143,91 @@ def test_plural_and_whole_word(tree: Path) -> None:
 
 @pytest.mark.parametrize(
     "bad",
-    ['{"forbidden": []}', "[]", policy("inventado"), "{", '{"forbidden":[{"term":"usuario"}]}'],
+    [
+        '{"forbidden": []}',
+        "[]",
+        policy("inventado"),
+        policy("usuario", "modo autónomo", exclude=("tarea", "inventado")),
+        policy("usuario", "modo autónomo", exclude=("tarea", "usuario")),
+        policy("usuario"),  # "modo autónomo" is in the column but neither kept nor excluded
+        "{",
+        '{"forbidden":[{"term":"usuario"}],"excluded":[]}',
+    ],
 )
-def test_policy_must_be_honest(tree: Path, bad: str) -> None:
+def test_policy_must_match_glosario(tree: Path, bad: str) -> None:
     put(tree, "tools/audit/glossary_forbidden.yaml", bad)
     assert any("ENTRADA:" in f for f in audit(tree))
 
 
-def test_real_policy_is_subset_of_glosario() -> None:
-    listed, exceptions = forbidden_terms(REPO_ROOT)
+def test_policy_drift_when_glosario_gains_a_term(tree: Path) -> None:
+    put(
+        tree,
+        ".kiro/specs/GLOSARIO.md",
+        "| Término | No usar |\n| --- | --- |\n| p | usuario, modo autónomo, tarea, nuevo |\n",
+    )
+    assert any("sin clasificar" in f and "nuevo" in f for f in audit(tree))
+
+
+def test_real_policy_matches_glosario() -> None:
+    kept, exceptions = forbidden_terms(REPO_ROOT)  # raises on any drift in either direction
     data = json.loads((REPO_ROOT / "tools/audit/glossary_forbidden.yaml").read_text("utf-8"))
     column = set(glossary_terms((REPO_ROOT / ".kiro/specs/GLOSARIO.md").read_text("utf-8")))
     excluded = {normalize(t) for group in data["excluded"] for t in group["terms"]}
-    assert listed and not excluded - column
-    assert not excluded & set(listed)
-    assert exceptions and {t for _, t in exceptions} <= set(listed)
-    assert all((REPO_ROOT / path).is_file() for path, _ in exceptions)
+    assert kept and kept == sorted(set(kept)) and not set(kept) & excluded
+    assert set(kept) | excluded == column
+    assert exceptions and {t for _, t, _ in exceptions} <= set(kept)
+    assert all((REPO_ROOT / path).is_file() for path, _, _ in exceptions)
     assert glossary(REPO_ROOT) == []
 
 
-def test_exception_waives_exact_path_and_term_only(tree: Path) -> None:
-    waived = {"path": ".kiro/specs/a.md", "term": "Usuario", "reason": "cuenta de Windows"}
+def waiver(text: str, path: str = ".kiro/specs/a.md") -> dict[str, str]:
+    return {"path": path, "term": "Usuario", "text": text, "reason": "cuenta de Windows"}
+
+
+def test_exception_waives_only_the_excepted_line_of_one_path(tree: Path) -> None:
     put(
         tree,
         "tools/audit/glossary_forbidden.yaml",
-        policy("usuario", "modo autónomo", exceptions=[waived]),
+        policy("usuario", "modo autónomo", exceptions=[waiver("ACL al usuario actual")]),
     )
-    put(tree, ".kiro/specs/a.md", "usuario y modo autónomo\n")
-    put(tree, ".kiro/specs/sub/a.md", "usuario\n")
+    put(tree, ".kiro/specs/a.md", "ACL al usuario actual y modo autónomo\nel usuario nuevo\n")
+    put(tree, ".kiro/specs/sub/a.md", "ACL al usuario actual\n")
     put(tree, ".kiro/specs/b.md", "usuario\n")
     assert glossary(tree) == [
         ".kiro/specs/a.md:1:modo autonomo",
+        ".kiro/specs/a.md:2:usuario",
         ".kiro/specs/b.md:1:usuario",
         ".kiro/specs/sub/a.md:1:usuario",
     ]
 
 
+def test_stale_exception_is_a_finding(tree: Path) -> None:
+    put(
+        tree,
+        "tools/audit/glossary_forbidden.yaml",
+        policy("usuario", "modo autónomo", exceptions=[waiver("ACL al usuario actual")]),
+    )
+    put(tree, ".kiro/specs/a.md", "ya sin el término\n")
+    assert any("excepción obsoleta" in f for f in glossary(tree))
+    put(tree, ".kiro/specs/a.md", "ACL al usuario actual\n")
+    assert glossary(tree) == []
+    (tree / ".kiro/specs/a.md").unlink()  # path removed: stale as well
+    assert any("excepción obsoleta" in f for f in glossary(tree))
+
+
 @pytest.mark.parametrize(
     "bad",
     [
-        {"path": "x.md", "term": "modo autónomo", "reason": "r"},  # not in the kept list
-        {"path": "x.md", "term": "usuario", "reason": ""},
-        {"path": "", "term": "usuario", "reason": "r"},
+        {"path": "x.md", "term": "tarea", "text": "t", "reason": "r"},  # excluded, not kept
+        {"path": "x.md", "term": "usuario", "text": "t", "reason": ""},
+        {"path": "x.md", "term": "usuario", "text": "", "reason": "r"},
+        {"path": "", "term": "usuario", "text": "t", "reason": "r"},
+        {"path": "x.md", "term": "usuario", "reason": "r"},
         "x.md",
     ],
 )
 def test_exceptions_must_be_reviewed(tree: Path, bad: object) -> None:
-    raw = json.loads(policy("usuario"))
+    raw = json.loads(policy("usuario", "modo autónomo"))
     raw["exceptions"] = [bad]
     put(tree, "tools/audit/glossary_forbidden.yaml", json.dumps(raw))
     assert any("ENTRADA:" in f for f in audit(tree))
@@ -198,14 +245,37 @@ def test_glossary_scope_quotes_fences_and_lines(tree: Path) -> None:
     put(tree, ".kiro/steering/policy.md", "usuario\n")
     put(tree, ".kiro/steering/GLOSARIO.md", "usuario\n")
     put(tree, "apps/example.md", "usuario\n")
+    # quote and inline-code spans end at the line: an unbalanced quote hides nothing
     assert glossary(tree) == [
+        ".kiro/specs/nested/example.md:10:usuario",
         ".kiro/specs/nested/example.md:11:usuario",
         ".kiro/specs/nested/example.md:12:modo autonomo",
         ".kiro/specs/nested/example.md:12:usuario",
+        ".kiro/specs/nested/example.md:9:usuario",
         ".kiro/steering/policy.md:1:usuario",
     ]
     assert main(["--root", str(tree), "--write"]) == 1
     assert (tree / ".kiro/specs/TRAZABILIDAD.md").exists()
+
+
+@pytest.mark.parametrize("stray", ['una pantalla de 5" y', "un `acento", "«abre sin cerrar"])
+def test_stray_quote_does_not_hide_later_lines(tree: Path, stray: str) -> None:
+    put(tree, ".kiro/steering/policy.md", f"{stray}\n\notro párrafo\n\n- usuario\n")
+    assert glossary(tree) == [".kiro/steering/policy.md:5:usuario"]
+
+
+@pytest.mark.parametrize("token", ["REQ-01-0100", "REQ-01-02", "REQ-1-001", "REQ-00-0010x"])
+def test_malformed_requirement_ids_are_reported(tree: Path, token: str) -> None:
+    task = tree / ".kiro/specs/00-demo/tasks.md"
+    task.write_text(task.read_text().replace("REQ-00-001", f"REQ-00-001, {token}"))
+    findings = audit(tree, write=True)
+    assert any("id mal formado" in f and token in f for f in findings)
+
+
+def test_valid_requirement_list_formats_pass(tree: Path) -> None:
+    task = tree / ".kiro/specs/00-demo/tasks.md"
+    task.write_text(task.read_text().replace("REQ-00-001", "REQ-00-001, REQ-00-001."))
+    assert audit(tree, write=True) == []
 
 
 def test_missing_inputs_fail_closed(tmp_path: Path, tree: Path) -> None:

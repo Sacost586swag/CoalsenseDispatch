@@ -3,8 +3,9 @@
 The glossary check enforces tools/audit/glossary_forbidden.yaml, a reviewed subset
 of GLOSARIO.md's "No usar" column (each entry: term, canonical, reason; generic or
 contextual terms are listed under "excluded" with the rule; "exceptions" waive one
-kept term in one exact file path, with a reason). Every listed term must
-still appear in that column, so the list cannot drift. glossary_terms() extracts
+kept term on the lines of one exact file path that contain the exception's text, and
+an exception that matches nothing is itself a finding). Kept plus excluded terms must
+equal that column, so the list cannot drift in either direction. glossary_terms() extracts
 the column: parenthesized explanations are removed before comma splitting and a
 quoted term at the start of an item supplies the term. Match whole words (an
 optional plural s/es is accepted) ignoring case/accents. Scan Markdown in
@@ -105,7 +106,13 @@ def generate(root: Path) -> tuple[str, list[str]]:
                 if record.id in seen:
                     report(path, record, "duplicado")
                 seen.add(record.id)
-        links = {t.id: re.findall(r"REQ-\d{2}-\d{3}", field(t.body, "Requisitos")) for t in tasks}
+        tokens = {
+            t.id: [x.rstrip(".)") for x in re.split(r"[,;\s]+", field(t.body, "Requisitos")) if x]
+            for t in tasks
+        }
+        links = {
+            k: [x for x in v if re.fullmatch(r"REQ-\d{2}-\d{3}", x)] for k, v in tokens.items()
+        }
         files = {
             t.id: list(
                 dict.fromkeys(
@@ -117,6 +124,9 @@ def generate(root: Path) -> tuple[str, list[str]]:
             for t in tasks
         }
         for task in tasks:
+            for token in tokens[task.id]:
+                if token not in links[task.id]:
+                    report(task_path, task, f"id mal formado en Requisitos: {token}")
             if not links[task.id] or set(links[task.id]) - {r.id for r in reqs}:
                 report(task_path, task, "referencia requisitos ausentes o desconocidos")
             if not future and (not files[task.id] or not proof_types(field(task.body, "Prueba"))):
@@ -215,42 +225,50 @@ def mask(source: str) -> str:
         else:
             lines.append(line)
     return re.sub(
-        r'«[^»]*»|"(?:\\.|[^"\\])*"|(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)',
+        r'«[^»\n]*»|"(?:\\.|[^"\\\n])*"|(`+)(?!`)[^\n]*?(?<!`)\1(?!`)',
         lambda m: blank(m[0]),
         "".join(lines),
     )
 
 
-def forbidden_terms(root: Path) -> tuple[list[str], set[tuple[str, str]]]:
+def _fields(item: object, keys: tuple[str, ...]) -> list[str]:
+    return [str(item.get(k) or "").strip() if isinstance(item, dict) else "" for k in keys]
+
+
+def forbidden_terms(root: Path) -> tuple[list[str], list[tuple[str, str, str]]]:
+    """Kept terms plus reviewed exceptions (path, term, text); raises on any drift."""
+    where = POLICY.as_posix()
     data = json.loads((root / POLICY).read_text(encoding="utf-8"))
-    listed = data["forbidden"] if isinstance(data, dict) else None
-    if not isinstance(listed, list) or not listed:
-        raise ValueError(f"{POLICY.as_posix()}: 'forbidden' debe ser una lista no vacía")
+    listed = data.get("forbidden") if isinstance(data, dict) else None
+    groups = data.get("excluded") if isinstance(data, dict) else None
+    if not isinstance(listed, list) or not listed or not isinstance(groups, list):
+        raise ValueError(f"{where}: faltan 'forbidden' (no vacía) o 'excluded'")
     column = set(glossary_terms((root / SPECS / "GLOSARIO.md").read_text(encoding="utf-8")))
-    terms = []
+    kept: set[str] = set()
     for entry in listed:
-        fields = [
-            str(entry.get(k) or "").strip() if isinstance(entry, dict) else ""
-            for k in ("term", "canonical", "reason")
-        ]
+        fields = _fields(entry, ("term", "canonical", "reason"))
         if not all(fields):
-            raise ValueError(f"{POLICY.as_posix()}: entrada sin term, canonical o reason")
-        term = normalize(fields[0])
-        if term not in column:
-            raise ValueError(
-                f"{POLICY.as_posix()}: «{fields[0]}» no está en «No usar» de GLOSARIO.md"
-            )
-        terms.append(term)
-    exceptions: set[tuple[str, str]] = set()
+            raise ValueError(f"{where}: entrada sin term, canonical o reason")
+        kept.add(normalize(fields[0]))
+    excluded: set[str] = set()
+    for group in groups:
+        names = group.get("terms") if isinstance(group, dict) else None
+        if not all(_fields(group, ("rule", "reason"))) or not isinstance(names, list):
+            raise ValueError(f"{where}: grupo excluido sin rule, reason o terms")
+        excluded |= {normalize(str(n).strip()) for n in names}
+    if unknown := (kept | excluded) - column:
+        raise ValueError(f"{where}: no están en «No usar» de GLOSARIO.md: {sorted(unknown)}")
+    if both := kept & excluded:
+        raise ValueError(f"{where}: términos conservados y excluidos a la vez: {sorted(both)}")
+    if missing := column - kept - excluded:
+        raise ValueError(f"{where}: términos de GLOSARIO.md sin clasificar: {sorted(missing)}")
+    exceptions = []
     for item in data.get("exceptions", []):
-        fields = [
-            str(item.get(k) or "").strip() if isinstance(item, dict) else ""
-            for k in ("path", "term", "reason")
-        ]
-        if not all(fields) or normalize(fields[1]) not in terms:
-            raise ValueError(f"{POLICY.as_posix()}: excepción sin path, reason o término listado")
-        exceptions.add((fields[0], normalize(fields[1])))
-    return sorted(set(terms)), exceptions
+        path, term, text, reason = _fields(item, ("path", "term", "text", "reason"))
+        if not all((path, term, text, reason)) or normalize(term) not in kept:
+            raise ValueError(f"{where}: excepción sin path, text, reason o término conservado")
+        exceptions.append((path, normalize(term), text))
+    return sorted(kept), exceptions
 
 
 def glossary(root: Path) -> list[str]:
@@ -260,18 +278,32 @@ def glossary(root: Path) -> list[str]:
         for t in terms
     ]
     findings = []
+    used: set[tuple[str, str, str]] = set()
     for base in (SPECS, Path(".kiro/steering")):
         for path in sorted((root / base).rglob("*.md")):
             if path.stem.casefold() == "glosario":
                 continue
-            source = normalize(mask(path.read_text(encoding="utf-8")))
+            raw = path.read_text(encoding="utf-8")
+            source = normalize(mask(raw))
             rel = path.relative_to(root).as_posix()
+            lines = raw.split("\n")
             for term, pattern in patterns:
-                if (rel, term) in exceptions:  # reviewed exception: exact path + term only
-                    continue
                 for match in pattern.finditer(source):
                     line = source.count("\n", 0, match.start()) + 1
-                    findings.append(f"{rel}:{line}:{term}")
+                    # reviewed exception: exact path + term + text of the excepted line
+                    waiver = next(
+                        (e for e in exceptions if e[:2] == (rel, term) and e[2] in lines[line - 1]),
+                        None,
+                    )
+                    if waiver:
+                        used.add(waiver)
+                    else:
+                        findings.append(f"{rel}:{line}:{term}")
+    findings += [
+        f"{POLICY.as_posix()}:1:excepción obsoleta: {p} {t} «{x}»"
+        for p, t, x in exceptions
+        if (p, t, x) not in used
+    ]
     return sorted(set(findings))
 
 
