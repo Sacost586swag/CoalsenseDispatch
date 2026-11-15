@@ -6,3 +6,14 @@ export { defaultTheme, defaultTheme as default } from "./themes/default.ts";
 export { highContrast } from "./themes/high-contrast.ts";
 export { reducedMotion } from "./themes/reduced-motion.ts";
 export { es } from "./i18n/es.ts";
+export {
+  NavTargetRegistry,
+  navTargetRegistry,
+  type NavTarget,
+  type NavTargetMeasure,
+} from "./nav/NavTargetRegistry.ts";
+export {
+  NavTargetProvider,
+  useNavTarget,
+  type NavTargetProviderProps,
+} from "./nav/useNavTarget.ts";

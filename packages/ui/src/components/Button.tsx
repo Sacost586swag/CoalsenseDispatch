@@ -1,5 +1,6 @@
-import { useId, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
+import { useId, type ButtonHTMLAttributes, type MouseEvent, type ReactNode, type Ref } from "react";
 import { es } from "../i18n/es.ts";
+import { useNavTarget } from "../nav/useNavTarget.ts";
 
 export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -20,6 +21,8 @@ export interface ButtonProps extends Omit<
   /** Catalog key of the visible text that says why it is disabled and what still works. */
   disabledReason?: keyof typeof es;
   children: ReactNode;
+  /** Merged with the navigation-target registration (React 19 passes `ref` as a prop). */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** The accessible name is the visible text: aria-label/title are not accepted (WCAG 2.5.3). */
@@ -33,8 +36,10 @@ export function Button({
   onClick,
   "aria-describedby": describedBy,
   type = "button",
+  ref,
   ...rest
 }: ButtonProps) {
+  const navRef = useNavTarget<HTMLButtonElement>({ id: rest.id, role: "button", ref });
   const reasonId = useId();
   const inactive = Boolean(loading) || disabled;
   const reason = disabled && disabledReason ? es[disabledReason] : undefined;
@@ -49,6 +54,7 @@ export function Button({
     <>
       <button
         {...rest}
+        ref={navRef}
         type={type}
         className={[
           "cs-button",

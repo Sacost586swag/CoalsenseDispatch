@@ -1,5 +1,6 @@
-import { useId, type AnchorHTMLAttributes, type MouseEvent, type ReactNode } from "react";
+import { useId, type AnchorHTMLAttributes, type MouseEvent, type ReactNode, type Ref } from "react";
 import { es } from "../i18n/es.ts";
+import { useNavTarget } from "../nav/useNavTarget.ts";
 
 export interface LinkProps extends Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -11,6 +12,8 @@ export interface LinkProps extends Omit<
   /** Catalog key of the visible text that says why it is disabled and what still works. */
   disabledReason?: keyof typeof es;
   children: ReactNode;
+  /** Merged with the navigation-target registration (React 19 passes `ref` as a prop). */
+  ref?: Ref<HTMLAnchorElement>;
 }
 
 export function Link({
@@ -21,9 +24,11 @@ export function Link({
   children,
   onClick,
   "aria-describedby": describedBy,
+  ref,
   ...rest
 }: LinkProps) {
   const reasonId = useId();
+  const navRef = useNavTarget<HTMLAnchorElement>({ id: rest.id, role: "link", ref });
   const classes = ["cs-link", className].filter(Boolean).join(" ");
   if (disabled) {
     const reason = disabledReason ? es[disabledReason] : undefined;
@@ -31,6 +36,7 @@ export function Link({
       <>
         <a
           {...rest}
+          ref={navRef}
           role="link"
           tabIndex={0}
           aria-disabled="true"
@@ -53,6 +59,7 @@ export function Link({
   return (
     <a
       {...rest}
+      ref={navRef}
       href={href}
       aria-describedby={describedBy}
       className={classes}
