@@ -10,9 +10,10 @@
   ],
   "tasks": {
     "audit": {
-      "dependsOn": ["audit:licenses", "audit:imports", "audit:secrets", "audit:copy"],
+      "dependsOn": ["audit:licenses", "audit:imports", "audit:secrets", "audit:copy", "audit:traceability"],
       "cache": false
     },
+    "audit:traceability": { "cache": false },
     "audit:copy": { "cache": false },
     "audit:licenses": { "cache": false },
     "audit:imports": { "cache": false },

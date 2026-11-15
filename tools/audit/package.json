@@ -9,6 +9,7 @@
     "audit:licenses": "uv run --locked python -m coalsense_audit.licenses",
     "audit:imports": "uv run --locked python -m coalsense_audit.imports",
     "audit:secrets": "uv run --locked python -m coalsense_audit.secrets",
+    "audit:traceability": "uv run --locked python -m coalsense_audit.traceability --check",
     "audit:copy": "uv run --locked python -m coalsense_audit.copy"
   }
 }
