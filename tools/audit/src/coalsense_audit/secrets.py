@@ -48,7 +48,9 @@ WORDS = re.compile(r"(?:[a-z]+(?:[_-][a-z]+)*|[A-Z]+(?:_[A-Z]+)*)")
 
 
 def bare_secret(value: str) -> bool:
-    if value[0] in "$%" or any(c in value for c in "./(") or "::" in value:
+    if value[0] in "$%~" or value.startswith(("/", "./", "../")) or "://" in value:
+        return False
+    if "." in value or "::" in value:
         return False
     if WORDS.fullmatch(value) or not (any(c.isdigit() for c in value) or value != value.lower()):
         return False

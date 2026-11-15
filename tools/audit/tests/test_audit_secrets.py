@@ -310,3 +310,20 @@ def test_bare_letters_only_key(tree: Path, name: str, separator: str) -> None:
 def test_bare_references_are_not_secrets(tree: Path, line: str) -> None:
     (tree / "settings.example").write_text(line, encoding="utf-8")
     assert secrets.audit(tree) == []
+
+
+@pytest.mark.parametrize("separator", ["=", ": "])
+def test_bare_base64_secret_with_slash(tree: Path, separator: str) -> None:
+    key = "wJalrXUtnFEMI" + "/K7MD" + "+bPxRfiCY" + "Ab9Cd8Ef7Gh6I"
+    assert len(key) == 40
+    (tree / "settings.example").write_text("aws_secret_access_key" + separator + key, "utf-8")
+    assert secrets.audit(tree) == ["settings.example:1: ASSIGNMENT: Posible secreto detectado."]
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["/usr/local/bin", "./config/app.yaml", "../x", "~/.secrets/Token1", "/opt/App/Key2"],
+)
+def test_bare_paths_are_not_secrets(tree: Path, value: str) -> None:
+    (tree / "settings.example").write_text("token_path=" + value, encoding="utf-8")
+    assert secrets.audit(tree) == []
