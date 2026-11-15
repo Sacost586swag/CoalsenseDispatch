@@ -20,3 +20,5 @@ Versiones fijadas exactas (sin `^` ni `~`) en `package.json` y `pyproject.toml`.
 | uv_build | 0.12.13 | MIT OR Apache-2.0 | PyPI: https://pypi.org/project/uv-build/ | Backend de construcción de los paquetes Python del workspace de uv. |
 | pydantic | 2.12.3 | MIT | PyPI: https://pypi.org/project/pydantic/2.12.3/ | Esquemas de configuración y protección de secretos con SecretStr. |
 | zod | 4.1.12 | MIT | npm: https://www.npmjs.com/package/zod/v/4.1.12 | Esquemas de configuración TypeScript. |
+| fastapi | 0.162.2 | MIT | PyPI: https://pypi.org/project/fastapi/0.162.2/ | Servicio HTTP del orquestador (rutas de autenticación, T-00-010). Publicada el 2026-11-07, más de 7 días antes de fijarla. |
+| httpx | 0.28.1 | BSD-3-Clause | PyPI: https://pypi.org/project/httpx/0.28.1/ | Solo desarrollo: lo exige `TestClient` de FastAPI para probar las rutas en `tests/`. La auditoría de importaciones lo exime fuera de `gateway/` solo en pruebas. Publicada el 2024-12-06. |

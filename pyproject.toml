@@ -13,6 +13,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx==0.28.1",
     "mypy==2.4.1",
     "pytest==9.2.0",
     "pyyaml==6.0.3",
@@ -44,3 +45,8 @@ strict = true
 [tool.pytest.ini_options]
 addopts = "--strict-markers --import-mode=importlib"
 markers = ["integration: necesita red y herramientas externas (pnpm, uv, git)"]
+
+# coalsense_common aún no publica py.typed; su fix definitivo es agregarlo en packages/common-py.
+[[tool.mypy.overrides]]
+module = "coalsense_common.*"
+follow_untyped_imports = true
