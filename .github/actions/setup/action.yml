@@ -1,0 +1,34 @@
+name: Prepare environment
+description: Node 24, Python 3.12, uv 0.12.13 and pnpm 11.21.0 with lockfile-keyed caches, then a frozen install.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: "24"
+    - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      with:
+        python-version: "3.12"
+    - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      with:
+        version: "0.12.13"
+        enable-cache: true
+        cache-dependency-glob: uv.lock
+    - name: Install pinned pnpm
+      shell: bash
+      run: npm install --global pnpm@11.21.0
+    - name: Locate pnpm store
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-
+    - name: Install frozen dependencies
+      shell: bash
+      run: |
+        pnpm install --frozen-lockfile
+        uv sync --locked
