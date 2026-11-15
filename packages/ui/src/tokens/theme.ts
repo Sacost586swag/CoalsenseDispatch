@@ -53,27 +53,29 @@ export function defineTheme<const T extends Theme>(
     };
   },
 ): ValidatedTheme<T> {
+  // Clone first and validate the clone: a hostile getter must not pass the checks and then
+  // hand different values to the clone (it is read exactly once, by structuredClone).
+  const clone = structuredClone(theme) as Theme;
   for (const key of ["min", "head"] as const) {
-    if (!Number.isFinite(theme.target[key]) || theme.target[key] < 44) {
+    if (!Number.isFinite(clone.target[key]) || clone.target[key] < 44) {
       throw new RangeError(`target.${key} must be at least 44 CSS px`);
     }
   }
-  if (!Number.isFinite(theme.target.gap) || theme.target.gap < 16) {
+  if (!Number.isFinite(clone.target.gap) || clone.target.gap < 16) {
     throw new RangeError("target.gap must be at least 16 CSS px");
   }
-  if (!Number.isFinite(theme.textScale) || theme.textScale < 1 || theme.textScale > 2) {
+  if (!Number.isFinite(clone.textScale) || clone.textScale < 1 || clone.textScale > 2) {
     throw new RangeError("textScale must be between 1 and 2");
   }
   if (
-    !Number.isFinite(theme.motion.duration) ||
-    theme.motion.duration < 0 ||
-    theme.motion.duration > 150 ||
-    theme.motion.property !== "opacity"
+    !Number.isFinite(clone.motion.duration) ||
+    clone.motion.duration < 0 ||
+    clone.motion.duration > 150 ||
+    clone.motion.property !== "opacity"
   ) {
     throw new RangeError("motion must be opacity only, from 0 to 150 ms");
   }
-  // Clone so callers keep no mutable reference to the validated theme.
-  const result = deepFreeze(structuredClone(theme)) as unknown as ValidatedTheme<T>;
+  const result = deepFreeze(clone) as unknown as ValidatedTheme<T>;
   validated.add(result);
   return result;
 }

@@ -199,3 +199,24 @@ test("toCssVariables accepts only themes validated by defineTheme", () => {
   const forged = { ...defaultTheme, target: { min: 10, head: 64, gap: 16 } };
   assert.throws(() => toCssVariables(forged), /validated|defineTheme/i);
 });
+
+test("defineTheme validates its own clone, so a hostile getter cannot slip in a low target", () => {
+  // The getter is honest for the first `honestReads` reads and returns 10 afterwards. Whatever
+  // the read pattern, a returned theme must hold the floor; otherwise defineTheme must throw.
+  for (let honestReads = 0; honestReads <= 8; honestReads++) {
+    let reads = 0;
+    const target = { head: 64, gap: 16 } as { min: number; head: number; gap: number };
+    Object.defineProperty(target, "min", {
+      enumerable: true,
+      get: () => (reads++ < honestReads ? 44 : 10),
+    });
+    let theme: { target: { min: number } } | undefined;
+    try {
+      theme = defineTheme({ ...defaultTheme, target } as never);
+    } catch (error) {
+      assert.ok(error instanceof RangeError, `honestReads=${honestReads}`);
+    }
+    if (theme)
+      assert.ok(theme.target.min >= 44, `honestReads=${honestReads}: min=${theme.target.min}`);
+  }
+});
