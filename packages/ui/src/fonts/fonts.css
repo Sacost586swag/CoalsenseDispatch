@@ -1,0 +1,17 @@
+/* Atkinson Hyperlegible (Braille Institute, SIL OFL 1.1), subconjunto latin 400 y 700.
+   Autoalojada: sin CDN ni peticiones a terceros. Licencia en OFL.txt. */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+}

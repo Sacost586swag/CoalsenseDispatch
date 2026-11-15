@@ -1,0 +1,336 @@
+/* Componentes base accesibles. Solo variables de los tokens (toCssVariables): ningún color ni
+   tamaño en duro. Sin :hover (nada queda oculto ni depende del puntero), sin animación. */
+
+:root {
+  /* Capas documentadas para la barra de Alto y Deshacer (T-00-015): la barra, marcada con
+     data-cs-stop-bar, queda por encima de los diálogos y el fondo del diálogo no la cubre. */
+  --layer-dialog: 100;
+  --layer-stop-bar: 200;
+  /* Hueco reservado abajo para la barra; T-00-015 puede redefinirlo según su altura real. */
+  --stop-bar-reserved: calc(var(--target-min) + 2 * var(--space-md));
+}
+
+[data-cs-stop-bar] {
+  position: relative;
+  z-index: var(--layer-stop-bar);
+}
+
+/* Foco visible de --ring-width: nunca se quita. */
+.cs-button:focus-visible,
+.cs-link:focus-visible,
+.cs-input:focus-visible,
+.cs-dialog:focus-visible {
+  outline: var(--ring-width) solid var(--color-ring);
+  outline-offset: var(--space-xs);
+}
+
+/* Objetivos interactivos: mínimo --target-min en ambas dimensiones; --target-head en modo cabeza. */
+.cs-button,
+.cs-link,
+.cs-input {
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  box-sizing: border-box;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+}
+
+:root[data-input-mode="head"] .cs-button,
+:root[data-input-mode="head"] .cs-link,
+:root[data-input-mode="head"] .cs-input {
+  min-width: var(--target-head);
+  min-height: var(--target-head);
+}
+
+/* Botón */
+.cs-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-radius: var(--space-sm);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.cs-button--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.cs-button--stop {
+  background: var(--color-stop);
+  border-color: var(--color-stop);
+  color: var(--color-on-stop);
+}
+
+.cs-button:active {
+  border-style: double;
+  border-width: calc(var(--border-width) * 4);
+}
+
+.cs-button:disabled {
+  border-style: dashed;
+  color: var(--color-secondary-text);
+  cursor: not-allowed;
+}
+
+.cs-button--loading {
+  cursor: progress;
+}
+
+.cs-button__status {
+  font-weight: var(--font-regular);
+}
+
+/* Enlace: siempre subrayado, nunca solo por color. */
+.cs-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  text-decoration: underline;
+  text-underline-offset: var(--space-xs);
+}
+
+.cs-link:active {
+  text-decoration-thickness: calc(var(--border-width) * 4);
+}
+
+.cs-link[aria-disabled="true"] {
+  color: var(--color-secondary-text);
+  text-decoration-style: dashed;
+  cursor: not-allowed;
+}
+
+/* Campo de texto */
+.cs-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+  color: var(--color-foreground);
+}
+
+.cs-field__label {
+  font-weight: var(--font-bold);
+}
+
+.cs-field__hint {
+  margin: 0;
+  color: var(--color-secondary-text);
+}
+
+.cs-input {
+  padding: var(--space-sm) var(--space-md);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-radius: var(--space-sm);
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+.cs-input:active {
+  border-color: var(--color-foreground);
+}
+
+.cs-input:disabled {
+  border-style: dashed;
+  color: var(--color-secondary-text);
+  cursor: not-allowed;
+}
+
+.cs-input--error {
+  border-color: var(--color-stop);
+  border-width: calc(var(--border-width) * 4);
+}
+
+.cs-field__error {
+  margin: 0;
+  color: var(--color-stop);
+}
+
+/* Diálogo: el fondo termina sobre el hueco de la barra de Alto y Deshacer. */
+.cs-dialog__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--stop-bar-reserved, 0);
+  z-index: var(--layer-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+}
+
+.cs-dialog {
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  padding: var(--space-md);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-radius: var(--space-sm);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+}
+
+.cs-dialog__title {
+  margin: 0 0 var(--space-sm);
+  font-size: calc(var(--font-base) * 1.25);
+}
+
+.cs-dialog__actions,
+.cs-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--target-gap);
+  margin-top: var(--space-md);
+}
+
+/* Lista numerada: números grandes y visibles para decirlos o apuntarlos. */
+.cs-numbered-list,
+.cs-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+  color: var(--color-foreground);
+}
+
+.cs-numbered-list__item,
+.cs-stepper__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.cs-numbered-list__number,
+.cs-stepper__number {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-radius: var(--space-sm);
+  font-size: calc(var(--font-base) * 1.25);
+  font-weight: var(--font-bold);
+}
+
+.cs-numbered-list__content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Paso a paso: el estado va en texto, no solo en color o forma. */
+.cs-stepper__step--done .cs-stepper__number {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.cs-stepper__step--current .cs-stepper__number {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.cs-stepper__step--current .cs-stepper__label {
+  font-weight: var(--font-bold);
+}
+
+.cs-stepper__state {
+  margin-left: auto;
+  color: var(--color-secondary-text);
+}
+
+/* Indicador de progreso */
+.cs-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+  color: var(--color-foreground);
+}
+
+.cs-progress__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.cs-progress__label {
+  font-weight: var(--font-bold);
+}
+
+.cs-progress__track {
+  overflow: hidden;
+  min-height: var(--space-md);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-radius: var(--space-sm);
+}
+
+.cs-progress__bar {
+  min-height: var(--space-md);
+  background: var(--color-primary);
+}
+
+.cs-progress__bar--indeterminate {
+  inline-size: 100%;
+  background: transparent;
+  border: calc(var(--border-width) * 2) dashed var(--color-primary);
+  box-sizing: border-box;
+}
+
+/* Aviso de estado: permanece hasta que la persona lo descarta; el tipo va en texto. */
+.cs-banner {
+  box-sizing: border-box;
+  padding: var(--space-md);
+  border: calc(var(--border-width) * 2) solid var(--color-border);
+  border-left-width: calc(var(--border-width) * 8);
+  border-radius: var(--space-sm);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+}
+
+.cs-banner--success {
+  border-color: var(--color-accent);
+}
+
+.cs-banner--warning,
+.cs-banner--error {
+  border-color: var(--color-stop);
+}
+
+.cs-banner--info {
+  border-color: var(--color-primary);
+}
+
+.cs-banner__kind {
+  font-weight: var(--font-bold);
+}
