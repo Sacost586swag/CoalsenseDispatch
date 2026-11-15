@@ -1,9 +1,21 @@
 {
   "licenses": [
-    "MIT", "BSD-2-Clause", "BSD-3-Clause", "0BSD", "Apache-2.0", "ISC",
-    "MPL-2.0", "Python-2.0", "PSF-2.0", "BlueOak-1.0.0"
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "Apache-2.0",
+    "ISC",
+    "MPL-2.0",
+    "Python-2.0",
+    "PSF-2.0",
+    "BlueOak-1.0.0",
+    "MIT-0",
+    "CC0-1.0"
   ],
   "comment_BlueOak-1.0.0": "OSI permissive, MIT-equivalent; approved by orchestrator 2026-11-14",
+  "comment_MIT-0": "permisiva; solo vía jsdom (dependencia de desarrollo); aprobada por el orquestador 2026-11-15",
+  "comment_CC0-1.0": "permisiva; solo vía jsdom (dependencia de desarrollo); aprobada por el orquestador 2026-11-15",
   "font_packages": [],
   "exceptions": [],
   "uninstalled_python": [
@@ -12,6 +24,110 @@
       "version": "0.4.6",
       "license": "BSD-3-Clause",
       "reason": "Solo win32 (marcador de pytest en uv.lock); texto de licencia 0.4.6 revisado: BSD-3-Clause"
+    }
+  ],
+  "uninstalled_npm": [
+    {
+      "name": "fsevents",
+      "version": "2.3.3",
+      "license": "MIT",
+      "reason": "Solo darwin (os en pnpm-lock.yaml); licencia MIT verificada con npm view fsevents@2.3.3 license 2026-11-15"
+    },
+    {
+      "name": "tslib",
+      "version": "2.9.1",
+      "license": "0BSD",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia 0BSD verificada con npm view tslib@2.9.1 license 2026-11-15"
+    },
+    {
+      "name": "@emnapi/core",
+      "version": "2.0.0-beta.2",
+      "license": "MIT",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/core@2.0.0-beta.2 license 2026-11-15"
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "2.0.0-beta.2",
+      "license": "MIT",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/runtime@2.0.0-beta.2 license 2026-11-15"
+    },
+    {
+      "name": "@emnapi/wasi-threads",
+      "version": "2.2.0",
+      "license": "MIT",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @emnapi/wasi-threads@2.2.0 license 2026-11-15"
+    },
+    {
+      "name": "@napi-rs/wasm-runtime",
+      "version": "1.2.6",
+      "license": "MIT",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @napi-rs/wasm-runtime@1.2.6 license 2026-11-15"
+    },
+    {
+      "name": "@tybys/wasm-util",
+      "version": "0.10.4",
+      "license": "MIT",
+      "reason": "Dependencia opcional (snapshot optional en pnpm-lock.yaml) no instalada en win32; licencia MIT verificada con npm view @tybys/wasm-util@0.10.4 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-android-arm64@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-darwin-arm64@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-darwin-x64@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-freebsd-x64@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm-gnueabihf@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-gnu@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-arm64-musl@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-gnu@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-linux-x64-musl@1.33.0 license 2026-11-15"
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "version": "1.33.0",
+      "license": "MPL-2.0",
+      "reason": "Paquete de plataforma opcional no instalado en win32; licencia MPL-2.0 verificada con npm view lightningcss-win32-arm64-msvc@1.33.0 license 2026-11-15"
     }
   ]
 }

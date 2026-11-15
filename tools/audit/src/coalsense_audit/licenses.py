@@ -63,8 +63,13 @@ def approved(expression: str, licenses: set[str]) -> bool:
         return False
 
 
-def pnpm_inventory(root: Path) -> tuple[list[tuple[str, str, int, bool]], list[str]]:
+def pnpm_inventory(
+    root: Path,
+) -> tuple[list[tuple[str, str, int, bool]], list[str], set[tuple[str, str]]]:
+    """Packages, importers and the optional platform packages (os/cpu/libc or optional snapshot)."""
     packages: list[tuple[str, str, int, bool]] = []
+    gated: set[tuple[str, str]] = set()
+    snapshot: tuple[str, str] | None = None
     importers = []
     section = ""
     version_seen = False
@@ -83,6 +88,14 @@ def pnpm_inventory(root: Path) -> tuple[list[tuple[str, str, int, bool]], list[s
         if section == "packages" and packages and re.match(r"^    (os|cpu):", line):
             name, version, at, _ = packages[-1]
             packages[-1] = (name, version, at, True)
+        if section == "packages" and packages and re.match(r"^    (os|cpu|libc):", line):
+            gated.add(packages[-1][:2])
+        if section == "snapshots":
+            head = re.match(r"^  '?(.+?)@([0-9][A-Za-z0-9.+-]*)(?:\(.*\))?'?:", line)
+            if head:
+                snapshot = (head[1], head[2])
+            elif snapshot and line == "    optional: true":
+                gated.add(snapshot)
         if section not in {"packages", "importers"} or not re.match(r"^  \S", line):
             continue
         match = re.fullmatch(r"  (.+):(?: \{\})?", line)
@@ -98,7 +111,7 @@ def pnpm_inventory(root: Path) -> tuple[list[tuple[str, str, int, bool]], list[s
             packages.append((name, version, number, False))
     if not version_seen or not {"packages", "importers"} <= sections:
         raise ValueError
-    return packages, importers
+    return packages, importers, gated
 
 
 def bsd_variant(dist: importlib.metadata.Distribution) -> str:
@@ -175,6 +188,7 @@ def audit(root: Path) -> list[str]:
         fonts = set(policy["font_packages"])
         exceptions = policy["exceptions"]
         uninstalled = policy.get("uninstalled_python", [])
+        uninstalled_npm = policy.get("uninstalled_npm", [])
         if not all(isinstance(x, str) for x in licenses | fonts):
             raise ValueError
         keys = {"name", "version", "license", "reason"}
@@ -183,7 +197,7 @@ def audit(root: Path) -> list[str]:
                 raise ValueError
             if not all(isinstance(v, str) and v.strip() for v in item.values()):
                 raise ValueError
-        for item in uninstalled:
+        for item in uninstalled + uninstalled_npm:
             if set(item) != keys:
                 raise ValueError
             if not all(isinstance(v, str) and v.strip() for v in item.values()):
@@ -236,7 +250,7 @@ def audit(root: Path) -> list[str]:
                     )
 
         source = "pnpm-lock.yaml"
-        packages, importers = pnpm_inventory(root)
+        packages, importers, gated_js = pnpm_inventory(root)
         direct_js: set[tuple[str, str]] = set()
         for importer in importers:
             manifest = json.loads((within(root, importer) / "package.json").read_text())
@@ -272,12 +286,36 @@ def audit(root: Path) -> list[str]:
                 return next(iter(found))
             return " AND ".join(f"({x})" for x in sorted(found))
 
+        # Optional platform package not installed here: reviewed uninstalled_npm entry supplies it.
+        npm_entries = {(e["name"], e["version"]): e["license"] for e in uninstalled_npm}
+        in_lock = {(n, v) for n, v, _, _ in packages}
+        for key in sorted(npm_entries):
+            if key not in in_lock or key in installed or key not in gated_js:
+                finding(
+                    "tools/audit/approved_licenses.yaml",
+                    1,
+                    "POLITICA",
+                    f"{key[0]}@{key[1]}: entrada de uninstalled_npm obsoleta "
+                    "(ausente del lock, instalada o sin restricción de plataforma).",
+                )
         for name, version, line, _ in packages:
+            npm_text = npm_evidence(name, version)
+            if (name, version) in gated_js and (name, version) not in installed:
+                npm_text = npm_entries.get((name, version)) or npm_text
+                if not npm_text:
+                    finding(
+                        source,
+                        line,
+                        "LICENCIA",
+                        f"{name}@{version}: paquete de plataforma no instalado "
+                        "y sin entrada en uninstalled_npm.",
+                    )
+                    continue
             check(
                 "npm",
                 name,
                 version,
-                npm_evidence(name, version),
+                npm_text,
                 (name, version) in direct_js,
                 source,
                 line,

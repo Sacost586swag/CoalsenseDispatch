@@ -399,3 +399,75 @@ def test_registry_finding_names_the_package(tree: Path) -> None:
 def test_npm_nonstandard_licenses_fail(tree: Path, license_text: str) -> None:
     _write_npm_license(tree, f'"license":"{license_text}"')
     assert any("LICENCIA: example@1.0.0" in f for f in audit(tree))
+
+
+def _npm_gated(tree: Path, constraint: str = "os: [darwin]", optional: bool = False) -> None:
+    lock = tree / "pnpm-lock.yaml"
+    entry = f"  plat@1.0.0:\n    resolution: {{}}\n    {constraint}\nsnapshots:\n"
+    snap = "  plat@1.0.0:\n    optional: true\n" if optional else ""
+    lock.write_text(lock.read_text().replace("snapshots: {}\n", entry + snap))
+
+
+def _npm_policy(tree: Path, entries: list[dict[str, str]]) -> None:
+    path = tree / "tools/audit/approved_licenses.yaml"
+    policy = json.loads(path.read_text())
+    policy["uninstalled_npm"] = entries
+    path.write_text(json.dumps(policy))
+
+
+NPM_ENTRY = {
+    "name": "plat",
+    "version": "1.0.0",
+    "license": "MIT",
+    "reason": "Paquete de plataforma; licencia revisada en el registro npm",
+}
+
+
+@pytest.mark.parametrize("constraint", ["os: [darwin]", "cpu: [x64]", "libc: [glibc]"])
+def test_uninstalled_npm_platform_package_needs_policy_entry(tree: Path, constraint: str) -> None:
+    _npm_gated(tree, constraint)
+    result = audit(tree)
+    assert len(result) == 1 and "plat@1.0.0" in result[0] and "uninstalled_npm" in result[0]
+    _npm_policy(tree, [NPM_ENTRY])
+    assert audit(tree) == []
+
+
+def test_uninstalled_npm_optional_snapshot_uses_policy(tree: Path) -> None:
+    _npm_gated(tree, "engines: {}", optional=True)
+    assert any("plat@1.0.0" in f and "uninstalled_npm" in f for f in audit(tree))
+    _npm_policy(tree, [NPM_ENTRY])
+    assert audit(tree) == []
+
+
+def test_uninstalled_npm_entry_license_must_be_approved(tree: Path) -> None:
+    _npm_gated(tree)
+    _npm_policy(tree, [{**NPM_ENTRY, "license": "GPL-3.0-only"}])
+    assert any("plat@1.0.0" in f and "GPL-3.0-only" in f for f in audit(tree))
+    _npm_policy(tree, [{**NPM_ENTRY, "version": "9.9.9"}])
+    assert any("plat@1.0.0" in f and "uninstalled_npm" in f for f in audit(tree))
+    _npm_policy(tree, [{**NPM_ENTRY, "reason": ""}])
+    assert any("ENTRADA" in f for f in audit(tree))
+
+
+def test_uninstalled_npm_stale_entries_fail(tree: Path) -> None:
+    _npm_gated(tree)
+    ghost = {**NPM_ENTRY, "name": "ghost"}
+    _npm_policy(tree, [NPM_ENTRY, ghost])
+    result = audit(tree)
+    assert len(result) == 1 and "POLITICA" in result[0] and "ghost@1.0.0" in result[0]
+    # in the lock but neither platform-constrained nor optional: also stale
+    _npm_policy(tree, [NPM_ENTRY, {**NPM_ENTRY, "name": "example"}])
+    assert any("POLITICA" in f and "example@1.0.0" in f for f in audit(tree))
+
+
+def test_installed_npm_package_ignores_policy_entry(tree: Path) -> None:
+    _npm_gated(tree)
+    sibling = tree / "node_modules/.pnpm/plat@1.0.0/node_modules/plat"
+    sibling.mkdir(parents=True)
+    (sibling / "package.json").write_text(
+        '{"name":"plat","version":"1.0.0","license":"GPL-3.0-only"}', encoding="utf-8"
+    )
+    _npm_policy(tree, [NPM_ENTRY])
+    result = audit(tree)
+    assert any("LICENCIA" in f and "plat@1.0.0" in f and "GPL-3.0-only" in f for f in result)
+    assert any("POLITICA" in f and "plat@1.0.0" in f for f in result)
