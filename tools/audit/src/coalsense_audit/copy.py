@@ -98,7 +98,11 @@ def audit(root: Path) -> list[str]:
         print(f"omitido (enlace simbólico): {path.relative_to(root).as_posix()}", file=sys.stderr)
 
     for base in ("apps/web/src", "packages/ui/src"):
-        if not (root / base).exists():
+        try:
+            if not (root / base).exists():
+                continue
+        except OSError:
+            findings.append(f"{base}:1: ENTRADA: No se pudo leer el directorio.")
             continue
         for directory, dirs, names in os.walk(root / base, onerror=unreadable, followlinks=False):
             for d in dirs:

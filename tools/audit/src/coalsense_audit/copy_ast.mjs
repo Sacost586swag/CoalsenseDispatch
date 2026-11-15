@@ -50,10 +50,11 @@ const visibleAria = new Set([
   "aria-valuetext",
   "aria-placeholder",
 ]);
-// `name` and `value` are technical only as identifier-like literals ("send", "ready_2"):
-// lowercase ASCII, no spaces. <Stat value="Alto" /> or <Avatar name="Juan Pérez" /> is copy.
+// `name` and `value` are technical only as clearly-identifier literals: lowercase ASCII with
+// at least one "_", "-" or digit ("send_2", "step-3"). A plain word ("alto", "pendiente"),
+// a capitalized one or text with spaces is visible copy.
 const identifierProps = new Set(["name", "value"]);
-const identifier = /^[a-z][a-z0-9_-]*$/;
+const identifier = /^(?=.*[_\d-])[a-z][a-z0-9_-]*$/;
 const isTechnical = (name) =>
   technicalProps.has(name) ||
   name.startsWith("data-") ||

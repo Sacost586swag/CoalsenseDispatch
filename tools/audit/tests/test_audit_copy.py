@@ -123,6 +123,9 @@ def test_no_false_positive_inside_words(tree: Path, word: str) -> None:
         '<option label="Enviar" />',
         '<Button aria-label="Enviar" />',
         '<Stat value="Alto" />',
+        '<Stat value="alto" />',
+        '<Chip value="pendiente" />',
+        '<Chip name="pendiente" />',
         '<Avatar name="Juan Pérez" />',
         '<Avatar name="Ana" />',
         '<Stat value="dos palabras" />',
@@ -153,8 +156,8 @@ export const view = <div className="layout" data-testid="view">
   {count > 1 && <Many />}
   {a - "x"}
   <Button id="send" className="primary" variant="solid" size="sm" type="button" data-x="Enviar"
-    aria-labelledby="titulo" role="button" value="enviar"
-    name="send_2" testId="send" label={es["stop.label"]} />
+    aria-labelledby="titulo" role="button" value="send_now"
+    name="step-3" testId="send" label={es["stop.label"]} />
 </div>;
 """,
     )
@@ -199,6 +202,20 @@ def test_unreadable_directory_fails_closed(tree: Path, monkeypatch: pytest.Monke
 
     monkeypatch.setattr(copy.os, "walk", walk)
     assert any("apps/web/src/sub:" in f and "ENTRADA" in f for f in audit(tree))
+
+
+def test_permission_error_on_source_root_fails_closed(
+    tree: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_exists = Path.exists
+
+    def exists(self: Path, **kw: object) -> bool:
+        if self.as_posix().endswith("packages/ui/src"):
+            raise PermissionError(13, "denied")
+        return real_exists(self, **kw)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(Path, "exists", exists)
+    assert any("packages/ui/src:" in f and "ENTRADA" in f for f in audit(tree))
 
 
 def test_missing_source_roots_are_fine(tree: Path) -> None:
