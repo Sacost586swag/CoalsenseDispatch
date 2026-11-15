@@ -58,11 +58,13 @@ export function TextField({
           {reason}
         </p>
       )}
-      {error && (
-        <p id={errorId} role="status" className="cs-field__error">
-          <strong>{es["state.error.label"]}:</strong> {error}
-        </p>
-      )}
+      <p id={errorId} role="status" className="cs-field__error">
+        {error && (
+          <>
+            <strong>{es["state.error.label"]}:</strong> {error}
+          </>
+        )}
+      </p>
     </div>
   );
 }

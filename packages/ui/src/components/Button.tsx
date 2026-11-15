@@ -10,7 +10,7 @@ export interface ButtonProps extends Omit<
   variant?: "primary" | "secondary" | "stop";
   /**
    * Keeps the visible label, adds the catalog "Cargando" text, blocks click and submit, and
-   * announces it politely. Pass it explicitly (true or false) to get the live region.
+   * announces it politely in a live region that is always mounted (so the change is read).
    */
   loading?: boolean;
   /**
@@ -77,11 +77,9 @@ export function Button({
           {reason}
         </span>
       )}
-      {loading !== undefined && (
-        <span role="status" className="cs-visually-hidden">
-          {loading ? es["state.loading.label"] : ""}
-        </span>
-      )}
+      <span role="status" className="cs-visually-hidden">
+        {loading ? es["state.loading.label"] : ""}
+      </span>
     </>
   );
 }
