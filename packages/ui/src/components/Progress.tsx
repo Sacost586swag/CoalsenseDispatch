@@ -8,9 +8,12 @@ export interface ProgressProps {
   max?: number;
 }
 
-export function Progress({ label, value, max = 100 }: ProgressProps) {
+export function Progress({ label, value, max: maxProp = 100 }: ProgressProps) {
   const labelId = useId();
-  const current = value === undefined ? undefined : Math.min(Math.max(value, 0), max);
+  // Bad input degrades to something honest: NaN is "unknown" (indeterminate), a bad max is 100.
+  const max = Number.isFinite(maxProp) && maxProp > 0 ? maxProp : 100;
+  const current =
+    value === undefined || Number.isNaN(value) ? undefined : Math.min(Math.max(value, 0), max);
   const percent = current === undefined ? undefined : Math.round((current / max) * 100);
   return (
     <div className="cs-progress">

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { useId, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from "react";
 import { es } from "../i18n/es.ts";
 
 export interface ButtonProps extends Omit<
@@ -7,34 +7,75 @@ export interface ButtonProps extends Omit<
 > {
   /** One primary action per screen (AX-13); "stop" is reserved for the Alto control. */
   variant?: "primary" | "secondary" | "stop";
-  /** Keeps the visible label, adds the catalog "Cargando" text and ignores activation. */
+  /**
+   * Keeps the visible label, adds the catalog "Cargando" text, blocks click and submit, and
+   * announces it politely. Pass it explicitly (true or false) to get the live region.
+   */
   loading?: boolean;
+  /**
+   * `disabled` keeps the control in the focus order (aria-disabled, guarded handler) instead of
+   * the native attribute, so the person can still reach it and learn why (AX-11).
+   */
+  disabled?: boolean;
+  /** Catalog key of the visible text that says why it is disabled and what still works. */
+  disabledReason?: keyof typeof es;
   children: ReactNode;
 }
 
 /** The accessible name is the visible text: aria-label/title are not accepted (WCAG 2.5.3). */
 export function Button({
   variant = "secondary",
-  loading = false,
+  loading,
+  disabled = false,
+  disabledReason,
   className,
   children,
   onClick,
+  "aria-describedby": describedBy,
   type = "button",
   ...rest
 }: ButtonProps) {
+  const reasonId = useId();
+  const inactive = Boolean(loading) || disabled;
+  const reason = disabled && disabledReason ? es[disabledReason] : undefined;
+  const guard = (event: MouseEvent<HTMLButtonElement>): void => {
+    if (inactive) {
+      event.preventDefault(); // also stops a type="submit" from submitting the form
+      return;
+    }
+    onClick?.(event);
+  };
   return (
-    <button
-      {...rest}
-      type={type}
-      className={["cs-button", `cs-button--${variant}`, loading && "cs-button--loading", className]
-        .filter(Boolean)
-        .join(" ")}
-      aria-busy={loading || undefined}
-      aria-disabled={loading || undefined}
-      onClick={loading ? undefined : onClick}
-    >
-      {children}
-      {loading && <span className="cs-button__status">{es["state.loading.label"]}</span>}
-    </button>
+    <>
+      <button
+        {...rest}
+        type={type}
+        className={[
+          "cs-button",
+          `cs-button--${variant}`,
+          loading && "cs-button--loading",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        aria-busy={loading || undefined}
+        aria-disabled={inactive || undefined}
+        aria-describedby={[describedBy, reason && reasonId].filter(Boolean).join(" ") || undefined}
+        onClick={guard}
+      >
+        {children}
+        {loading && <span className="cs-button__status">{es["state.loading.label"]}</span>}
+      </button>
+      {reason && (
+        <span id={reasonId} className="cs-reason">
+          {reason}
+        </span>
+      )}
+      {loading !== undefined && (
+        <span role="status" className="cs-visually-hidden">
+          {loading ? es["state.loading.label"] : ""}
+        </span>
+      )}
+    </>
   );
 }

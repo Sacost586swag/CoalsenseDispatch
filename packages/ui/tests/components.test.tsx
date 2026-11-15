@@ -104,6 +104,19 @@ describe("stylesheet (no hard-coded values, targets, focus, motion)", () => {
     expect(css).not.toMatch(/:hover/);
   });
 
+  it("pressing never changes a control's size", () => {
+    for (const selector of [".cs-button:active", ".cs-link:active", ".cs-input:active"]) {
+      expect(rule(selector), selector).not.toMatch(
+        /(^|[;\s])(border|border-width|padding[\w-]*|margin[\w-]*|(min-|max-)?(width|height)|font[\w-]*):/,
+      );
+    }
+  });
+
+  it("disabled controls are styled by aria-disabled, never by the native attribute", () => {
+    expect(css).toMatch(/\.cs-button\[aria-disabled="true"\]/);
+    expect(css).not.toMatch(/:disabled/);
+  });
+
   it("motion is opacity only, token duration, no keyframes", () => {
     expect(css).not.toMatch(/@keyframes|animation/);
     for (const [, value] of css.matchAll(/transition:([^;]*);/g)) {
@@ -128,18 +141,19 @@ describe("no component can time out on its own", () => {
 });
 
 describe("Button", () => {
-  it("normal, disabled and loading pass axe and keep the visible label in the name", async () => {
-    for (const props of [{}, { disabled: true }, { loading: true }]) {
-      const { unmount } = render(<Button {...props}>Guardar</Button>);
-      const button = screen.getByRole("button", { name: nameContains("Guardar") });
-      expect(button.className).toContain("cs-button");
-      expect(button.hasAttribute("aria-label")).toBe(false);
-      expect(await violations()).toEqual([]);
-      unmount();
-    }
+  it.each([
+    ["normal", {}],
+    ["disabled", { disabled: true }],
+    ["loading", { loading: true }],
+  ])("%s passes axe and keeps the visible label in the name", async (_state, props) => {
+    render(<Button {...props}>Guardar</Button>);
+    const button = screen.getByRole("button", { name: nameContains("Guardar") });
+    expect(button.className).toContain("cs-button");
+    expect(button.hasAttribute("aria-label")).toBe(false);
+    expect(await violations()).toEqual([]);
   });
 
-  it("loading shows the catalog text, announces busy and ignores activation", async () => {
+  it("loading shows the catalog text, is busy, announces politely and ignores activation", async () => {
     const onClick = vi.fn();
     render(
       <Button loading onClick={onClick}>
@@ -150,8 +164,38 @@ describe("Button", () => {
     expect(button.getAttribute("aria-busy")).toBe("true");
     expect(button.getAttribute("aria-disabled")).toBe("true");
     expect(button.textContent).toContain(es["state.loading.label"]);
+    expect(screen.getByRole("status").textContent).toBe(es["state.loading.label"]);
     await userEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("a loading submit button never submits the form, by click or Enter", async () => {
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <input aria-label="campo" />
+        <Button type="submit" loading>
+          Enviar
+        </Button>
+      </form>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: nameContains("Enviar") }));
+    screen.getByRole("button", { name: nameContains("Enviar") }).focus();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.click(screen.getByRole("textbox"));
+    await userEvent.keyboard("{Enter}");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("an idle submit button still submits", async () => {
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button type="submit">Enviar</Button>
+      </form>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: nameContains("Enviar") }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it("activates with click and keyboard, defaults to type=button, has no tooltip", async () => {
@@ -167,58 +211,119 @@ describe("Button", () => {
     expect(onClick).toHaveBeenCalledTimes(3);
   });
 
-  it("disabled does not activate; variants only change the class", async () => {
+  it("disabled stays focusable, does not activate or submit, and says why", async () => {
     const onClick = vi.fn();
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
     render(
-      <Button disabled variant="stop" onClick={onClick}>
-        Alto
-      </Button>,
+      <form onSubmit={onSubmit}>
+        <Button
+          type="submit"
+          disabled
+          disabledReason="state.offline.message"
+          variant="stop"
+          onClick={onClick}
+        >
+          Alto
+        </Button>
+      </form>,
     );
     const button = screen.getByRole("button", { name: nameContains("Alto") });
     expect(button.className).toContain("cs-button--stop");
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    expect(button.hasAttribute("disabled")).toBe(false);
+    await userEvent.tab();
+    expect(document.activeElement).toBe(button);
     await userEvent.click(button);
+    await userEvent.keyboard("{Enter}");
     expect(onClick).not.toHaveBeenCalled();
+    expect(onSubmit).not.toHaveBeenCalled();
+    const reason = document.getElementById(button.getAttribute("aria-describedby") ?? "");
+    expect(reason?.textContent).toBe(es["state.offline.message"]);
+    expect(await violations()).toEqual([]);
   });
 });
 
 describe("Link", () => {
-  it("normal and disabled pass axe; the name is the visible text", async () => {
-    for (const props of [{ href: "/ayuda" }, { href: "/ayuda", disabled: true }]) {
-      const { unmount } = render(<Link {...props}>Ver ayuda</Link>);
-      const link = screen.getByRole("link", { name: nameContains("Ver ayuda") });
-      expect(link.className).toContain("cs-link");
-      expect(await violations()).toEqual([]);
-      unmount();
-    }
+  it.each([
+    ["normal", { href: "/ayuda" }],
+    ["disabled", { href: "/ayuda", disabled: true }],
+  ])("%s passes axe; the name is the visible text", async (_state, props) => {
+    render(<Link {...props}>Ver ayuda</Link>);
+    const link = screen.getByRole("link", { name: nameContains("Ver ayuda") });
+    expect(link.className).toContain("cs-link");
+    expect(await violations()).toEqual([]);
   });
 
-  it("a disabled link is not navigable", () => {
+  it("a disabled link is focusable, has no destination, ignores onClick and says why", async () => {
+    const onClick = vi.fn();
     render(
-      <Link href="/ayuda" disabled>
+      <Link href="/ayuda" disabled disabledReason="state.offline.message" onClick={onClick}>
         Ver ayuda
       </Link>,
     );
     const link = screen.getByRole("link", { name: nameContains("Ver ayuda") });
     expect(link.getAttribute("aria-disabled")).toBe("true");
     expect(link.hasAttribute("href")).toBe(false);
+    await userEvent.tab();
+    expect(document.activeElement).toBe(link);
+    await userEvent.click(link);
+    await userEvent.keyboard("{Enter}");
+    expect(onClick).not.toHaveBeenCalled();
+    const reason = document.getElementById(link.getAttribute("aria-describedby") ?? "");
+    expect(reason?.textContent).toBe(es["state.offline.message"]);
+  });
+
+  it("an enabled link still calls onClick", async () => {
+    const onClick = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    render(
+      <Link href="/ayuda" onClick={onClick}>
+        Ver ayuda
+      </Link>,
+    );
+    await userEvent.click(screen.getByRole("link"));
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("TextField", () => {
-  it("normal, hint, error and disabled pass axe; the label names the field", async () => {
-    const variants = [
-      {},
-      { hint: "Solo letras" },
-      { error: "Falta el nombre" },
-      { disabled: true },
-    ];
-    for (const props of variants) {
-      const { unmount } = render(<TextField label="Nombre" {...props} />);
-      const input = screen.getByRole("textbox", { name: nameContains("Nombre") });
-      expect(input.className).toContain("cs-input");
-      expect(await violations()).toEqual([]);
-      unmount();
-    }
+  it.each([
+    ["normal", {}],
+    ["hint", { hint: "Solo letras" }],
+    ["error", { error: "Falta el nombre" }],
+    ["disabled", { disabled: true }],
+  ])("%s passes axe; the label names the field", async (_state, props) => {
+    render(<TextField label="Nombre" {...props} />);
+    const input = screen.getByRole("textbox", { name: nameContains("Nombre") });
+    expect(input.className).toContain("cs-input");
+    expect(await violations()).toEqual([]);
+  });
+
+  it("disabled stays focusable, cannot be edited and says why", async () => {
+    render(
+      <TextField
+        label="Nombre"
+        disabled
+        disabledReason="state.offline.message"
+        aria-describedby="externo"
+        defaultValue="Ana"
+      />,
+    );
+    const input = screen.getByRole("textbox", { name: nameContains("Nombre") }) as HTMLInputElement;
+    expect(input.getAttribute("aria-disabled")).toBe("true");
+    expect(input.hasAttribute("disabled")).toBe(false);
+    await userEvent.tab();
+    expect(document.activeElement).toBe(input);
+    await userEvent.keyboard("xyz");
+    expect(input.value).toBe("Ana");
+    const ids = (input.getAttribute("aria-describedby") ?? "").split(" ");
+    expect(ids).toContain("externo");
+    const reason = ids.map((id) => document.getElementById(id)).find((n) => n?.textContent);
+    expect(reason?.textContent).toBe(es["state.offline.message"]);
+  });
+
+  it("an error message appears in a polite live region", () => {
+    render(<TextField label="Nombre" error="Falta el nombre" />);
+    expect(screen.getByRole("status").textContent).toContain("Falta el nombre");
   });
 
   it("error is linked, flagged invalid and not conveyed by color alone", () => {
@@ -263,18 +368,61 @@ describe("Dialog", () => {
 
   it("renders nothing while closed", () => {
     render(
-      <Dialog open={false} title="Enviar correo" actions={null}>
+      <Dialog open={false} title="Enviar correo" actions={<Button>Aprobar</Button>}>
         Texto
       </Dialog>,
     );
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("open dialog passes axe, is modal and is named by its title", async () => {
+  it("open dialog passes axe and is named by its title; no aria-modal (it would hide the bar)", async () => {
     render(open());
     const dialog = screen.getByRole("dialog", { name: nameContains("Enviar correo") });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(dialog.hasAttribute("aria-modal")).toBe(false);
     expect(await violations()).toEqual([]);
+  });
+
+  it("makes the rest of the page inert except the dialog and the Alto/Deshacer bar", () => {
+    const page = (isOpen: boolean) => (
+      <>
+        <p>Contenido de la pantalla</p>
+        {open({ open: isOpen })}
+      </>
+    );
+    const { rerender } = render(page(true));
+    expect(screen.getByText("Contenido de la pantalla").hasAttribute("inert")).toBe(true);
+    // The bar, its buttons and every ancestor up to the document are not inert.
+    const bar = document.querySelector(`[${STOP_BAR_ATTRIBUTE}]`) as HTMLElement;
+    for (let node: Element | null = bar; node; node = node.parentElement) {
+      expect(node.hasAttribute("inert"), node.outerHTML.slice(0, 60)).toBe(false);
+    }
+    expect(document.querySelector(".cs-dialog__backdrop")?.hasAttribute("inert")).toBe(false);
+    rerender(page(false));
+    expect(document.querySelectorAll("[inert]")).toHaveLength(0);
+  });
+
+  it("keeps a sibling that was already inert after closing", () => {
+    const page = (isOpen: boolean) => (
+      <>
+        <p inert>Ya inerte</p>
+        {open({ open: isOpen })}
+      </>
+    );
+    const { rerender } = render(page(true));
+    rerender(page(false));
+    expect(screen.getByText("Ya inerte").hasAttribute("inert")).toBe(true);
+  });
+
+  it("restores the page when the dialog unmounts", () => {
+    const { unmount } = render(
+      <>
+        <p>Contenido de la pantalla</p>
+        {open()}
+      </>,
+    );
+    expect(document.querySelectorAll("[inert]").length).toBeGreaterThan(0);
+    unmount();
+    expect(document.querySelectorAll("[inert]")).toHaveLength(0);
   });
 
   it("moves focus inside, traps Tab and keeps the Alto/Deshacer bar reachable", async () => {
@@ -327,7 +475,7 @@ describe("Dialog", () => {
       return (
         <>
           <button type="button">Abrir</button>
-          <Dialog open={isOpen} title="Enviar correo" actions={null}>
+          <Dialog open={isOpen} title="Enviar correo" actions={<Button>Aprobar</Button>}>
             Texto
           </Dialog>
         </>
@@ -369,14 +517,14 @@ describe("NumberedList", () => {
 });
 
 describe("Progress", () => {
-  it("determinate and indeterminate pass axe and are named by the visible label", async () => {
-    for (const props of [{ value: 40 }, {}]) {
-      const { unmount } = render(<Progress label="Subiendo archivo" {...props} />);
-      const bar = screen.getByRole("progressbar", { name: nameContains("Subiendo archivo") });
-      expect(bar.className).toContain("cs-progress");
-      expect(await violations()).toEqual([]);
-      unmount();
-    }
+  it.each([
+    ["determinate", { value: 40 }],
+    ["indeterminate", {}],
+  ])("%s passes axe and is named by the visible label", async (_state, props) => {
+    render(<Progress label="Subiendo archivo" {...props} />);
+    const bar = screen.getByRole("progressbar", { name: nameContains("Subiendo archivo") });
+    expect(bar.className).toContain("cs-progress");
+    expect(await violations()).toEqual([]);
   });
 
   it("shows the value as text, clamps it and never advances by itself", () => {
@@ -387,6 +535,17 @@ describe("Progress", () => {
     expect(document.body.textContent).toContain("100 %");
     act(() => vi.advanceTimersByTime(EIGHT_HOURS));
     expect(bar.getAttribute("aria-valuenow")).toBe("100");
+  });
+
+  it("NaN, infinite or negative input falls back to something sensible", () => {
+    const { rerender } = render(<Progress label="Subiendo archivo" value={Number.NaN} />);
+    expect(screen.getByRole("progressbar").hasAttribute("aria-valuenow")).toBe(false);
+    expect(document.body.textContent).not.toContain("NaN");
+    rerender(<Progress label="Subiendo archivo" value={-5} max={0} />);
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("0");
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuemax")).toBe("100");
+    rerender(<Progress label="Subiendo archivo" value={Number.POSITIVE_INFINITY} />);
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("100");
   });
 
   it("indeterminate has no value and says it is loading in text", () => {
@@ -405,17 +564,17 @@ describe("StatusBanner", () => {
     error: es["state.error.label"],
   } as const;
 
-  it("every variant passes axe and names its kind in text, not only color", async () => {
-    for (const variant of ["info", "success", "warning", "error"] as const) {
-      const { unmount } = render(<StatusBanner variant={variant}>No se pudo enviar.</StatusBanner>);
+  it.each(["info", "success", "warning", "error"] as const)(
+    "%s passes axe and names its kind in text, not only color",
+    async (variant) => {
+      render(<StatusBanner variant={variant}>No se pudo enviar.</StatusBanner>);
       const banner = document.querySelector(".cs-banner");
       expect(banner?.textContent).toContain(labels[variant]);
       expect(banner?.textContent).toContain("No se pudo enviar.");
       expect(["status", "alert"]).toContain(banner?.getAttribute("role"));
       expect(await violations()).toEqual([]);
-      unmount();
-    }
-  });
+    },
+  );
 
   it("with actions and a dismiss button still passes axe; the name has the visible text", async () => {
     render(

@@ -10,14 +10,30 @@ export interface TextFieldProps extends Omit<
   hint?: string;
   /** Message in plain language; shown with the catalog "Error" word, never by color alone. */
   error?: string;
+  /** `disabled` keeps focus (aria-disabled + readOnly); this catalog key says why. */
+  disabledReason?: keyof typeof es;
 }
 
-export function TextField({ label, hint, error, id, className, ...rest }: TextFieldProps) {
+export function TextField({
+  label,
+  hint,
+  error,
+  disabled = false,
+  disabledReason,
+  id,
+  className,
+  "aria-describedby": describedByProp,
+  ...rest
+}: TextFieldProps) {
   const generated = useId();
   const inputId = id ?? generated;
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
-  const describedBy = [hint && hintId, error && errorId].filter(Boolean).join(" ");
+  const reasonId = `${inputId}-reason`;
+  const reason = disabled && disabledReason ? es[disabledReason] : undefined;
+  const describedBy = [describedByProp, hint && hintId, error && errorId, reason && reasonId]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div className="cs-field">
       <label htmlFor={inputId} className="cs-field__label">
@@ -32,11 +48,18 @@ export function TextField({ label, hint, error, id, className, ...rest }: TextFi
         {...rest}
         id={inputId}
         className={["cs-input", error && "cs-input--error", className].filter(Boolean).join(" ")}
+        readOnly={disabled || rest.readOnly}
+        aria-disabled={disabled || undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
       />
+      {reason && (
+        <p id={reasonId} className="cs-field__hint">
+          {reason}
+        </p>
+      )}
       {error && (
-        <p id={errorId} className="cs-field__error">
+        <p id={errorId} role="status" className="cs-field__error">
           <strong>{es["state.error.label"]}:</strong> {error}
         </p>
       )}

@@ -38,6 +38,11 @@ Reglas que cumplen todos:
 - Objetivo mínimo `var(--target-min)` en ambas dimensiones; `var(--target-head)` bajo
   `:root[data-input-mode="head"]`; separación `var(--target-gap)` en sus grupos de
   acciones. Foco de `var(--ring-width)` que nunca se quita.
+- Deshabilitado (Button, Link, TextField) = `aria-disabled` + guarda del manejador
+  (no activa ni envía formularios), sigue enfocable y acepta `disabledReason` (clave
+  del catálogo) que se muestra como texto y se enlaza con `aria-describedby`. Nunca el
+  atributo nativo `disabled`. `loading` bloquea clic y envío y anuncia «Cargando» en una
+  región viva (pasar `loading` explícito, true o false, para tenerla).
 - Sin `:hover`, pulsación larga ni gestos; sin animación; ningún temporizador (la
   prueba lo verifica sobre el código). StatusBanner solo desaparece al pulsar
   Descartar. Dialog no se cierra solo, ni al pulsar el fondo; Escape cierra solo con
@@ -50,8 +55,10 @@ Reglas que cumplen todos:
 
 ### Barra de Alto y Deshacer (para T-00-015)
 
-Marcar la barra con `data-cs-stop-bar` (constante `STOP_BAR_ATTRIBUTE`). Mientras haya
-un Dialog abierto: el fondo del diálogo termina por encima del hueco
+Marcar la barra con `data-cs-stop-bar` (constante `STOP_BAR_ATTRIBUTE`). El Dialog no
+usa `aria-modal` (dejaría la barra fuera del árbol accesible): mientras está abierto
+pone `inert` en todo salvo el diálogo y la barra (y sus ancestros) y lo restaura al
+cerrar. Además: el fondo del diálogo termina por encima del hueco
 `--stop-bar-reserved` (por defecto `--target-min` + 2 × `--space-md`, redefinible),
 la barra queda en `--layer-stop-bar` (200) sobre el fondo (`--layer-dialog`, 100) y
 sus controles forman parte del ciclo de Tab del diálogo. Se asume la barra abajo.

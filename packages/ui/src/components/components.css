@@ -70,12 +70,12 @@
   color: var(--color-on-stop);
 }
 
+/* Pressed: inset ring, so the box never changes size and neighbours do not move. */
 .cs-button:active {
-  border-style: double;
-  border-width: calc(var(--border-width) * 4);
+  box-shadow: inset 0 0 0 calc(var(--border-width) * 3) currentColor;
 }
 
-.cs-button:disabled {
+.cs-button[aria-disabled="true"] {
   border-style: dashed;
   color: var(--color-secondary-text);
   cursor: not-allowed;
@@ -83,6 +83,24 @@
 
 .cs-button--loading {
   cursor: progress;
+}
+
+/* Texto que explica por qué un control está deshabilitado. */
+.cs-reason {
+  color: var(--color-secondary-text);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+}
+
+/* Solo para lectores de pantalla (región viva); fuera del flujo y sin tamaño. */
+.cs-visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 0;
+  block-size: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .cs-button__status {
@@ -100,7 +118,7 @@
 }
 
 .cs-link:active {
-  text-decoration-thickness: calc(var(--border-width) * 4);
+  text-decoration-style: double;
 }
 
 .cs-link[aria-disabled="true"] {
@@ -141,7 +159,7 @@
   border-color: var(--color-foreground);
 }
 
-.cs-input:disabled {
+.cs-input[aria-disabled="true"] {
   border-style: dashed;
   color: var(--color-secondary-text);
   cursor: not-allowed;
