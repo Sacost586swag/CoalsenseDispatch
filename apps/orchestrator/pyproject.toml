@@ -3,10 +3,18 @@ name = "coalsense-orchestrator"
 version = "0.0.0"
 description = "Orquestador FastAPI: gateway, políticas, agentes, memoria y bitácora."
 requires-python = "==3.12.*"
-dependencies = ["coalsense-common", "fastapi==0.162.2", "pydantic==2.12.3"]
+dependencies = [
+    "coalsense-common",
+    "coalsense-intents",
+    "fastapi==0.162.2",
+    "pydantic==2.12.3",
+    "jsonschema==4.26.0",
+    "asyncpg==0.32.0",
+]
 
 [tool.uv.sources]
 coalsense-common = { workspace = true }
+coalsense-intents = { workspace = true }
 
 [build-system]
 requires = ["uv_build==0.12.13"]

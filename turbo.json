@@ -10,17 +10,56 @@
   ],
   "tasks": {
     "audit": {
-      "dependsOn": ["audit:licenses", "audit:imports", "audit:secrets", "audit:copy", "audit:traceability"],
+      "dependsOn": [
+        "audit:licenses",
+        "audit:imports",
+        "audit:secrets",
+        "audit:copy",
+        "audit:traceability",
+        "audit:schema"
+      ],
       "cache": false
     },
-    "audit:traceability": { "cache": false },
-    "audit:copy": { "cache": false },
-    "audit:licenses": { "cache": false },
-    "audit:imports": { "cache": false },
-    "audit:secrets": { "cache": false },
-    "lint": {},
-    "typecheck": {},
-    "test": { "passThroughEnv": ["COALSENSE_SKIP_NETWORK_TESTS"] },
-    "build": { "outputs": ["dist/**"] }
+    "audit:traceability": {
+      "cache": false
+    },
+    "audit:copy": {
+      "cache": false
+    },
+    "audit:licenses": {
+      "cache": false
+    },
+    "audit:imports": {
+      "cache": false
+    },
+    "audit:secrets": {
+      "cache": false
+    },
+    "audit:schema": {
+      "cache": false
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "env": ["COALSENSE_SKIP_NETWORK_TESTS", "COALSENSE_TEST_POSTGRES"]
+    },
+    "build": {
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "dependsOn": ["^build"]
+    },
+    "test:a11y": {
+      "cache": false
+    },
+    "test:integration": {
+      "cache": false
+    },
+    "build:catalog": {
+      "outputs": ["catalog-dist/**"]
+    }
   }
 }

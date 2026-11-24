@@ -1,0 +1,25 @@
+# Solo pruebas sintéticas. No es configuración de producción.
+services:
+  postgres:
+    image: pgvector/pgvector@sha256:0dd3149a06e4579a0d70d8fef9945636cd514005e7237deb27f9b67886f8dc4f
+    pull_policy: never
+    environment:
+      POSTGRES_PASSWORD: ${COALSENSE_POSTGRES_TEST_PASSWORD:?Provide a temporary test password}
+      POSTGRES_DB: coalsense_test
+    ports:
+      - "127.0.0.1::5432"
+    tmpfs:
+      - /var/lib/postgresql/data:rw,noexec,nosuid,size=128m
+    # [SUPUESTO] Límites de esta instancia efímera de prueba.
+    mem_limit: 512m
+    cpus: 1
+    command:
+      - postgres
+      - -c
+      - log_statement=none
+      - -c
+      - log_min_error_statement=panic
+      - -c
+      - log_parameter_max_length=0
+      - -c
+      - log_parameter_max_length_on_error=0

@@ -37,6 +37,8 @@ const technicalProps = new Set([
   "rel",
   "method",
   "autoComplete",
+  "autoCapitalize",
+  "state",
   "inputMode",
   "lang",
   "dir",

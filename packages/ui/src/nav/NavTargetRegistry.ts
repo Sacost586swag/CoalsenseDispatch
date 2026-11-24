@@ -26,6 +26,58 @@ function visibleLabel(element: Node): string {
   return Array.from(element.childNodes, visibleLabel).join(" ");
 }
 
+// aria-labelledby, then the <label>s of a form control, then the visible contents. A control's
+// value is never read: only this label text can leave the module.
+function labelText(element: HTMLElement): string {
+  const ids = element.getAttribute("aria-labelledby")?.split(/\s+/).filter(Boolean) ?? [];
+  const named = ids.flatMap((id) => document.getElementById(id) ?? []);
+  const labels = named.length ? named : Array.from((element as HTMLInputElement).labels ?? []);
+  return (labels.length ? labels : [element]).map(visibleLabel).join(" ");
+}
+
+// Controls behind a modal ([inert]), under aria-hidden or not rendered must not get numbers.
+function isVisible(element: HTMLElement): boolean {
+  if (element.closest("[inert],[aria-hidden='true']")) return false;
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility({ visibilityProperty: true });
+  }
+  for (let node: HTMLElement | null = element; node; node = node.parentElement) {
+    const style = window.getComputedStyle(node);
+    if (style.display === "none" || style.visibility === "hidden") return false;
+  }
+  return true;
+}
+
+const sameTargets = (a: NavTarget[], b: NavTarget[]): boolean =>
+  a.length === b.length &&
+  a.every((t, i) => {
+    const o = b[i];
+    return (
+      o !== undefined &&
+      t.id === o.id &&
+      t.label === o.label &&
+      t.role === o.role &&
+      t.disabled === o.disabled &&
+      t.bounds.x === o.bounds.x &&
+      t.bounds.y === o.bounds.y &&
+      t.bounds.width === o.bounds.width &&
+      t.bounds.height === o.bounds.height
+    );
+  });
+
+const MUTATION_ATTRIBUTES = [
+  "class",
+  "style",
+  "hidden",
+  "inert",
+  "aria-hidden",
+  "aria-disabled",
+  "aria-labelledby",
+  "disabled",
+  "role",
+  "open",
+];
+
 /** Viewport coordinates, in CSS pixels. No polling or expiry timers. */
 export class NavTargetRegistry {
   private registrations = new Map<string, Registration>();
@@ -56,38 +108,27 @@ export class NavTargetRegistry {
     this.registrations.set(id, registration);
     if (this.registrations.size === 1) this.start();
     this.observer?.observe(element);
-    this.mutations?.observe(element, {
-      subtree: true,
-      childList: true,
-      characterData: true,
-      attributes: true,
-    });
-    this.refresh();
+    this.schedule();
     return () => {
       if (this.registrations.get(id) !== registration) return;
       this.registrations.delete(id);
       this.observer?.unobserve(element);
-      // MutationObserver has no unobserve: reconnect only the remaining nodes.
-      this.mutations?.disconnect();
-      for (const { element: remaining } of this.registrations.values()) {
-        this.mutations?.observe(remaining, {
-          subtree: true,
-          childList: true,
-          characterData: true,
-          attributes: true,
-        });
+      if (this.registrations.size) {
+        this.schedule();
+        return;
       }
-      if (!this.registrations.size) this.stop();
-      this.refresh();
+      this.stop();
+      this.publish([]);
     };
   }
 
-  /** Also called after React commits, including label/disabled/layout changes. */
+  /** Measures every target once. Runs from the animation-frame batch, never inside a commit. */
   refresh = (): void => {
     const next: NavTarget[] = [];
     for (const [id, registration] of this.registrations) {
-      const { element, role, measure } = registration;
-      const label = visibleLabel(element).replace(/\s+/g, " ").trim();
+      const { element, measure } = registration;
+      if (!isVisible(element)) continue;
+      const label = labelText(element).replace(/\s+/g, " ").trim();
       if (!label) {
         if (
           !registration.warned &&
@@ -100,26 +141,21 @@ export class NavTargetRegistry {
       }
       registration.warned = false;
       const { x, y, width, height } = measure(element);
+      if (!width || !height) continue;
       next.push({
         id,
         label,
         bounds: { x, y, width, height },
-        role: element.getAttribute("role") || role,
+        role: element.getAttribute("role") || registration.role,
         disabled: element.matches(":disabled") || element.getAttribute("aria-disabled") === "true",
       });
     }
     next.sort((a, b) => a.bounds.y - b.bounds.y || a.bounds.x - b.bounds.x);
-    if (JSON.stringify(next) === JSON.stringify(this.targets)) return;
-    this.targets = next;
-    for (const listener of this.listeners) listener();
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent<NavTarget[]>("cs:nav-targets", { detail: this.snapshot() }),
-      );
-    }
+    this.publish(next);
   };
 
-  private schedule = (): void => {
+  /** Coalesces every trigger (commits, observers, events) into one pass per frame. */
+  schedule = (): void => {
     if (this.frame !== undefined) return;
     this.frame = window.requestAnimationFrame(() => {
       this.frame = undefined;
@@ -127,17 +163,42 @@ export class NavTargetRegistry {
     });
   };
 
+  private publish(next: NavTarget[]): void {
+    if (sameTargets(next, this.targets)) return;
+    this.targets = next;
+    for (const listener of this.listeners) listener();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent<NavTarget[]>("cs:nav-targets", { detail: this.snapshot() }),
+      );
+    }
+  }
+
   private start(): void {
     if (typeof ResizeObserver !== "undefined") {
       this.observer = new ResizeObserver(this.schedule);
-      // Root resizing can move a target without resizing that target.
+      // A sibling or ancestor can move a target without resizing it: watch the page itself.
       this.observer.observe(document.documentElement);
+      this.observer.observe(document.body);
     }
     if (typeof MutationObserver !== "undefined") {
+      // One root observer: insertions, label text, visibility and disabled attributes.
       this.mutations = new MutationObserver(this.schedule);
+      this.mutations.observe(document.body, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: MUTATION_ATTRIBUTES,
+      });
     }
     window.addEventListener("scroll", this.schedule, true);
     window.addEventListener("resize", this.schedule);
+    // Transitions and animations move controls without any resize or scroll.
+    window.addEventListener("transitionend", this.schedule, true);
+    window.addEventListener("animationend", this.schedule, true);
+    window.visualViewport?.addEventListener("resize", this.schedule);
+    window.visualViewport?.addEventListener("scroll", this.schedule);
   }
 
   private stop(): void {
@@ -147,6 +208,10 @@ export class NavTargetRegistry {
     this.mutations = undefined;
     window.removeEventListener("scroll", this.schedule, true);
     window.removeEventListener("resize", this.schedule);
+    window.removeEventListener("transitionend", this.schedule, true);
+    window.removeEventListener("animationend", this.schedule, true);
+    window.visualViewport?.removeEventListener("resize", this.schedule);
+    window.visualViewport?.removeEventListener("scroll", this.schedule);
     if (this.frame !== undefined) window.cancelAnimationFrame(this.frame);
     this.frame = undefined;
   }

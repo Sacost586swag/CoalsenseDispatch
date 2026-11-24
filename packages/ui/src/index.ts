@@ -4,6 +4,7 @@ export { relativeLuminance, contrastRatio } from "./tokens/contrast.ts";
 export { toCssVariables } from "./tokens/css.ts";
 export { defaultTheme, defaultTheme as default } from "./themes/default.ts";
 export { highContrast } from "./themes/high-contrast.ts";
+export { stitchTheme } from "./themes/stitch.ts";
 export { reducedMotion } from "./themes/reduced-motion.ts";
 export { es } from "./i18n/es.ts";
 export {

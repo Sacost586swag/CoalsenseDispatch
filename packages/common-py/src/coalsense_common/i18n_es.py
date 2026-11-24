@@ -55,6 +55,9 @@ es: dict[str, str] = {
     "auth.pairing.notClaimed.message": "Todavía no hay una cuenta que quiera vincular este equipo.",
     "auth.pairing.busy.message": "Este equipo ya espera la respuesta de otra cuenta.",
     "auth.pairing.claimMismatch.message": "Esa solicitud ya no es la vigente.",
+    "auth.session.notFound.message": "No se encontró esa sesión.",
+    "auth.forbidden.message": "Tu rol no tiene permiso para esto.",
+    "auth.next.askAccess": "Pide acceso a la persona responsable.",
     "banner.dismiss.label": "Descartar",
     "status.info.label": "Información",
     "status.success.label": "Listo",
@@ -62,4 +65,650 @@ es: dict[str, str] = {
     "step.done.label": "Completado",
     "step.current.label": "Actual",
     "step.pending.label": "Pendiente",
+    "catalog.product": "Coalsense Dispatch",
+    "catalog.title": "Componentes accesibles",
+    "catalog.description": (
+        "Explora los componentes y sus estados. "
+        "Las acciones de esta muestra no envían ni publican contenido."
+    ),
+    "catalog.navigation": "Ejemplos de componentes",
+    "catalog.actionDone": "Acción de muestra completada.",
+    "catalog.continue": "Continuar",
+    "catalog.disabledReason": (
+        "Esta acción no está disponible en esta muestra. Alto sigue disponible."
+    ),
+    "catalog.back": "Volver al catálogo",
+    "catalog.field": "Nombre del documento",
+    "catalog.fieldHint": "Puedes escribir o dictar el nombre.",
+    "catalog.fieldError": "Escribe o dicta un nombre para continuar.",
+    "catalog.openDialog": "Abrir diálogo",
+    "catalog.closeDialog": "Cerrar diálogo",
+    "catalog.dialogTitle": "Revisa este paso",
+    "catalog.dialogBody": "Puedes cerrar este diálogo cuando quieras. Alto sigue disponible.",
+    "catalog.draft": "Preparar borrador",
+    "catalog.review": "Revisar contenido",
+    "catalog.deliver": "Entregar resultado",
+    "catalog.progress": "Avance del documento",
+    "catalog.bannerBody": "Este aviso permanece hasta que lo descartes.",
+    "catalog.recipient": "Destinatario de muestra",
+    "catalog.effect": "Esta muestra no envía contenido.",
+    "catalog.retry": "Intentar de nuevo",
+    "catalog.case.button-normal": "Botón",
+    "catalog.case.button-primary": "Acción principal",
+    "catalog.case.button-disabled": "Botón no disponible",
+    "catalog.case.button-loading": "Botón cargando",
+    "catalog.case.link-normal": "Enlace",
+    "catalog.case.link-disabled": "Enlace no disponible",
+    "catalog.case.field-normal": "Campo de texto",
+    "catalog.case.field-disabled": "Campo no disponible",
+    "catalog.case.field-error": "Campo con error",
+    "catalog.case.dialog-closed": "Diálogo cerrado",
+    "catalog.case.dialog-open": "Diálogo abierto",
+    "catalog.case.list": "Lista numerada",
+    "catalog.case.progress-known": "Avance conocido",
+    "catalog.case.progress-loading": "Avance cargando",
+    "catalog.case.banner-info": "Aviso informativo",
+    "catalog.case.banner-success": "Aviso completado",
+    "catalog.case.banner-warning": "Aviso de atención",
+    "catalog.case.banner-error": "Aviso de error",
+    "catalog.case.stepper": "Pasos de una tarea",
+    "catalog.case.approval": "Tarjeta de aprobación",
+    "catalog.case.stopbar-ready": "Barra con Deshacer",
+    "catalog.case.stopbar-empty": "Barra sin acción que deshacer",
+    "catalog.case.state-loading": "Estado cargando",
+    "catalog.case.state-empty": "Estado vacío",
+    "catalog.case.state-error": "Estado de error",
+    "catalog.case.state-offline": "Estado sin conexión",
+    "catalog.case.state-calibration_failed": "Estado de calibración fallida",
+    "catalog.case.state-modality_missing": "Estado de modalidad no detectada",
+    "auth.app.title": "Tu espacio de trabajo",
+    "auth.app.intro": "Tú eliges qué hacer. Los agentes te ayudan y tú revisas el resultado.",
+    "auth.signIn.title": "Ingresa a tu cuenta",
+    "auth.email.label": "Tu correo",
+    "auth.email.hint": "Puedes escribir o dictar tu correo. No necesitas contraseña.",
+    "auth.device.label": "Nombre de este equipo",
+    "auth.device.default": "Mi equipo",
+    "auth.request.label": "Pedir código",
+    "auth.code.title": "Ingresa el código",
+    "auth.code.label": "Código de tu correo",
+    "auth.code.hint": "El código no vence por tiempo. Puedes pegarlo, escribirlo o dictarlo.",
+    "auth.verify.label": "Ingresar",
+    "auth.otherEmail.label": "Usar otro correo",
+    "auth.newCode.label": "Pedir otro código",
+    "auth.code.sent": (
+        "Revisa tu correo. El código sigue disponible hasta que lo uses o pidas otro."
+    ),
+    "auth.signedIn.title": "Ya ingresaste",
+    "auth.signedIn.body": "Puedes vincular el companion para usar esta cuenta en otro equipo.",
+    "auth.pair.title": "Vincula el companion",
+    "auth.pair.code.label": "Código del companion",
+    "auth.pair.hint": (
+        "Abre el companion en el equipo que quieres vincular y copia o dicta su código."
+    ),
+    "auth.pair.label": "Vincular equipo",
+    "auth.pair.pending.title": "Confirma en el companion",
+    "auth.pair.pending.body": (
+        "La solicitud está pendiente. Revisa la cuenta y aprueba o rechaza "
+        "la vinculación en ese equipo. No hay límite de tiempo."
+    ),
+    "auth.pair.another.label": "Vincular otro equipo",
+    "auth.signOut.label": "Cerrar sesión",
+    "auth.wait.message": (
+        "Hay varios intentos seguidos. Espera un momento y vuelve a "
+        "intentar. Tu acceso no se pierde."
+    ),
+    "auth.unavailable.message": (
+        "No se pudo conectar con el servicio. Tus datos de este paso siguen aquí."
+    ),
+    "auth.retry.label": "Intentar de nuevo",
+    "auth.stopped.message": (
+        "Se detuvo la espera. El servicio puede haber recibido la solicitud. "
+        "Puedes revisar el paso o intentar de nuevo."
+    ),
+    "auth.loading.message": "Se está consultando el servicio. Alto sigue disponible.",
+    "auth.help.notConfigured": (
+        "Las rutas de ayuda humana todavía no están configuradas en este equipo."
+    ),
+    "auth.help.close": "Cerrar ayuda",
+    "auth.offline.message": (
+        "No hay conexión. Conservamos los datos de este paso para que puedas continuar."
+    ),
+    "auth.field.emailError": "Revisa el correo antes de pedir el código.",
+    "auth.field.required": "Escribe o dicta este dato para continuar.",
+    "auth.theme.label": "Cambiar contraste",
+    "auth.status.checking": "Se está revisando tu sesión.",
+    "auth.session.lost": "Tu sesión ya no está disponible. Puedes ingresar de nuevo.",
+    "auth.back.label": "Volver",
+    "auth.privacy.note": (
+        "El código y la sesión se usan solo para tu acceso. No se guardan en "
+        "el historial de esta página."
+    ),
+    "input.profile.invalid.message": ("El perfil no se puede activar con esta configuración."),
+    "input.profile.retry.message": (
+        "Revisa los vínculos de Alto, Deshacer y Ayuda humana. El perfil anterior sigue disponible."
+    ),
+    "input.undo.empty.message": "No hay nada que deshacer ahora.",
+    "input.undo.irreversible.message": (
+        "La última acción no se puede deshacer. No se cambió nada."
+    ),
+    "input.undo.unverified.message": (
+        "No se pudo verificar si esta acción se puede deshacer. No se cambió nada."
+    ),
+    "input.undo.uncertain.message": (
+        "El equipo no pudo comprobar si terminó de deshacer. Revisa el resultado."
+    ),
+    "input.undo.busy.message": "Se está deshaciendo una acción. Alto sigue disponible.",
+    "input.undo.blocked.message": (
+        "Se detuvo Deshacer antes de cambiar algo. Puedes intentarlo de nuevo."
+    ),
+    "input.undo.done.message": "Se deshizo {action}.",
+    "input.actuation.done.message": "Se envió la acción al equipo.",
+    "input.actuation.resumed.message": "Se reanudó la entrada local.",
+    "input.actuation.paused.message": "La entrada local está pausada.",
+    "input.actuation.interim.message": "El dictado continúa. Aún no se insertó texto.",
+    "input.actuation.dragging.message": (
+        "Arrastre activo. Usa Alto o vuelve a indicar arrastrar para terminar."
+    ),
+    "input.actuation.blocked.message": (
+        "La acción está detenida. Puedes reanudar la entrada cuando quieras."
+    ),
+    "input.actuation.elevated.message": (
+        "Esta ventana tiene permisos más altos y no se puede controlar desde aquí. "
+        "Puedes abrirla sin permisos de administrador o pedir ayuda humana."
+    ),
+    "input.actuation.changed.message": (
+        "Cambió la ventana de destino. Se detuvo la acción; revisa el resultado antes de continuar."
+    ),
+    "input.actuation.unavailable.message": (
+        "No se pudo comprobar el destino. Selecciona una ventana o pide ayuda humana."
+    ),
+    "input.actuation.failed.message": (
+        "El equipo no pudo completar la acción. Revisa el resultado antes de intentar de nuevo."
+    ),
+    "input.actuation.halt_failed.message": (
+        "No se pudo comprobar que todo se haya soltado. Usa Alto de nuevo o pide ayuda humana."
+    ),
+    "input.action.drag": "el arrastre",
+    "input.action.text": "la inserción de texto",
+    "input.action.dictation": "el texto dictado",
+    "input.action.mode": "el cambio de modo",
+    "input.action.profile": "el cambio de perfil de capacidad",
+    "workspace.title": "Tu espacio de trabajo",
+    "workspace.local": "Espacio local",
+    "workspace.local.note": (
+        "Tus borradores permanecen en esta pestaña. Nada se envía sin tu aprobación."
+    ),
+    "workspace.memory.note": (
+        "Conserva este espacio abierto mientras trabajas. Al ir al acceso o recargar, "
+        "se borran los borradores locales."
+    ),
+    "workspace.nav.label": "Navegación principal",
+    "workspace.nav.home": "Inicio",
+    "workspace.nav.tasks": "Tareas",
+    "workspace.nav.autonomy": "Autonomía",
+    "workspace.nav.achievements": "Logros",
+    "workspace.nav.caregiver": "Cuidador/a",
+    "workspace.nav.settings": "Ajustes",
+    "workspace.nav.account": "Mi cuenta",
+    "workspace.brand.subtitle": "Asistente de trabajo",
+    "workspace.language": "ES · Español",
+    "workspace.contrast": "Contraste",
+    "workspace.help": "Ayuda",
+    "workspace.say": "Di:",
+    "workspace.keyboard": "Teclado y mouse",
+    "workspace.voice": "Voz",
+    "workspace.head": "Cabeza y gestos",
+    "workspace.gaze": "Mirada y switch",
+    "workspace.not.connected": "Sin conectar",
+    "workspace.not.available": "No disponible",
+    "workspace.input.title": "Modo de entrada",
+    "workspace.input.note": "Puedes seguir usando teclado y mouse en cualquier momento.",
+    "workspace.input.manual": "Control de esta página",
+    "workspace.input.change": "Cambiar modo",
+    "workspace.stop.notice": (
+        "La tarea está pausada. Tu borrador sigue aquí. Puedes revisar, deshacer o pedir ayuda."
+    ),
+    "workspace.resume": "Reanudar tarea",
+    "workspace.pause": "Pausar tarea",
+    "workspace.paused": "En pausa",
+    "workspace.undo.done": "Se deshizo el último cambio.",
+    "workspace.undo.none": "No hay un cambio reversible ahora.",
+    "workspace.undo.barrier": (
+        "La última acción no se puede deshacer desde aquí. Revisa el resultado."
+    ),
+    "workspace.help.body": (
+        "Todavía no hay un contacto de ayuda configurado. Puedes pedir apoyo a una "
+        "persona de confianza o continuar con teclado y mouse."
+    ),
+    "workspace.close": "Cerrar",
+    "workspace.back": "Volver",
+    "workspace.continue": "Continuar",
+    "workspace.skip": "Continuar con teclado y mouse",
+    "workspace.welcome.title": "Tú decides. Nosotros hacemos el trabajo pesado.",
+    "workspace.welcome.body": (
+        "Elige cómo quieres navegar y controlar Coalsense Dispatch. Puedes cambiar de "
+        "modo cuando lo necesites."
+    ),
+    "workspace.welcome.selection": "Cómo quieres controlar el equipo",
+    "workspace.welcome.voice.body": (
+        "Usa frases cortas para navegar y dictar. Necesita el companion con reconocimiento local."
+    ),
+    "workspace.welcome.head.body": (
+        "Usa movimientos suaves de cabeza y gestos. Necesita una cámara y calibración."
+    ),
+    "workspace.welcome.gaze.body": (
+        "Usa la mirada o un dispositivo de accesibilidad. Esta modalidad todavía no "
+        "está disponible."
+    ),
+    "workspace.welcome.keyboard.body": "Navega con Tab, activa con Enter y escribe a tu ritmo.",
+    "workspace.welcome.selected": "Elegido",
+    "workspace.welcome.choose": "Elegir",
+    "workspace.welcome.start": "Configurar mi control",
+    "workspace.welcome.safe": "Cámara y micrófono bajo tu control",
+    "workspace.welcome.safe.body": (
+        "No se activan al abrir esta pantalla. Cualquier comprobación necesita tu permiso."
+    ),
+    "workspace.welcome.note": (
+        "Puedes empezar con teclado y mouse. Elegir voz o cabeza no activa sensores ni "
+        "declara que estén listos."
+    ),
+    "workspace.calibration.title": "Prepara tu espacio de control",
+    "workspace.calibration.body": (
+        "Busca una postura cómoda. Puedes comprobar la cámara sin guardar ni enviar imágenes."
+    ),
+    "workspace.calibration.preview": "Vista previa de la cámara",
+    "workspace.calibration.no.camera": "La cámara está apagada",
+    "workspace.calibration.camera.active": "Cámara encendida solo para la vista previa",
+    "workspace.calibration.camera.start": "Comprobar cámara",
+    "workspace.calibration.camera.stop": "Apagar cámara",
+    "workspace.calibration.camera.denied": (
+        "No se pudo abrir la cámara. Revisa el permiso del navegador o continúa con "
+        "teclado y mouse."
+    ),
+    "workspace.calibration.camera.unsupported": (
+        "Este navegador no ofrece acceso a la cámara. Puedes continuar con teclado y mouse."
+    ),
+    "workspace.calibration.camera.stopped": "La cámara se apagó. No se guardaron imágenes.",
+    "workspace.calibration.step1": "Acomoda la cámara",
+    "workspace.calibration.step1.body": (
+        "Ubica tu rostro dentro de la vista previa y busca una luz uniforme."
+    ),
+    "workspace.calibration.step2": "Mantén una postura cómoda",
+    "workspace.calibration.step2.body": (
+        "No necesitas sostener una postura ni completar este paso en un tiempo determinado."
+    ),
+    "workspace.calibration.step3": "Comprueba tu forma de entrada",
+    "workspace.calibration.step3.body": (
+        "La detección de gestos todavía no está disponible. La vista previa no es una "
+        "calibración de gestos."
+    ),
+    "workspace.calibration.local": "Vista previa local",
+    "workspace.calibration.local.body": (
+        "Las imágenes se muestran en esta página y se descartan al apagar la cámara o salir."
+    ),
+    "workspace.calibration.voice.note": (
+        "El reconocimiento de voz local todavía no está vinculado. Puedes conectar el "
+        "companion desde Mi cuenta y continuar aquí con teclado y mouse."
+    ),
+    "workspace.calibration.practice": "Ir a la zona de práctica",
+    "workspace.practice.title": "Tu primera tarea, a tu ritmo",
+    "workspace.practice.body": "Practica con un borrador. Aquí no se envía ningún mensaje.",
+    "workspace.practice.step": "Zona de práctica",
+    "workspace.practice.prompt": "Escribe una frase o pega tus notas",
+    "workspace.practice.placeholder": "Por ejemplo: quiero organizar las notas de una reunión.",
+    "workspace.practice.action": "Guardar mi primera nota",
+    "workspace.practice.success": (
+        "Guardaste tu primera nota en esta pestaña. Tú decidiste qué escribir y cuándo continuar."
+    ),
+    "workspace.practice.to.home": "Abrir mi espacio de trabajo",
+    "workspace.home.title": "Tu trabajo empieza contigo",
+    "workspace.home.body": "Tú eliges la tarea, revisas el resultado y decides el siguiente paso.",
+    "workspace.home.tasks": "Elige la tarea de hoy",
+    "workspace.home.tasks.body": (
+        "Empieza con tus ideas. Puedes preparar, editar y revisar un borrador en este equipo."
+    ),
+    "workspace.home.available": "Tres formas de empezar",
+    "workspace.home.week": "Tu avance",
+    "workspace.home.completed": "Borradores copiados",
+    "workspace.home.approvals": "Por revisar",
+    "workspace.home.income": "Ingresos registrados",
+    "workspace.home.no.income": "Todavía no hay ingresos registrados.",
+    "workspace.home.goal": "A tu ritmo",
+    "workspace.home.goal.body": (
+        "No hay rachas ni plazos. Puedes pausar y continuar cuando quieras."
+    ),
+    "workspace.home.history": "Ver mis tareas",
+    "workspace.home.custom": "¿Prefieres empezar con una idea libre?",
+    "workspace.home.custom.body": "Escribe tus notas y decide después qué quieres preparar.",
+    "workspace.home.custom.action": "Empezar con mis notas",
+    "workspace.home.system": "Estado del equipo",
+    "workspace.home.connection": "Sin servicios externos conectados",
+    "workspace.home.microphone": "Micrófono",
+    "workspace.home.camera": "Cámara",
+    "workspace.home.external": "Envíos externos",
+    "workspace.home.off": "Apagado",
+    "workspace.home.manual": "Disponibles con teclado y mouse",
+    "workspace.task.email": "Redactar un correo",
+    "workspace.task.email.body": (
+        "Prepara un mensaje profesional, revisa el destinatario y conserva el control del envío."
+    ),
+    "workspace.task.email.category": "Comunicación",
+    "workspace.task.email.start": "Iniciar correo",
+    "workspace.task.document": "Ordenar mis notas",
+    "workspace.task.document.body": (
+        "Reúne tus ideas en un documento que puedes editar y revisar a tu ritmo."
+    ),
+    "workspace.task.document.category": "Documentos",
+    "workspace.task.document.start": "Iniciar documento",
+    "workspace.task.social": "Preparar una publicación",
+    "workspace.task.social.body": (
+        "Escribe una publicación y revisa el contenido antes de compartirlo."
+    ),
+    "workspace.task.social.category": "Contenido",
+    "workspace.task.social.start": "Iniciar publicación",
+    "workspace.task.new.title": "Cuéntanos qué quieres preparar",
+    "workspace.task.new.body": (
+        "Este borrador usa lo que escribas aquí. No se envían tus notas a un servicio externo."
+    ),
+    "workspace.task.title.label": "Nombre de la tarea",
+    "workspace.task.recipient": "Destinatario",
+    "workspace.task.subject": "Asunto",
+    "workspace.task.notes": "Tus notas o el texto del borrador",
+    "workspace.task.notes.hint": "Puedes pegar texto y cambiarlo después. No hay un tiempo límite.",
+    "workspace.task.prepare": "Preparar mi borrador",
+    "workspace.task.required": "Escribe el nombre de la tarea y alguna nota para continuar.",
+    "workspace.task.progress.title": "Tu tarea está en tus manos",
+    "workspace.task.progress.body": (
+        "El borrador está preparado con tus notas. Revisa cada paso antes de continuar."
+    ),
+    "workspace.task.steps": "Pasos de la tarea",
+    "workspace.task.step.choose": "Elegiste qué preparar",
+    "workspace.task.step.draft": "Preparaste el borrador",
+    "workspace.task.step.review": "Revisas y decides",
+    "workspace.task.step.external": "Compartes cuando tú lo apruebas",
+    "workspace.task.done": "Listo",
+    "workspace.task.pending": "Pendiente",
+    "workspace.task.current": "Ahora",
+    "workspace.task.preview": "Tu borrador",
+    "workspace.task.edit": "Editar borrador",
+    "workspace.task.save": "Guardar cambios",
+    "workspace.task.review": "Revisar antes de compartir",
+    "workspace.task.no.external": "No se enviará nada durante la preparación.",
+    "workspace.task.local.status": "Borrador local",
+    "workspace.task.review.status": "Por revisar",
+    "workspace.task.completed.status": "Borrador copiado",
+    "workspace.task.empty.title": "Tu próxima tarea empieza aquí",
+    "workspace.task.empty.body": (
+        "Todavía no has creado una tarea en esta pestaña. Elige qué quieres preparar."
+    ),
+    "workspace.task.empty.action": "Elegir una tarea",
+    "workspace.task.list.title": "Mis tareas",
+    "workspace.task.list.body": (
+        "Retoma tus borradores. Las tareas permanecen en esta pestaña mientras esté abierta."
+    ),
+    "workspace.task.open": "Abrir tarea",
+    "workspace.task.not.found": "Esta tarea no está disponible en esta pestaña.",
+    "workspace.task.not.found.body": "Puedes volver a tus tareas o comenzar un borrador nuevo.",
+    "workspace.review.title": "Listo para tu decisión",
+    "workspace.review.body": (
+        "Revisa el contenido, el destino y el efecto de cada acción. Nada se envía por inacción."
+    ),
+    "workspace.review.warning": "Revisa antes de compartir",
+    "workspace.review.warning.body": (
+        "Enviar un correo o publicar comparte contenido con otra persona o servicio. "
+        "Siempre necesita tu aprobación."
+    ),
+    "workspace.review.local.warning": (
+        "Todavía no hay un servicio de envío vinculado. Puedes copiar el borrador para "
+        "usarlo donde decidas."
+    ),
+    "workspace.review.preview": "Vista previa del contenido",
+    "workspace.review.destination": "Destino",
+    "workspace.review.unspecified": "Sin destinatario",
+    "workspace.review.channel": "Canal",
+    "workspace.review.channel.local": "Borrador en este equipo",
+    "workspace.review.safeguard": "Nada se envía sin tu aprobación.",
+    "workspace.review.safeguard.body": (
+        "Puedes editar, cancelar o decidir después. No hay cuenta regresiva ni "
+        "aprobación automática."
+    ),
+    "workspace.review.effect": "Qué hará esta acción",
+    "workspace.review.effect.body": (
+        "Copiará este borrador al portapapeles del equipo. No enviará un correo ni "
+        "publicará contenido."
+    ),
+    "workspace.review.copy": "Aprobar y copiar borrador",
+    "workspace.review.send": "Aprobar y enviar",
+    "workspace.review.send.reason": (
+        "Vincula un servicio de correo para habilitar el envío. Mientras tanto, puedes "
+        "copiar el borrador."
+    ),
+    "workspace.review.cancel": "Cancelar preparación",
+    "workspace.review.defer": "Decidir después",
+    "workspace.review.copy.failed": (
+        "No se pudo copiar el borrador. Puedes seleccionar el texto o intentar de nuevo."
+    ),
+    "workspace.review.copy.done": "El borrador se copió al portapapeles. Todavía no se ha enviado.",
+    "workspace.review.cancelled": (
+        "Se canceló la preparación. Tu texto sigue disponible para editarlo."
+    ),
+    "workspace.review.changed": "El borrador cambió. Revísalo otra vez antes de aprobar.",
+    "workspace.review.paused": "La tarea está pausada. Reanúdala para copiar el borrador.",
+    "workspace.review.cancel.wait": (
+        "Se detuvo la espera. Revisa el portapapeles antes de intentar de nuevo."
+    ),
+    "workspace.achievements.title": "Lo que has construido",
+    "workspace.achievements.body": (
+        "Cada paso cuenta. Aquí aparecen las acciones que completaste en esta pestaña."
+    ),
+    "workspace.achievements.empty": "Tus primeros logros aparecerán aquí",
+    "workspace.achievements.empty.body": (
+        "Prepara y revisa un borrador. Cuando apruebes copiarlo, quedará registrado "
+        "como un borrador copiado."
+    ),
+    "workspace.achievements.local": "Acción completada en este equipo",
+    "workspace.achievements.no.income": "No se registraron envíos, publicaciones ni ingresos.",
+    "workspace.achievements.start": "Preparar una tarea",
+    "workspace.settings.title": "Tu forma de trabajar",
+    "workspace.settings.body": "Ajusta esta página a lo que te resulte más cómodo.",
+    "workspace.settings.text": "Tamaño del texto",
+    "workspace.settings.text.normal": "Texto habitual",
+    "workspace.settings.text.large": "Texto ampliado",
+    "workspace.settings.input": "Elegir mi forma de entrada",
+    "workspace.settings.account": "Abrir mi cuenta y vinculación",
+    "workspace.autonomy.title": "Tú mantienes la decisión",
+    "workspace.autonomy.body": (
+        "Cada tarea requiere tu revisión. Una acción que comparte contenido siempre "
+        "necesita aprobación."
+    ),
+    "workspace.autonomy.current": "Aprobación en cada paso",
+    "workspace.autonomy.note": "La autonomía no se aumenta por completar tareas ni por inacción.",
+    "workspace.caregiver.title": "Apoyo con tu permiso",
+    "workspace.caregiver.body": (
+        "Un cuidador o cuidadora puede acompañarte sin decidir ni aprobar en tu nombre."
+    ),
+    "workspace.caregiver.empty": "No hay una delegación configurada en este espacio.",
+    "workspace.caregiver.note": (
+        "Puedes pedir apoyo a una persona de confianza. Los permisos de tu cuenta se "
+        "revisan por separado."
+    ),
+    "workspace.account.open": "Abrir mi cuenta",
+    "workspace.account.enter": "Abrir mi espacio de trabajo",
+    "workspace.onboarding.open": "Elegir mi forma de entrada",
+    "workspace.preview.text": "Vista previa editable",
+    "workspace.offline": (
+        "Sin conexión. El texto de esta pantalla sigue aquí. Conserva esta "
+        "pestaña abierta mientras escribes."
+    ),
+    "workspace.connection.check": "Comprobar conexión",
+    "workspace.pause.label": "Tarea en pausa",
+    "workspace.safety.ready": "Alto, Deshacer y Ayuda están disponibles en esta página.",
+    "workspace.steps.label": "Tu recorrido",
+    "workspace.step.control": "Elige tu control",
+    "workspace.step.setup": "Prepara tu espacio",
+    "workspace.step.practice": "Prueba una tarea",
+    "workspace.achievements.export": "Exportar registro",
+    "workspace.achievements.export.empty": (
+        "Todavía no hay un registro para exportar. Puedes preparar y revisar un borrador."
+    ),
+    "workspace.achievements.export.ready": (
+        "El archivo está listo para guardar. Revisa la descarga; no se registró "
+        "como una nueva entrega."
+    ),
+    "workspace.achievements.export.title": "Registro de borradores copiados",
+    "workspace.income.empty": "Sin registros",
+    "workspace.audio.read": "Leer en voz alta",
+    "workspace.audio.stop": "Detener lectura",
+    "workspace.audio.unavailable": (
+        "No hay una voz local en español disponible. Puedes seguir leyendo el texto en pantalla."
+    ),
+    "workspace.audio.alerts": "Avisos por voz local",
+    "workspace.audio.alerts.body": (
+        "Lee los avisos de esta página con una voz del equipo. No usa voces en la nube."
+    ),
+    "workspace.task.activity": "Bitácora de esta tarea",
+    "workspace.task.activity.body": "Los pasos que completaste y lo que falta por decidir.",
+    "workspace.task.activity.created": "Creaste este borrador",
+    "workspace.task.activity.updated": "Guardaste cambios",
+    "workspace.task.activity.waiting": "Listo para tu revisión",
+    "workspace.task.activity.waiting.body": (
+        "El siguiente paso lo decides tú. No se enviará nada automáticamente."
+    ),
+    "workspace.calibration.gestures": "Tus gestos de control",
+    "workspace.calibration.brow": "Gesto de cejas",
+    "workspace.calibration.mouth": "Gesto de boca",
+    "workspace.calibration.head": "Movimiento de cabeza",
+    "workspace.calibration.pending": "Necesita calibración",
+    "workspace.calibration.try": "Probar:",
+    "workspace.recovery.loading.title": "Abriendo la pantalla",
+    "workspace.recovery.loading.body": (
+        "La pantalla todavía está cargando. Puedes volver a Inicio sin recargar este espacio."
+    ),
+    "workspace.recovery.error.title": "Esta pantalla no se pudo mostrar",
+    "workspace.recovery.error.body": (
+        "Puedes intentar abrirla otra vez o volver a Inicio. No hace falta recargar la pestaña."
+    ),
+    "workspace.recovery.missing.title": "No encontramos esta pantalla",
+    "workspace.recovery.missing.body": (
+        "Esta dirección no corresponde a una pantalla. Puedes abrir "
+        "Inicio para continuar en el espacio local."
+    ),
+    "workspace.recovery.retry": "Volver a intentar",
+    "workspace.editor.undo.pending": (
+        "Hay una edición pendiente. Puedes aplicarla o descartarla "
+        "antes de deshacer."
+    ),
+    "workspace.audio.pause": "Pausar lectura",
+    "workspace.audio.resume": "Reanudar lectura",
+    "workspace.audio.control.failed": (
+        "No se pudo cambiar la lectura. Puedes detenerla o usar Alto."
+    ),
+    "workspace.editor.read.after": "La lectura corresponde al texto de Después.",
+    "workspace.editor.pending": (
+        "Termina o descarta la edición pendiente antes de cambiar de editor."
+    ),
+    "workspace.editor.discard": "Descartar edición pendiente",
+    "workspace.editor.discarded": (
+        "Se descartó la edición pendiente. El borrador guardado no cambió."
+    ),
+    "workspace.editor.removed": "Este bloque se eliminará.",
+    "workspace.editor.no.change": "Este cambio no modifica el borrador.",
+    "workspace.editor.blocks": "Editar por bloques",
+    "workspace.editor.body": (
+        "Selecciona un bloque por su número. Los cambios se hacen en esta pestaña."
+    ),
+    "workspace.editor.select": "Seleccionar bloque",
+    "workspace.editor.block": "Bloque",
+    "workspace.editor.kind.paragraph": "Párrafo",
+    "workspace.editor.kind.heading": "Encabezado",
+    "workspace.editor.kind.list": "Viñeta",
+    "workspace.editor.text": "Texto para el bloque seleccionado",
+    "workspace.editor.replace": "Reemplazar texto",
+    "workspace.editor.insert": "Añadir después",
+    "workspace.editor.delete": "Borrar bloque",
+    "workspace.editor.delete.reason": "Conserva al menos un bloque en el borrador.",
+    "workspace.editor.compare": "Comparar cambio",
+    "workspace.editor.apply": "Aplicar cambio",
+    "workspace.editor.back": "Volver al borrador",
+    "workspace.editor.revise": "Seguir editando",
+    "workspace.editor.before": "Antes",
+    "workspace.editor.after": "Después",
+    "workspace.editor.required": "Escribe el texto antes de comparar el cambio.",
+    "workspace.editor.limit": (
+        "El borrador supera los 50.000 caracteres. Acorta el texto antes de guardarlo."
+    ),
+    "workspace.editor.invalid.draft": (
+        "El borrador necesita un nombre y texto dentro de los límites del editor."
+    ),
+    "workspace.editor.saved": (
+        "El cambio se guardó como una nueva versión. Puedes deshacerlo o revisarlo."
+    ),
+    "workspace.editor.empty": "No hay bloques con texto. Puedes editar el borrador completo.",
+    "workspace.editor.jump": "Número de bloque",
+    "workspace.editor.show": "Mostrar bloque",
+    "workspace.editor.invalid": "No encontramos ese bloque. Elige un número de los que aparecen.",
+    "workspace.editor.previous": "Bloques anteriores",
+    "workspace.editor.next": "Bloques siguientes",
+    "workspace.editor.range": "Bloques mostrados",
+    "workspace.versions.button": "Ver versiones",
+    "workspace.versions.title": "Versiones del borrador",
+    "workspace.versions.body": (
+        "Las versiones quedan en este espacio. Recuperar una crea una nueva versión para revisar."
+    ),
+    "workspace.versions.label": "Versión",
+    "workspace.versions.current": "Versión actual",
+    "workspace.versions.show": "Ver versión",
+    "workspace.versions.number": "Número de versión",
+    "workspace.versions.open": "Mostrar versión",
+    "workspace.versions.use": "Recuperar esta versión",
+    "workspace.versions.not.found": "No encontramos esa versión. Elige un número del historial.",
+    "workspace.versions.restored": (
+        "Se recuperó el contenido como una nueva versión. Revisa otra vez antes de compartir."
+    ),
+    "workspace.versions.type": "Tipo de tarea",
+    "workspace.versions.previous": "Versiones anteriores",
+    "workspace.versions.next": "Versiones siguientes",
+    "workspace.recovery.root.title": "El espacio no se pudo mostrar",
+    "workspace.recovery.root.body": (
+        "Puedes intentar abrirlo otra vez. Los borradores que es"
+        "taban solo en memoria pueden haberse perdido."
+    ),
+    "workspace.recovery.root.stop": "Alto activado en esta pantalla.",
+    "workspace.recovery.root.stop.failed": (
+        "Alto activado. No se pudo comprobar que la lectura local se haya detenido."
+    ),
+    "workspace.recovery.root.enable": "Permitir reintento",
+    "workspace.review.open.editor": "Abrir editor",
+    "workspace.settings.contrast": "Cambiar contraste",
+    "workspace.recovery.home": "Volver a Inicio",
+    "workspace.recovery.safety": "Alto, Deshacer y Ayuda humana siguen disponibles.",
+    "workspace.paused.reason": "La tarea está pausada. Reanúdala para continuar.",
+    "workspace.achievements.inspect": "Ver detalle",
+    "workspace.achievements.detail.title": "Detalle de la copia",
+    "workspace.achievements.detail.body": (
+        "Este registro confirma una copia al portapapeles en esta pestaña. "
+        "No prueba un envío ni una publicación."
+    ),
+    "workspace.achievements.detail.task": "Identificador de la tarea",
+    "workspace.achievements.detail.revision": "Versión aprobada",
+    "workspace.achievements.detail.date": "Fecha de la copia",
+    "workspace.calibration.try.reason": (
+        "La detección de gestos aún no está disponible. Puedes seguir con teclado y mouse."
+    ),
+    "workspace.calibration.sensitivity": "Sensibilidad de detección",
+    "workspace.calibration.not.configured": "Sin configurar",
+    "workspace.achievements.review": "Borradores por revisar",
+    "workspace.achievements.rhythm": "Tu ritmo de trabajo",
+    "workspace.achievements.rhythm.value": "Sin plazos",
+    "workspace.achievements.approval": "Control de las decisiones",
+    "workspace.achievements.approval.value": "Siempre tuyo",
+    "workspace.achievements.path": "Tu recorrido de trabajo",
+    "workspace.achievements.path.body": (
+        "Preparar, revisar y decidir son pasos separados. Ningún logro aumenta tus "
+        "permisos automáticamente."
+    ),
+    "workspace.stop.cleanup": (
+        "La tarea está pausada. No se pudo comprobar el cierre de un recurso "
+        "local. Revisa la cámara o pide ayuda."
+    ),
 }

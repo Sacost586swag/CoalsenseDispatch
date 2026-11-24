@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coalsense:tool-manifest:1",
+  "title": "ToolManifest",
+  "$ref": "#/$defs/ToolManifest",
+  "$defs": {
+    "JsonValue": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "null" },
+        { "type": "array", "items": { "$ref": "#/$defs/JsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/JsonValue" } }
+      ]
+    },
+    "ToolSchema": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/JsonValue" }
+    },
+    "ToolName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+(?![\\s\\S])"
+    },
+    "ToolEffectClass": { "enum": ["read", "internal_write", "external_effect"] },
+    "ToolManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "input_schema",
+        "output_schema",
+        "reversible",
+        "data_categories",
+        "provider"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/ToolName" },
+        "input_schema": { "$ref": "#/$defs/ToolSchema" },
+        "output_schema": { "$ref": "#/$defs/ToolSchema" },
+        "effect_class": { "$ref": "#/$defs/ToolEffectClass", "default": "external_effect" },
+        "reversible": { "type": "boolean" },
+        "compensation": { "$ref": "#/$defs/ToolName" },
+        "data_categories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*(?![\\s\\S])" }
+        },
+        "provider": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*(?![\\s\\S])" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "reversible": { "const": true } } },
+          "then": { "required": ["compensation"] },
+          "else": { "not": { "required": ["compensation"] } }
+        }
+      ]
+    }
+  }
+}

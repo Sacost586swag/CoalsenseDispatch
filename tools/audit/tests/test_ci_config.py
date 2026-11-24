@@ -138,11 +138,22 @@ def _validate(config: dict[Any, Any]) -> None:
             ]
         else:
             task = UNFILTERED[stage]
+            browser_setup = (
+                "pnpm --filter @coalsense/ui exec playwright install --with-deps chromium && "
+                if stage in {"accessibility", "integration"}
+                else ""
+            )
             # turbo exits 0 when a task exists but no package implements it: require >=1 task.
-            assert [step["run"] for step in rest] == [
+            expected_runs = [
                 f"pnpm turbo run {task} --dry=json | node .github/scripts/require-tasks.mjs {task}",
-                f"pnpm turbo run {task}",
+                f"{browser_setup}pnpm turbo run {task}",
             ]
+            if stage == "integration":
+                compose = _load(REPO / "infra/compose.test.yaml")
+                image = compose["services"]["postgres"]["image"]
+                assert re.fullmatch(r"pgvector/pgvector@sha256:[0-9a-f]{64}", image)
+                expected_runs.insert(1, "docker pull " + image)
+            assert [step["run"] for step in rest] == expected_runs
 
     start = jobs["start"]
     assert start["outputs"] == {"started": "${{ steps.clock.outputs.started }}"}
@@ -196,7 +207,14 @@ def test_ci_contract() -> None:
         (("jobs", "audit", "steps", 3, "run"), "pnpm turbo run audit --filter='...[origin/main]'"),
         (("jobs", "accessibility", "steps", 2, "run"), "echo skip"),  # no task-count guard
         (("jobs", "accessibility", "steps", 3, "continue-on-error"), True),
+        (("jobs", "accessibility", "steps", 3, "run"), "pnpm turbo run test:a11y"),
+        (("jobs", "integration", "steps", 3, "run"), "pnpm turbo run test:integration"),
         (("jobs", "integration", "steps", 3, "run"), "echo placeholder"),
+        (("jobs", "integration", "steps", 3, "run"), "docker pull pgvector/pgvector:pg16"),
+        (
+            ("jobs", "integration", "steps", 4, "run"),
+            "pnpm --filter @coalsense/web test:integration",
+        ),
         (("jobs", "audit", "permissions"), {"contents": "write"}),
         (("jobs", "required", "if"), "${{ success() }}"),
         (("jobs", "required", "steps", 0, "run"), "echo success"),

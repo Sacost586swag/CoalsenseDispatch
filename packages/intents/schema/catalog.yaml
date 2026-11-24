@@ -1,0 +1,106 @@
+{
+  "control.stop": {
+    "priority": "preemptive",
+    "definition": "ControlStopIntent"
+  },
+  "control.undo": {
+    "priority": "preemptive",
+    "definition": "ControlUndoIntent"
+  },
+  "help.request_human": {
+    "priority": "preemptive",
+    "definition": "HelpRequestHumanIntent"
+  },
+  "approval.approve": {
+    "priority": "normal",
+    "definition": "ApprovalApproveIntent"
+  },
+  "approval.reject": {
+    "priority": "normal",
+    "definition": "ApprovalRejectIntent"
+  },
+  "pointer.move": {
+    "priority": "normal",
+    "definition": "PointerMoveIntent"
+  },
+  "pointer.click": {
+    "priority": "normal",
+    "definition": "PointerClickIntent"
+  },
+  "pointer.double_click": {
+    "priority": "normal",
+    "definition": "PointerDoubleClickIntent"
+  },
+  "pointer.drag_toggle": {
+    "priority": "normal",
+    "definition": "PointerDragToggleIntent"
+  },
+  "pointer.scroll": {
+    "priority": "normal",
+    "definition": "PointerScrollIntent"
+  },
+  "key.press": {
+    "priority": "normal",
+    "definition": "KeyPressIntent"
+  },
+  "text.insert": {
+    "priority": "normal",
+    "definition": "TextInsertIntent"
+  },
+  "text.dictation": {
+    "priority": "normal",
+    "definition": "TextDictationIntent"
+  },
+  "nav.next": {
+    "priority": "normal",
+    "definition": "NavNextIntent"
+  },
+  "nav.previous": {
+    "priority": "normal",
+    "definition": "NavPreviousIntent"
+  },
+  "nav.select": {
+    "priority": "normal",
+    "definition": "NavSelectIntent"
+  },
+  "nav.back": {
+    "priority": "normal",
+    "definition": "NavBackIntent"
+  },
+  "ui.show_numbers": {
+    "priority": "normal",
+    "definition": "UiShowNumbersIntent"
+  },
+  "ui.show_grid": {
+    "priority": "normal",
+    "definition": "UiShowGridIntent"
+  },
+  "ui.select_target": {
+    "priority": "normal",
+    "definition": "UiSelectTargetIntent"
+  },
+  "mode.set": {
+    "priority": "normal",
+    "definition": "ModeSetIntent"
+  },
+  "input.pause": {
+    "priority": "normal",
+    "definition": "InputPauseIntent"
+  },
+  "input.resume": {
+    "priority": "normal",
+    "definition": "InputResumeIntent"
+  },
+  "profile.switch": {
+    "priority": "normal",
+    "definition": "ProfileSwitchIntent"
+  },
+  "calibration.request": {
+    "priority": "normal",
+    "definition": "CalibrationRequestIntent"
+  },
+  "command.invoke": {
+    "priority": "normal",
+    "definition": "CommandInvokeIntent"
+  }
+}

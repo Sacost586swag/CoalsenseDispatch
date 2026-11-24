@@ -1,0 +1,104 @@
+html {
+  scroll-padding-bottom: calc(var(--stop-bar-reserved) + var(--space-md));
+}
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  overflow-wrap: anywhere;
+}
+* {
+  box-sizing: border-box;
+}
+.app-header,
+.auth-main {
+  max-inline-size: 72rem;
+  margin-inline: auto;
+  padding: var(--space-md);
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--target-gap);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+.app-header p {
+  margin: 0;
+  font-weight: var(--font-bold);
+}
+.auth-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--space-2xl);
+  padding-block: var(--space-xl);
+  padding-block-end: calc(var(--stop-bar-reserved) + var(--space-xl));
+}
+.auth-intro h1 {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.15;
+  text-wrap: balance;
+  margin-block: 0 var(--space-md);
+  max-inline-size: 12ch;
+}
+.auth-intro p {
+  max-inline-size: 32ch;
+}
+.auth-panel {
+  min-inline-size: 0;
+}
+.auth-panel h2 {
+  margin-block: 0 var(--space-md);
+  font-size: 1.6em;
+  text-wrap: balance;
+}
+.auth-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.auth-panel form > .cs-button {
+  align-self: flex-start;
+}
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--target-gap);
+  margin-block-start: var(--space-md);
+}
+.auth-privacy {
+  color: var(--color-secondary-text);
+  margin-block-start: var(--space-lg);
+}
+.auth-panel .cs-banner {
+  margin-block-end: var(--space-md);
+}
+.cs-button,
+.cs-link {
+  max-inline-size: 100%;
+}
+:focus-visible {
+  outline: var(--ring-width) solid var(--color-ring);
+  outline-offset: var(--space-xs);
+  scroll-margin-block: var(--space-md);
+}
+::selection {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+input {
+  caret-color: var(--color-foreground);
+}
+@media (max-width: 50rem) {
+  .auth-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-lg);
+  }
+  .auth-intro h1 {
+    max-inline-size: none;
+  }
+}

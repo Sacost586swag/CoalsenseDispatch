@@ -21,6 +21,7 @@ from coalsense_common import new_id
 
 from .errors import code_gone, code_invalid, request_invalid, send_failed
 from .ports import Account, AuthDeps, CodeRecord, CodeSender, Device, EmailVault
+from .sessions import IssuedCredential, SessionService
 
 MAX_ATTEMPTS = 5  # [SUPUESTO] por código
 EMAIL_CODE_DIGITS = 6  # [SUPUESTO]
@@ -79,10 +80,13 @@ def hash_code(key: bytes, kind: str, subject: str, code: str) -> str:
 class EmailCodeService:
     """Solicitar y verificar el código por correo (alta e ingreso, REQ-00-020)."""
 
-    def __init__(self, deps: AuthDeps, sender: CodeSender, vault: EmailVault) -> None:
+    def __init__(
+        self, deps: AuthDeps, sender: CodeSender, vault: EmailVault, sessions: SessionService
+    ) -> None:
         self.deps = deps
         self.sender = sender
         self.vault = vault
+        self.sessions = sessions
 
     def request(self, email: str, ip: str) -> None:
         """Responde igual para correos nuevos y conocidos: no revela qué cuentas existen."""
@@ -120,7 +124,8 @@ class EmailCodeService:
 
     def verify(
         self, email: str, code: str, device_label: str, ip: str
-    ) -> tuple[Account, Device, bool]:
+    ) -> tuple[Account, Device, bool, IssuedCredential]:
+        """Ingresa: crea el dispositivo y su credencial inicial (se entrega una sola vez)."""
         d = self.deps
         normalized = normalize_email(email)
         if normalized is None:
@@ -159,6 +164,7 @@ class EmailCodeService:
             if created:
                 d.repo.add_account(account)
             d.repo.add_device(device)
+            issued = self.sessions.issue(account, device)
             record.used_at = now
             record.account_id = account.id
             d.repo.update_code(record)
@@ -166,4 +172,4 @@ class EmailCodeService:
             if created:
                 d.emit("auth.account.created", "ok", account.id)
             d.emit("auth.login", "ok", account.id, device.id)
-            return account, device, created
+            return account, device, created, issued

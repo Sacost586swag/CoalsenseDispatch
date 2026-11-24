@@ -4,6 +4,10 @@ Detrás de un proxy, la confianza en `X-Forwarded-Proto` y `X-Forwarded-For` vie
 `trusted_proxies` (IP o rangos CIDR). No ejecutar uvicorn con `--proxy-headers`: reescribiría
 el esquema y el cliente con otra lista de confianza (`--forwarded-allow-ips`) y las dos podrían
 discrepar. Usar `--no-proxy-headers`.
+
+Sesión: `Authorization: Bearer <credencial>`. Si el pedido toca rotar la credencial, la
+respuesta trae la nueva en `X-Credential-Rotated` (con `Cache-Control: no-store`). Ninguna
+ruta de contenido se sirve sin `RequireScopes`; `operator` solo recibe alcances `ops:*`.
 """
 
 import logging
@@ -18,8 +22,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .codes import EmailCodeService
-from .errors import AuthError, generic, request_invalid, session_required, tls_required
+from .errors import AuthError, generic, request_invalid, tls_required
 from .pairing import PairingService
+from .revocation import RevocationService
+from .roles import RequireScopes
+from .scopes import DEVICES_MANAGE, PAIRING_CLAIM
+from .sessions import Principal, SessionService
 
 HSTS = "max-age=63072000; includeSubDomains"
 log = logging.getLogger("coalsense.auth")
@@ -97,10 +105,6 @@ def normalize_ip(raw: str) -> str:
     return str(ip_network(f"{address}/64", strict=False))
 
 
-def _no_session(request: Request) -> str:
-    raise session_required()
-
-
 def _peer(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
@@ -140,14 +144,17 @@ def _log_error(request: Request, event: str, status: int) -> None:
 def create_app(
     emails: EmailCodeService,
     pairing: PairingService,
+    sessions: SessionService,
+    revocation: RevocationService,
     *,
     trusted_proxies: Iterable[str] = frozenset(),
-    current_account: Callable[[Request], str] = _no_session,
 ) -> FastAPI:
-    """`current_account` devuelve el id de la cuenta con sesión abierta; la sesión es T-00-011."""
     trusted = TrustedProxies(trusted_proxies)
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-    account = Annotated[str, Depends(current_account)]
+    app.state.sessions = sessions
+    manager = Annotated[Principal, Depends(RequireScopes(DEVICES_MANAGE))]
+    claimer = Annotated[Principal, Depends(RequireScopes(PAIRING_CLAIM))]
+    authenticated = Annotated[Principal, Depends(RequireScopes())]
 
     @app.middleware("http")
     async def require_tls(
@@ -157,6 +164,10 @@ def create_app(
             return _json(tls_required())
         response = await call_next(request)
         response.headers["Strict-Transport-Security"] = HSTS
+        rotated = getattr(request.state, "rotated_credential", None)
+        if rotated:
+            response.headers["X-Credential-Rotated"] = rotated
+            response.headers["Cache-Control"] = "no-store"
         return response
 
     @app.exception_handler(AuthError)
@@ -176,17 +187,36 @@ def create_app(
         _log_error(request, "auth.http.unexpected", 500)  # sin el error: podría traer datos
         return _json(generic(500))
 
+    @app.get("/auth/session")
+    def session_summary(who: authenticated, response: Response) -> dict[str, str]:
+        response.headers["Cache-Control"] = "no-store"
+        return {
+            "account_id": who.account_id,
+            "device_id": who.device_id,
+            "session_id": who.session_id,
+            "role": who.role,
+        }
+
     @app.post("/auth/code/request", status_code=202)
     def request_code(body: RequestCode, request: Request) -> dict[str, bool]:
         emails.request(body.email, client_ip(request, trusted))
         return {"requested": True}
 
     @app.post("/auth/code/verify")
-    def verify_code(body: VerifyCode, request: Request) -> dict[str, str | bool]:
-        who, device, created = emails.verify(
+    def verify_code(
+        body: VerifyCode, request: Request, response: Response
+    ) -> dict[str, str | bool]:
+        who, device, created, issued = emails.verify(
             body.email, body.code, body.device_label, client_ip(request, trusted)
         )
-        return {"account_id": who.id, "device_id": device.id, "created": created}
+        response.headers["Cache-Control"] = "no-store"  # lleva la credencial, solo esta vez
+        return {
+            "account_id": who.id,
+            "device_id": device.id,
+            "session_id": issued.session_id,
+            "credential": issued.value,
+            "created": created,
+        }
 
     @app.post("/auth/pairing/start", status_code=201)
     def start_pairing(body: StartPairing, request: Request) -> dict[str, str]:
@@ -194,8 +224,8 @@ def create_app(
         return {"code": code}
 
     @app.post("/auth/pairing/claim", status_code=202)
-    def claim_pairing(body: ClaimPairing, request: Request, account_id: account) -> dict[str, str]:
-        pairing.claim(account_id, body.code, client_ip(request, trusted))
+    def claim_pairing(body: ClaimPairing, request: Request, who: claimer) -> dict[str, str]:
+        pairing.claim(who.account_id, body.code, client_ip(request, trusted))
         return {"status": "pending"}
 
     @app.post("/auth/pairing/status")
@@ -204,9 +234,17 @@ def create_app(
         return {"state": state, "hint": hint, "claim_id": claim_id}
 
     @app.post("/auth/pairing/confirm")
-    def confirm_pairing(body: CompanionDecision, request: Request) -> dict[str, str]:
-        device = pairing.confirm(body.client_ref, body.claim_id, client_ip(request, trusted))
-        return {"device_id": device.id}
+    def confirm_pairing(
+        body: CompanionDecision, request: Request, response: Response
+    ) -> dict[str, str]:
+        ip = client_ip(request, trusted)
+        device, issued = pairing.confirm(body.client_ref, body.claim_id, ip)
+        response.headers["Cache-Control"] = "no-store"  # lleva la credencial, solo esta vez
+        return {
+            "device_id": device.id,
+            "session_id": issued.session_id,
+            "credential": issued.value,
+        }
 
     @app.post("/auth/pairing/reject")
     def reject_pairing(body: CompanionDecision, request: Request) -> dict[str, bool]:
@@ -214,8 +252,13 @@ def create_app(
         return {"rejected": True}
 
     @app.post("/auth/devices/{device_id}/revoke")
-    def revoke_device(device_id: str, account_id: account) -> dict[str, bool]:
-        pairing.revoke(account_id, device_id)
+    def revoke_device(device_id: str, who: manager) -> dict[str, bool]:
+        revocation.revoke_device(who.account_id, device_id)
+        return {"revoked": True}
+
+    @app.post("/auth/sessions/{session_id}/revoke")
+    def revoke_session(session_id: str, who: manager) -> dict[str, bool]:
+        revocation.revoke_session(who.account_id, session_id)
         return {"revoked": True}
 
     return app

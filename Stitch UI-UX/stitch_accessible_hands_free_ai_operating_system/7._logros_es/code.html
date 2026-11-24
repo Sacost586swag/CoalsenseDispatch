@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Coalsense Dispatch</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-error-container":"#93000a","on-primary-fixed-variant":"#00504b","surface-container-highest":"#e5e2dd","error-container":"#ffdad6","surface-container-lowest":"#ffffff","on-tertiary-fixed-variant":"#00522a","surface-container":"#f0ede9","on-secondary-fixed-variant":"#614000","on-primary-fixed":"#00201e","surface-container-low":"#f6f3ee","on-secondary-container":"#704b00","on-secondary-fixed":"#281800","surface-bright":"#fcf9f4","secondary":"#805600","inverse-on-surface":"#f3f0eb","inverse-surface":"#31302d","error":"#ba1a1a","surface-variant":"#e5e2dd","outline-variant":"#bec9c6","on-primary-container":"#8fd2cb","on-surface":"#1c1c19","background":"#fcf9f4","on-primary":"#ffffff","secondary-fixed-dim":"#feba49","on-tertiary-fixed":"#00210d","outline":"#6f7977","surface-dim":"#dcdad5","on-secondary":"#ffffff","inverse-primary":"#90d3cc","on-tertiary":"#ffffff","surface-tint":"#226963","primary-fixed":"#abefe8","on-background":"#1c1c19","tertiary-fixed":"#a2f5b7","primary":"#00433f","surface":"#fcf9f4","primary-fixed-dim":"#90d3cc","on-tertiary-container":"#86d79c","tertiary-fixed-dim":"#87d89d","secondary-fixed":"#ffddb0","surface-container-high":"#ebe8e3","tertiary":"#004522","on-error":"#ffffff","primary-container":"#0f5c57","on-surface-variant":"#3f4947","tertiary-container":"#005f31","secondary-container":"#feba49"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-md":"1.5rem","space-xl":"3rem","margin":"1.5rem","gutter-desktop":"2rem","gutter":"1.5rem","space-xs":"0.5rem","space-sm":"1rem","margin-desktop":"3rem","space-lg":"2rem"},"fontFamily":{"label-lg":["Atkinson Hyperlegible Next"],"body-md":["Atkinson Hyperlegible Next"],"headline-xl":["Atkinson Hyperlegible Next"],"headline-md":["Atkinson Hyperlegible Next"],"headline-lg":["Atkinson Hyperlegible Next"],"body-xl":["Atkinson Hyperlegible Next"],"label-voice":["Atkinson Hyperlegible Next"],"body-lg":["Atkinson Hyperlegible Next"]},"fontSize":{"label-lg":["20px",{"lineHeight":"26px","fontWeight":"600"}],"body-md":["18px",{"lineHeight":"28px","fontWeight":"400"}],"headline-xl":["48px",{"lineHeight":"60px","letterSpacing":"-0.01em","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"38px","fontWeight":"600"}],"headline-lg":["36px",{"lineHeight":"48px","letterSpacing":"-0.005em","fontWeight":"700"}],"body-xl":["24px",{"lineHeight":"36px","fontWeight":"400"}],"label-voice":["16px",{"lineHeight":"22px","letterSpacing":"0.02em","fontWeight":"700"}],"body-lg":["20px",{"lineHeight":"30px","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-lg text-body-lg text-on-surface antialiased"><header class="fixed top-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-28 w-full px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="Coalsense Dispatch Emblem" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrBC8dK4_mWN3uN1Zk_7LWSp-JmxvCBxaBdK7mlkAVmQBunMLfsvZ2HpobtkxVyqyc3tGzJgsVa2rF7wfwgAMx1wxIzNgMuIN4sA-TBYmwA8odxq7RPccOcRHR2_wiUGbtylsn6E8TRRlc-fbc_q7w_Z18NTOGaxTCrp0Ug4sAHL_peg6VHSFGZEZ9ufbBq4iWj0FWKDGPQSAYQryRewBVn3IQff2h2HLm5pmLHPYsdC"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-primary font-bold leading-tight">Coalsense Dispatch</span><span class="font-body-md text-body-md text-on-surface-variant font-medium">Autonomous Work Assistant / Asistente de Trabajo</span></div></div><nav class="flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-bold rounded-lg shadow-sm"><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="home" href="#"><span class="font-label-lg text-label-lg">Home / Inicio</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "HOME"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="tasks" href="#"><span class="font-label-lg text-label-lg">Tasks / Tareas</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "TASKS"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="autonomy" href="#"><span class="font-label-lg text-label-lg">Autonomy / Autonomía</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "AUTONOMY"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="achievements" href="#"><span class="font-label-lg text-label-lg">Achievements / Logros</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "LOGROS"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="caregiver" href="#"><span class="font-label-lg text-label-lg">Caregiver / Cuidador</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "CAREGIVER"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="settings" href="#"><span class="font-label-lg text-label-lg">Settings / Ajustes</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "SETTINGS"</span></a></nav><div class="flex items-center gap-space-md"><div class="min-h-[64px] px-space-sm bg-surface-container rounded-xl flex flex-col justify-center items-center"><div class="flex items-center gap-space-xs"><button aria-pressed="true" class="min-h-[44px] px-space-xs rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg" type="button">EN</button><span class="text-outline font-bold text-label-lg">|</span><button aria-pressed="false" class="min-h-[44px] px-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg" type="button">ES</button></div><span class="font-label-voice text-label-voice text-on-surface-variant mt-0.5">SAY: "ESPAÑOL" / "ENGLISH"</span></div><button class="min-h-[64px] min-w-[64px] px-space-sm bg-surface-container-low hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[24px]">contrast</span><span class="font-label-lg text-label-lg font-bold">Contrast</span></div><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "CONTRAST"</span></button><button class="min-h-[64px] px-space-md bg-surface-container-low hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[24px] text-primary">help</span><span class="font-label-lg text-label-lg font-bold">Help / Ayuda</span></div><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "HELP"</span></button><div class="flex items-center gap-space-xs pl-space-xs"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[24px]">person</span></div><div class="flex flex-col"><span class="font-label-lg text-label-lg font-bold text-on-surface">Alex M.</span><span class="font-label-voice text-label-voice text-tertiary font-bold">(Active)</span></div></div></div></div></header><main class="w-full pt-28 pb-60 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Dynamic Audio Feedback Region for Screen Reader & Cognitive Validation -->
+<div aria-live="polite" class="sr-only" id="audit-accessibility-announcer">
+    Sección de Logros y Registro de Autonomía cargada. 48 tareas verificadas. Filtro actual: Todo el trabajo.
+  </div>
+<div class="w-full max-w-[1520px] mx-auto px-gutter-desktop py-space-lg flex flex-col gap-space-xl">
+<!-- 1. Encabezado de Contexto / Registro de Auditoría Fáctica -->
+<header class="w-full bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg relative overflow-hidden">
+<div class="flex flex-col gap-space-xs max-w-4xl">
+<div class="inline-flex items-center gap-space-xs bg-tertiary-fixed text-on-tertiary-fixed px-space-sm py-1.5 rounded-full w-fit">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-voice text-label-voice tracking-wide">REGISTRO DE TRABAJO AUTÓNOMO VERIFICADO • AUDITORÍA CERTIFICADA</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
+          Logros y Registro de Autonomía
+        </h1>
+<p class="font-body-xl text-body-xl text-on-surface-variant leading-relaxed">
+          Historial fáctico de entregables completados, ingresos generados e hitos de soberanía laboral alcanzados por Alex M.
+        </p>
+</div>
+<!-- Quick Action / Exportar Registro Certificado -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md flex-shrink-0">
+<button class="min-h-[72px] min-w-[260px] px-space-lg py-space-xs bg-primary hover:bg-primary-container text-on-primary rounded-xl flex flex-col items-center justify-center transition-colors shadow-sm focus:ring-4 focus:ring-primary focus:outline-none" onclick="document.getElementById('audit-accessibility-announcer').innerText = 'Exportando registro firmado criptográficamente en formato PDF y CSV.'; alert('Registro fáctico de 48 tareas y $840.00 USD exportado exitosamente con firma criptográfica.');" type="button">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[28px]">download_for_offline</span>
+<span class="font-label-lg text-label-lg">Exportar Registro</span>
+</div>
+<span class="font-label-voice text-label-voice text-primary-fixed tracking-wider uppercase mt-0.5">DI: "EXPORTAR"</span>
+</button>
+</div>
+</header>
+<!-- 2. Tarjetas de Métricas Fácticas (Sin Gamificación Paternalista) -->
+<section aria-label="Métricas de Desempeño y Compensación Fáctica" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Métrica 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md relative">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">task_alt</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded">MÉTRICA 01</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface-variant font-medium">Tareas Completadas</div>
+<div class="font-headline-xl text-headline-xl font-bold text-primary my-1">48</div>
+<p class="font-body-md text-body-md text-on-surface leading-snug">
+            100% aprobadas por ti antes de salir, 0 transmisiones no autorizadas.
+          </p>
+</div>
+<div class="pt-space-xs flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span class="font-label-voice text-label-voice">Aprobación soberana absoluta</span>
+</div>
+</div>
+<!-- Métrica 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md relative">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">calendar_today</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded">MÉTRICA 02</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface-variant font-medium">Racha de Trabajo Activo</div>
+<div class="font-headline-xl text-headline-xl font-bold text-on-surface my-1">14 Días</div>
+<p class="font-body-md text-body-md text-on-surface leading-snug">
+            Sesiones ejecutivas diarias consecutivas sin interrupción de flujo.
+          </p>
+</div>
+<div class="pt-space-xs flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">pace</span>
+<span class="font-label-voice text-label-voice">Ritmo regulado por fatiga</span>
+</div>
+</div>
+<!-- Métrica 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md relative">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[32px]">payments</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded">MÉTRICA 03</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface-variant font-medium">Ingresos Totales Autónomos</div>
+<div class="font-headline-xl text-headline-xl font-bold text-secondary my-1">$840.00 <span class="font-label-lg text-label-lg text-on-surface-variant font-normal">USD</span></div>
+<p class="font-body-md text-body-md text-on-surface leading-snug">
+            Depósito directo verificado • Entregables remunerados a clientes.
+          </p>
+</div>
+<div class="pt-space-xs flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+<span class="font-label-voice text-label-voice">Cuenta bancaria propia vinculada</span>
+</div>
+</div>
+<!-- Métrica 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between gap-space-md relative">
+<div class="flex items-start justify-between">
+<div class="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">shield_person</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded">MÉTRICA 04</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface-variant font-medium">Primer Ingreso • Nivel</div>
+<div class="font-headline-md text-headline-md font-bold text-primary my-1">12 Oct 2024</div>
+<p class="font-body-md text-body-md text-on-surface leading-snug font-semibold">
+            Operador Nivel 2
+          </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-snug">
+            Múltiples agentes en paralelo con supervisión ejecutiva por voz.
+          </p>
+</div>
+<div class="pt-space-xs flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-[20px]">military_tech</span>
+<span class="font-label-voice text-label-voice">Certificación N2 aprobada</span>
+</div>
+</div>
+</section>
+<!-- 3. Selector de Modo de Visualización y Filtros (Objetivos de toque >= 64px, separación >= 24px) -->
+<section aria-label="Filtro de Categorías de Trabajo" class="w-full flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[24px] text-primary">filter_list</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">Filtrar por Categoría de Entregable</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant">Selecciona un botón o di el comando por voz</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md" role="tablist">
+<!-- Filtro 1: Todo el Trabajo -->
+<button aria-selected="true" class="min-h-[72px] px-space-md py-space-xs bg-primary-container text-on-primary rounded-xl flex flex-col items-center justify-center shadow-sm focus:ring-4 focus:ring-primary focus:outline-none transition-colors" id="filter-btn-all" onclick="setAchievementFilter('all', this)" role="tab" type="button">
+<span class="font-label-lg text-label-lg font-bold">Todo el Trabajo (48)</span>
+<span class="font-label-voice text-label-voice text-on-primary-container uppercase mt-0.5">DI: "VER TODOS"</span>
+</button>
+<!-- Filtro 2: Comunicación -->
+<button aria-selected="false" class="min-h-[72px] px-space-md py-space-xs bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-xl flex flex-col items-center justify-center shadow-sm focus:ring-4 focus:ring-primary focus:outline-none transition-colors" id="filter-btn-comms" onclick="setAchievementFilter('comms', this)" role="tab" type="button">
+<span class="font-label-lg text-label-lg font-bold">Comunicación Clientes (22)</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant uppercase mt-0.5">DI: "VER CORREOS"</span>
+</button>
+<!-- Filtro 3: Documentos -->
+<button aria-selected="false" class="min-h-[72px] px-space-md py-space-xs bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-xl flex flex-col items-center justify-center shadow-sm focus:ring-4 focus:ring-primary focus:outline-none transition-colors" id="filter-btn-docs" onclick="setAchievementFilter('docs', this)" role="tab" type="button">
+<span class="font-label-lg text-label-lg font-bold">Documentos e Informes (16)</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant uppercase mt-0.5">DI: "VER DOCUMENTOS"</span>
+</button>
+<!-- Filtro 4: Marketing -->
+<button aria-selected="false" class="min-h-[72px] px-space-md py-space-xs bg-surface-container-lowest hover:bg-surface-container text-on-surface rounded-xl flex flex-col items-center justify-center shadow-sm focus:ring-4 focus:ring-primary focus:outline-none transition-colors" id="filter-btn-mktg" onclick="setAchievementFilter('mktg', this)" role="tab" type="button">
+<span class="font-label-lg text-label-lg font-bold">Marketing y Redes (10)</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant uppercase mt-0.5">DI: "VER REDES"</span>
+</button>
+</div>
+</section>
+<!-- 4. Línea de Tiempo de Tareas y Entregables Completados -->
+<section aria-label="Cronología Detallada de Tareas Verificadas" class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">
+          Cronología de Entregables Auditados (Más reciente primero)
+        </h2>
+<span class="font-label-voice text-label-voice text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-lg">
+          ORDEN: DESCENDENTE POR FECHA
+        </span>
+</div>
+<!-- Timeline Container -->
+<div class="flex flex-col gap-space-md" id="achievements-timeline-list">
+<!-- TAREA 01 -->
+<article class="achievement-card bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg relative transition-all" data-category="comms">
+<div class="flex flex-col gap-space-xs flex-grow max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-voice text-label-voice bg-surface-container-highest text-on-surface px-space-xs py-1 rounded">Hoy, 10:45 AM</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice bg-primary-fixed text-on-primary-fixed px-space-xs py-1 rounded">Comunicación con Clientes</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant font-bold">TARJETA 01</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+              Correo de seguimiento: Confirmación de SLA Sprint 4
+            </h3>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+              Correo estructurado enviado a Elena Rostova. 142 palabras, tono contractual calibrado y cero errores de sintaxis detectados en previsualización.
+            </p>
+<!-- Métricas de Esfuerzo & Autonomía -->
+<div class="flex flex-wrap items-center gap-space-md pt-space-xs font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">timer</span>
+<span>Tiempo dedicado: <strong>7 mins</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<span>Modo de entrada: <strong>Voz y Cabeza</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-tertiary">mouse</span>
+<span>Clics de mouse requeridos: <strong>0</strong></span>
+</div>
+</div>
+</div>
+<!-- Lado Derecho: Remuneración, Estado y Acción -->
+<div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-space-md flex-shrink-0 w-full lg:w-auto">
+<div class="flex flex-col items-start lg:items-end gap-1">
+<div class="font-headline-md text-headline-md font-bold text-secondary">
+                +$15.00 USD
+              </div>
+<span class="inline-flex items-center gap-1.5 font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                Despachado y Verificado
+              </span>
+</div>
+<button class="min-h-[64px] min-w-[220px] px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="inspectAudit('01', 'Correo de seguimiento: Confirmación de SLA Sprint 4', '+$15.00 USD')" type="button">
+<span class="font-label-lg text-label-lg font-bold">Inspeccionar Auditoría</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant tracking-wider uppercase">DI: "INSPECCIONAR 1"</span>
+</button>
+</div>
+</article>
+<!-- TAREA 02 -->
+<article class="achievement-card bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg relative transition-all" data-category="docs">
+<div class="flex flex-col gap-space-xs flex-grow max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-voice text-label-voice bg-surface-container-highest text-on-surface px-space-xs py-1 rounded">23 Oct 2024, 4:20 PM</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice bg-primary-fixed text-on-primary-fixed px-space-xs py-1 rounded">Documentos e Informes</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant font-bold">TARJETA 02</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+              Síntesis Ejecutiva: Rendimiento de Operaciones Q3
+            </h3>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+              Documento técnico de 6 páginas condensando métricas de incidentes, despachos y ahorro de ancho de banda. Formato corporativo PDF exportado sin asistencia presencial.
+            </p>
+<div class="flex flex-wrap items-center gap-space-md pt-space-xs font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">timer</span>
+<span>Tiempo dedicado: <strong>34 mins</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<span>Modo de entrada: <strong>Voz Pura</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-tertiary">mouse</span>
+<span>Clics de mouse requeridos: <strong>0</strong></span>
+</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-space-md flex-shrink-0 w-full lg:w-auto">
+<div class="flex flex-col items-start lg:items-end gap-1">
+<div class="font-headline-md text-headline-md font-bold text-secondary">
+                +$45.00 USD
+              </div>
+<span class="inline-flex items-center gap-1.5 font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                Despachado y Verificado
+              </span>
+</div>
+<button class="min-h-[64px] min-w-[220px] px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="inspectAudit('02', 'Síntesis Ejecutiva: Rendimiento de Operaciones Q3', '+$45.00 USD')" type="button">
+<span class="font-label-lg text-label-lg font-bold">Inspeccionar Auditoría</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant tracking-wider uppercase">DI: "INSPECCIONAR 2"</span>
+</button>
+</div>
+</article>
+<!-- TAREA 03 -->
+<article class="achievement-card bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg relative transition-all" data-category="mktg">
+<div class="flex flex-col gap-space-xs flex-grow max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-voice text-label-voice bg-surface-container-highest text-on-surface px-space-xs py-1 rounded">21 Oct 2024, 11:15 AM</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice bg-primary-fixed text-on-primary-fixed px-space-xs py-1 rounded">Marketing y Redes</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant font-bold">TARJETA 03</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+              Secuencia de 3 Publicaciones B2B: Lanzamiento API
+            </h3>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+              Campañas de difusión técnica para LinkedIn y X redactadas por Agente Sintáctico 1, revisadas y despachadas mediante comando verbal directo.
+            </p>
+<div class="flex flex-wrap items-center gap-space-md pt-space-xs font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">timer</span>
+<span>Tiempo dedicado: <strong>12 mins</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<span>Modo de entrada: <strong>Voz y Cabeza</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-tertiary">mouse</span>
+<span>Clics de mouse requeridos: <strong>0</strong></span>
+</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-space-md flex-shrink-0 w-full lg:w-auto">
+<div class="flex flex-col items-start lg:items-end gap-1">
+<div class="font-headline-md text-headline-md font-bold text-secondary">
+                +$22.50 USD
+              </div>
+<span class="inline-flex items-center gap-1.5 font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                Despachado y Verificado
+              </span>
+</div>
+<button class="min-h-[64px] min-w-[220px] px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="inspectAudit('03', 'Secuencia de 3 Publicaciones B2B: Lanzamiento API', '+$22.50 USD')" type="button">
+<span class="font-label-lg text-label-lg font-bold">Inspeccionar Auditoría</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant tracking-wider uppercase">DI: "INSPECCIONAR 3"</span>
+</button>
+</div>
+</article>
+<!-- TAREA 04 -->
+<article class="achievement-card bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg relative transition-all" data-category="comms">
+<div class="flex flex-col gap-space-xs flex-grow max-w-4xl">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-voice text-label-voice bg-surface-container-highest text-on-surface px-space-xs py-1 rounded">19 Oct 2024, 09:05 AM</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice bg-primary-fixed text-on-primary-fixed px-space-xs py-1 rounded">Comunicación con Clientes</span>
+<span class="text-outline font-bold text-label-voice">•</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant font-bold">TARJETA 04</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+              Resolución de Incidente Crítico: Servidor de Despacho Norte
+            </h3>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+              Comunicado preventivo enviado al consorcio de clientes afectados. Aprobado en 4 minutos desde el panel de emergencia sin intervención de intermediarios.
+            </p>
+<div class="flex flex-wrap items-center gap-space-md pt-space-xs font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">timer</span>
+<span>Tiempo dedicado: <strong>4 mins</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">visibility</span>
+<span>Modo de entrada: <strong>Voz Directa</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-tertiary">mouse</span>
+<span>Clics de mouse requeridos: <strong>0</strong></span>
+</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-space-md flex-shrink-0 w-full lg:w-auto">
+<div class="flex flex-col items-start lg:items-end gap-1">
+<div class="font-headline-md text-headline-md font-bold text-secondary">
+                +$30.00 USD
+              </div>
+<span class="inline-flex items-center gap-1.5 font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+                Despachado y Verificado
+              </span>
+</div>
+<button class="min-h-[64px] min-w-[220px] px-space-md py-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="inspectAudit('04', 'Resolución de Incidente Crítico: Servidor de Despacho Norte', '+$30.00 USD')" type="button">
+<span class="font-label-lg text-label-lg font-bold">Inspeccionar Auditoría</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant tracking-wider uppercase">DI: "INSPECCIONAR 4"</span>
+</button>
+</div>
+</article>
+</div>
+</section>
+<!-- 5. Crecimiento Profesional y Hoja de Ruta de Autonomía -->
+<section aria-label="Hoja de Ruta de Autonomía y Escala Salarial" class="w-full bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[28px] text-primary">trending_up</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">
+              Crecimiento Profesional y Hoja de Ruta de Autonomía
+            </h2>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">
+            Certificación continua de capacidades operativas basada en volumen real de entregables libres de asistencia presencial.
+          </p>
+</div>
+<div class="bg-surface-container px-space-md py-space-xs rounded-xl flex flex-col items-center justify-center">
+<span class="font-label-voice text-label-voice text-on-surface-variant">ESTADO GLOBAL</span>
+<span class="font-label-lg text-label-lg font-bold text-primary">Nivel 2 Activo • 80% al Nivel 3</span>
+</div>
+</div>
+<!-- Roadmap Grid (3 Pasos Estructurados sin Sliders ni Timers) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md pt-space-xs">
+<!-- Nivel 1: Completado -->
+<div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-voice text-label-voice text-tertiary bg-tertiary-fixed px-2.5 py-1 rounded-full font-bold">
+                COMPLETADO ✓
+              </span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">NIVEL 01</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface mt-2">
+              Fundamentos de Control
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Revisión manual del 100% de las palabras. Operación con un solo agente y validación visual letra por letra mediante comandos de voz básicos.
+            </p>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-surface font-medium">Requisito: 20 Tareas</span>
+<span class="font-label-lg text-label-lg text-tertiary font-bold">20/20 (100%)</span>
+</div>
+</div>
+<!-- Nivel 2: Nivel Actual Activo -->
+<div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between gap-space-md ring-4 ring-primary">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-voice text-label-voice text-on-primary bg-primary px-3 py-1 rounded-full font-bold">
+                NIVEL ACTUAL ACTIVO ✓
+              </span>
+<span class="font-label-voice text-label-voice text-primary font-bold">NIVEL 02</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-primary mt-2">
+              Trabajo Multitarea con Agentes
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Supervisión simultánea de 2 agentes redactores. Resolución ejecutiva de ambigüedades contextuales y autorización rápida de transferencias de datos.
+            </p>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-surface font-medium">Capacidad Operativa</span>
+<span class="font-label-lg text-label-lg text-primary font-bold">Totalmente Acreditado</span>
+</div>
+</div>
+<!-- Nivel 3: En Progreso -->
+<div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-voice text-label-voice text-on-secondary-container bg-secondary-fixed px-3 py-1 rounded-full font-bold">
+                EN PROGRESO (80%)
+              </span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">NIVEL 03</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface mt-2">
+              Orquestación de Flujos Autónomos
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Gestión de proyectos complejos de varios pasos para clientes corporativos. Aprobación por lotes y delegación segura sin fatiga cognitiva.
+            </p>
+</div>
+<!-- Avance Visual Fáctico sin Sliders Pequeños -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-body-md">
+<span class="font-body-md text-body-md text-on-surface font-medium">Progreso de entregables</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">48 / 60 Tareas</span>
+</div>
+<!-- Barra de Progreso Accesible y de Alto Contraste -->
+<div aria-valuemax="100" aria-valuemin="0" aria-valuenow="80" class="w-full h-5 bg-surface-container-highest rounded-full overflow-hidden" role="progressbar">
+<div class="h-full bg-primary rounded-full transition-all" style="width: 80%;"></div>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant mt-1">Faltan 12 entregables verificados para certificar el Nivel 3.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Modal Accesible de Inspección de Auditoría (Controlado vía DOM) -->
+<div aria-labelledby="modal-audit-title" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-gutter" id="audit-inspector-modal" role="dialog">
+<div class="bg-surface-container-lowest rounded-xl max-w-3xl w-full p-space-xl shadow-2xl flex flex-col gap-space-lg relative max-h-[921px] overflow-y-auto">
+<div class="flex items-start justify-between border-b pb-space-sm border-surface-container-high">
+<div class="flex flex-col">
+<span class="font-label-voice text-label-voice text-tertiary bg-tertiary-fixed px-2.5 py-1 rounded w-fit mb-1 font-bold">
+              REGISTRO CRIPTOGRÁFICO INMUTABLE
+            </span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold" id="modal-audit-title">
+              Detalle de Auditoría
+            </h2>
+</div>
+<button class="min-h-[64px] min-w-[64px] bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center focus:ring-4 focus:ring-primary focus:outline-none" onclick="closeAuditModal()" type="button">
+<span class="material-symbols-outlined text-[28px]">close</span>
+<span class="font-label-voice text-label-voice">DI: "CERRAR"</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-md font-body-lg text-body-lg text-on-surface">
+<div class="p-space-md bg-surface-container-low rounded-xl flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-medium">Identificador Hash de Transmisión:</span>
+<span class="font-mono text-body-md text-on-surface font-bold">0x8F94...44E1</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-medium">Método de Validación del Operador:</span>
+<span class="font-bold text-primary">Comando Verbal "APROBAR Y DESPACHAR"</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant font-medium">Compensación Acreditada:</span>
+<span class="font-headline-md text-headline-md text-secondary font-bold" id="modal-audit-compensation">+$15.00 USD</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="font-label-lg text-label-lg font-bold">Resumen de Contenido Despachado:</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed bg-surface-bright p-space-sm rounded-lg" id="modal-audit-desc">
+              Cargando información del registro...
+            </p>
+</div>
+<div class="flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+<span class="font-body-md text-body-md font-medium">Certificación de no-intervención de terceros adjunta.</span>
+</div>
+</div>
+<div class="flex justify-end gap-space-md pt-space-xs border-t border-surface-container-high">
+<button class="min-h-[64px] min-w-[200px] px-space-lg bg-primary hover:bg-primary-container text-on-primary rounded-xl flex flex-col items-center justify-center focus:ring-4 focus:ring-primary focus:outline-none" onclick="closeAuditModal()" type="button">
+<span class="font-label-lg text-label-lg">Cerrar Detalle</span>
+<span class="font-label-voice text-label-voice text-primary-fixed uppercase tracking-wider">DI: "CERRAR"</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Filtro accesible de categorías de trabajo
+    function setAchievementFilter(category, buttonEl) {
+      const allButtons = document.querySelectorAll('[role="tab"]');
+      allButtons.forEach(btn => {
+        btn.setAttribute('aria-selected', 'false');
+        btn.classList.remove('bg-primary-container', 'text-on-primary');
+        btn.classList.add('bg-surface-container-lowest', 'text-on-surface');
+        
+        const voiceSpan = btn.querySelector('.font-label-voice');
+        if (voiceSpan) {
+          voiceSpan.classList.remove('text-on-primary-container');
+          voiceSpan.classList.add('text-on-surface-variant');
+        }
+      });
+
+      buttonEl.setAttribute('aria-selected', 'true');
+      buttonEl.classList.remove('bg-surface-container-lowest', 'text-on-surface');
+      buttonEl.classList.add('bg-primary-container', 'text-on-primary');
+      
+      const activeVoiceSpan = buttonEl.querySelector('.font-label-voice');
+      if (activeVoiceSpan) {
+        activeVoiceSpan.classList.remove('text-on-surface-variant');
+        activeVoiceSpan.classList.add('text-on-primary-container');
+      }
+
+      const cards = document.querySelectorAll('.achievement-card');
+      let visibleCount = 0;
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const announcer = document.getElementById('audit-accessibility-announcer');
+      if (announcer) {
+        announcer.innerText = 'Mostrando ' + visibleCount + ' entregables en el filtro seleccionado.';
+      }
+    }
+
+    // Modal de Inspección de Auditoría
+    function inspectAudit(cardId, title, compensation) {
+      const modal = document.getElementById('audit-inspector-modal');
+      const titleEl = document.getElementById('modal-audit-title');
+      const compEl = document.getElementById('modal-audit-compensation');
+      const descEl = document.getElementById('modal-audit-desc');
+      const announcer = document.getElementById('audit-accessibility-announcer');
+
+      if (titleEl) titleEl.innerText = 'Auditoría Tarjeta ' + cardId + ': ' + title;
+      if (compEl) compEl.innerText = compensation;
+      if (descEl) descEl.innerText = 'El entregable fue supervisado y transmitido exitosamente por el usuario utilizando el motor de voz de Coalsense Dispatch. No se registraron ediciones forzadas de agentes externos.';
+      
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      if (announcer) {
+        announcer.innerText = 'Ventana de auditoría abierta para la tarjeta ' + cardId;
+      }
+    }
+
+    function closeAuditModal() {
+      const modal = document.getElementById('audit-inspector-modal');
+      const announcer = document.getElementById('audit-accessibility-announcer');
+
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      if (announcer) {
+        announcer.innerText = 'Ventana de auditoría cerrada.';
+      }
+    }
+  </script>
+</div></main><aside class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"><div class="w-full px-gutter-desktop py-space-xs bg-surface-container-low flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1.5 rounded-full"><span class="material-symbols-outlined text-primary text-[24px] animate-pulse">mic</span><span class="font-label-lg text-label-lg text-primary font-bold">Voice Engine Active</span></div><div class="flex items-baseline gap-space-xs"><span class="font-body-md text-body-md text-on-surface-variant font-medium">Recognized / Reconocido:</span><span class="font-headline-md text-headline-md text-on-surface font-bold bg-surface-bright px-space-xs py-0.5 rounded-lg">"Heard: open my tasks" / "Entendí: abre mis tareas"</span></div><span class="font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-space-xs py-1 rounded-full font-bold">98% confident</span></div><div class="flex items-center gap-space-sm"><button class="min-h-[48px] px-space-md rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center gap-space-xs transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="material-symbols-outlined text-[20px] text-error">cancel</span><span class="font-label-lg text-label-lg">Cancel Command</span><span class="font-label-voice text-label-voice text-on-surface-variant ml-1">SAY: "CANCEL"</span></button></div></div><div class="h-24 w-full px-gutter-desktop flex items-center justify-between gap-space-md bg-surface-container-lowest"><button class="min-h-[80px] min-w-[200px] px-space-lg bg-error hover:bg-error/95 text-on-error rounded-xl flex flex-col items-center justify-center shadow-md focus:ring-4 focus:ring-error-container focus:outline-none" type="button"><span class="font-headline-md text-headline-md tracking-wider font-bold">STOP / ALTO</span><span class="font-label-voice text-label-voice tracking-wide">SAY: "STOP"</span></button><div class="flex items-center gap-space-md px-space-lg py-space-xs bg-surface-container-low rounded-xl"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[32px]">visibility</span><span class="material-symbols-outlined text-primary text-[32px]">record_voice_over</span></div><div class="flex flex-col"><span class="font-headline-md text-headline-md font-bold text-on-surface">Input: Voice &amp; Head Gaze (Active)</span><span class="font-body-md text-body-md text-on-surface-variant">Modo: Voz y Cabeza</span></div><button class="min-h-[48px] px-space-md ml-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="font-label-lg text-label-lg font-bold">Switch Mode</span><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "SWITCH"</span></button></div><button class="min-h-[80px] min-w-[200px] px-space-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl flex flex-col items-center justify-center shadow-md focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="font-headline-md text-headline-md tracking-wider font-bold">UNDO / DESHACER</span><span class="font-label-voice text-label-voice tracking-wide text-on-surface-variant">SAY: "UNDO"</span></button></div></aside></body></html>

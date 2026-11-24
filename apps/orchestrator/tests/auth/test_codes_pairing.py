@@ -33,8 +33,10 @@ from coalsense_orchestrator.auth.memory import InMemoryAuditSink, InMemoryAuthRe
 from coalsense_orchestrator.auth.pairing import MAX_CLAIMS, PairingService
 from coalsense_orchestrator.auth.ports import AuthDeps, CodeRecord
 from coalsense_orchestrator.auth.rate_limit import RateLimiter
+from coalsense_orchestrator.auth.revocation import RevocationService
 from coalsense_orchestrator.auth.routes import create_app
-from fastapi import Request
+from coalsense_orchestrator.auth.sessions import ROTATE_AFTER_S, SessionService, credential_hash
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx import Response
 
@@ -79,13 +81,6 @@ class FakeVault:
         return b"sealed:" + bytes(b ^ 0x5A for b in email.encode())
 
 
-def who(request: Request) -> str:
-    account = request.headers.get("x-account")
-    if not account:
-        raise errors.session_required()
-    return account
-
-
 class Env:
     def __init__(self) -> None:
         self.clock = FakeClock()
@@ -99,15 +94,18 @@ class Env:
             limiter=RateLimiter(self.clock, cap_s=CAP_S),
             key=KEY,
         )
-        self.emails = EmailCodeService(self.deps, self.sender, FakeVault())
-        self.pairing = PairingService(self.deps)
-        self.app = create_app(
-            self.emails,
-            self.pairing,
-            trusted_proxies=frozenset({"testclient"}),
-            current_account=who,
-        )
+        self.sessions = SessionService(self.deps)
+        self.revocation = RevocationService(self.deps)
+        self.emails = EmailCodeService(self.deps, self.sender, FakeVault(), self.sessions)
+        self.pairing = PairingService(self.deps, self.sessions)
+        self.creds: dict[str, str] = {}  # id de cuenta -> credencial de su último ingreso
+        self.app = self.make_app(frozenset({"testclient"}))
         self.api = TestClient(self.app, base_url="https://testserver")
+
+    def make_app(self, proxies: frozenset[str] = frozenset()) -> FastAPI:
+        return create_app(
+            self.emails, self.pairing, self.sessions, self.revocation, trusted_proxies=proxies
+        )
 
     def request(self, email: str = EMAIL, ip: str | None = None) -> int:
         headers = {"x-forwarded-for": ip} if ip else {}
@@ -124,6 +122,7 @@ class Env:
         response = self.verify(self.sender.last, email)
         assert response.status_code == 200, response.text
         body: dict[str, str] = response.json()
+        self.creds[body["account_id"]] = body["credential"]
         return body
 
     def start_pairing(self, ref: str = REF) -> str:
@@ -136,7 +135,7 @@ class Env:
 
     def claim(self, account: str, code: str) -> Response:
         return self.api.post(
-            "/auth/pairing/claim", json={"code": code}, headers={"x-account": account}
+            "/auth/pairing/claim", json={"code": code}, headers=bearer(self.creds[account])
         )
 
     def companion(self, action: str, ref: str = REF, claim_id: str | None = None) -> Response:
@@ -152,6 +151,10 @@ class Env:
 @pytest.fixture
 def env() -> Env:
     return Env()
+
+
+def bearer(credential: str) -> dict[str, str]:
+    return {"authorization": f"Bearer {credential}"}
 
 
 def assert_error(response: Response, status: int, code: str) -> dict[str, object]:
@@ -562,28 +565,28 @@ def test_pairing_requires_a_signed_in_account(env: Env) -> None:
     code = env.start_pairing()
     response = env.api.post("/auth/pairing/claim", json={"code": code})
     assert_error(response, 401, "auth.session.required")
-    plain = TestClient(create_app(env.emails, env.pairing), base_url="https://testserver")
-    response = plain.post("/auth/pairing/claim", json={"code": code}, headers={"x-account": "a"})
-    assert_error(response, 401, "auth.session.required")
+    response = env.api.post("/auth/pairing/claim", json={"code": code}, headers=bearer("x" * 43))
+    assert_error(response, 401, "auth.session.required")  # credencial desconocida
 
 
 def test_revoke_device_audits_and_checks_owner(env: Env) -> None:
     login = env.login()
     path = f"/auth/devices/{login['device_id']}/revoke"
-    stranger = env.api.post(path, headers={"x-account": "otra-cuenta"})
+    other = env.login("otra@ejemplo.org")
+    stranger = env.api.post(path, headers=bearer(other["credential"]))
     assert_error(stranger, 404, "auth.device.not_found")
-    mine = {"x-account": login["account_id"]}
+    mine = bearer(login["credential"])
     assert env.api.post(path, headers=mine).status_code == 200
     assert env.repo.devices[login["device_id"]].revoked_at is not None
     event = next(
         e for e in env.audit.events if (e.event, e.result) == ("auth.device.revoked", "ok")
     )
     assert event.account_id == login["account_id"] and event.device_id == login["device_id"]
-    assert_error(env.api.post(path, headers=mine), 404, "auth.device.not_found")
+    assert_error(env.api.post(path, headers=mine), 401, "auth.session.required")
     failed = [
         e for e in env.audit.events if (e.event, e.result) == ("auth.device.revoked", "failed")
     ]
-    assert len(failed) == 2 and failed[0].account_id == "otra-cuenta"  # M6: también se registra
+    assert len(failed) == 1 and failed[0].account_id == other["account_id"]  # M6
 
 
 # --- REQ-00-026: TLS -----------------------------------------------------------------------
@@ -602,7 +605,7 @@ def test_forwarded_proto_only_from_trusted_proxy(env: Env) -> None:
     http = TestClient(env.app, base_url="http://testserver")
     ok = http.post("/auth/code/request", json={"email": EMAIL}, headers=headers)
     assert ok.status_code == 202
-    other = create_app(env.emails, env.pairing, trusted_proxies=frozenset({"10.0.0.1"}))
+    other = env.make_app(frozenset({"10.0.0.1"}))
     untrusted = TestClient(other, base_url="http://testserver")
     refused = untrusted.post("/auth/code/request", json={"email": EMAIL}, headers=headers)
     assert_error(refused, 400, "auth.tls.required")
@@ -624,7 +627,7 @@ def test_forwarded_proto_uses_the_rightmost_value(env: Env) -> None:
 
 
 def test_trusted_proxies_accept_cidr_ranges(env: Env) -> None:
-    app = create_app(env.emails, env.pairing, trusted_proxies=frozenset({"10.0.0.0/8"}))
+    app = env.make_app(frozenset({"10.0.0.0/8"}))
     inside = TestClient(app, base_url="http://testserver", client=("10.1.2.3", 50000))
     outside = TestClient(app, base_url="http://testserver", client=("11.1.2.3", 50000))
     headers = {"x-forwarded-proto": "https"}
@@ -697,9 +700,9 @@ def test_failed_account_creation_does_not_burn_the_code(env: Env) -> None:
             return super().seal(email)
 
     vault = FlakyVault()
-    env.emails = EmailCodeService(env.deps, env.sender, vault)
+    env.emails = EmailCodeService(env.deps, env.sender, vault, env.sessions)
     env.api = TestClient(
-        create_app(env.emails, env.pairing, trusted_proxies=frozenset({"testclient"})),
+        env.make_app(frozenset({"testclient"})),
         base_url="https://testserver",
         raise_server_exceptions=False,
     )
@@ -732,12 +735,20 @@ def test_audit_and_logs_never_hold_codes_hashes_or_emails(
     account = env.login()["account_id"]
     pairing_code = env.start_pairing()
     env.claim(account, pairing_code)
-    env.companion("confirm", claim_id=env.pending())
+    claim_id = env.pending()
+    confirmed = env.companion("confirm", claim_id=claim_id).json()
+    _, rotated = env.sessions.authenticate(env.creds[account])  # sin tiempo: no rota
+    assert rotated is None
+    env.clock.advance(ROTATE_AFTER_S)
+    _, rotated = env.sessions.authenticate(env.creds[account])  # ahora sí rota
+    assert rotated
     env.sender.fail = True
     env.clock.advance(CAP_S)
     env.request()
     lookup = email_lookup(KEY, EMAIL)
     plain = {first, wrong_code(first), pairing_code, EMAIL, EMAIL.lower(), lookup, REF}
+    credentials = {confirmed["credential"], env.creds[account], rotated}
+    plain |= {claim_id} | credentials | {credential_hash(KEY, c) for c in credentials}
     plain.add(env.repo.accounts[account].email_hint)
     plain.add(lookup_of(KEY, "client", REF))
     plain |= {code for _, code in env.sender.sent}

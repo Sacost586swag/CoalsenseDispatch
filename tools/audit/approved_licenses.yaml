@@ -17,7 +17,15 @@
   "comment_MIT-0": "permisiva; solo vía jsdom (dependencia de desarrollo); aprobada por el orquestador 2026-11-15",
   "comment_CC0-1.0": "permisiva; solo vía jsdom (dependencia de desarrollo); aprobada por el orquestador 2026-11-15",
   "font_packages": [],
-  "exceptions": [],
+  "exceptions": [
+    {
+      "ecosystem": "npm",
+      "name": "caniuse-lite",
+      "version": "1.0.30001826",
+      "license": "CC-BY-4.0",
+      "reason": "Datos de compatibilidad de navegadores de caniuse.com usados por Next.js, sin modificar. Excepcion limitada a esta version y este dataset; atribucion y licencia conservadas en THIRD_PARTY.md. No habilita CC-BY para dependencias de codigo."
+    }
+  ],
   "uninstalled_python": [
     {
       "name": "colorama",

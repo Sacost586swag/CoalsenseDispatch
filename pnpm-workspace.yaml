@@ -2,3 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
   - "tools/*"
+
+# No se distribuye el optimizador opcional con binarios LGPL. La app usa assets locales.
+overrides:
+  "next>sharp": "-"

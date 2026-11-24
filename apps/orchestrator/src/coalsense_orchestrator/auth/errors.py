@@ -18,6 +18,9 @@ CATALOG_KEYS = (
     "auth.tls.required.message",
     "auth.session.required.message",
     "auth.device.notFound.message",
+    "auth.session.notFound.message",
+    "auth.forbidden.message",
+    "auth.next.askAccess",
     "auth.send.failed.message",
     "auth.pairing.notClaimed.message",
     "auth.pairing.busy.message",
@@ -92,6 +95,16 @@ def device_not_found() -> AuthError:
     return _error(
         "auth.device.not_found", "auth.device.notFound.message", "auth.next.checkData", 404
     )
+
+
+def session_not_found() -> AuthError:
+    return _error(
+        "auth.session.not_found", "auth.session.notFound.message", "auth.next.checkData", 404
+    )
+
+
+def forbidden() -> AuthError:
+    return _error("auth.forbidden", "auth.forbidden.message", "auth.next.askAccess", 403)
 
 
 def pairing_not_claimed() -> AuthError:

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>Coalsense Dispatch</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-error-container":"#93000a","on-primary-fixed-variant":"#00504b","surface-container-highest":"#e5e2dd","error-container":"#ffdad6","surface-container-lowest":"#ffffff","on-tertiary-fixed-variant":"#00522a","surface-container":"#f0ede9","on-secondary-fixed-variant":"#614000","on-primary-fixed":"#00201e","surface-container-low":"#f6f3ee","on-secondary-container":"#704b00","on-secondary-fixed":"#281800","surface-bright":"#fcf9f4","secondary":"#805600","inverse-on-surface":"#f3f0eb","inverse-surface":"#31302d","error":"#ba1a1a","surface-variant":"#e5e2dd","outline-variant":"#bec9c6","on-primary-container":"#8fd2cb","on-surface":"#1c1c19","background":"#fcf9f4","on-primary":"#ffffff","secondary-fixed-dim":"#feba49","on-tertiary-fixed":"#00210d","outline":"#6f7977","surface-dim":"#dcdad5","on-secondary":"#ffffff","inverse-primary":"#90d3cc","on-tertiary":"#ffffff","surface-tint":"#226963","primary-fixed":"#abefe8","on-background":"#1c1c19","tertiary-fixed":"#a2f5b7","primary":"#00433f","surface":"#fcf9f4","primary-fixed-dim":"#90d3cc","on-tertiary-container":"#86d79c","tertiary-fixed-dim":"#87d89d","secondary-fixed":"#ffddb0","surface-container-high":"#ebe8e3","tertiary":"#004522","on-error":"#ffffff","primary-container":"#0f5c57","on-surface-variant":"#3f4947","tertiary-container":"#005f31","secondary-container":"#feba49"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-md":"1.5rem","space-xl":"3rem","margin":"1.5rem","gutter-desktop":"2rem","gutter":"1.5rem","space-xs":"0.5rem","space-sm":"1rem","margin-desktop":"3rem","space-lg":"2rem"},"fontFamily":{"label-lg":["Atkinson Hyperlegible Next"],"body-md":["Atkinson Hyperlegible Next"],"headline-xl":["Atkinson Hyperlegible Next"],"headline-md":["Atkinson Hyperlegible Next"],"headline-lg":["Atkinson Hyperlegible Next"],"body-xl":["Atkinson Hyperlegible Next"],"label-voice":["Atkinson Hyperlegible Next"],"body-lg":["Atkinson Hyperlegible Next"]},"fontSize":{"label-lg":["20px",{"lineHeight":"26px","fontWeight":"600"}],"body-md":["18px",{"lineHeight":"28px","fontWeight":"400"}],"headline-xl":["48px",{"lineHeight":"60px","letterSpacing":"-0.01em","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"38px","fontWeight":"600"}],"headline-lg":["36px",{"lineHeight":"48px","letterSpacing":"-0.005em","fontWeight":"700"}],"body-xl":["24px",{"lineHeight":"36px","fontWeight":"400"}],"label-voice":["16px",{"lineHeight":"22px","letterSpacing":"0.02em","fontWeight":"700"}],"body-lg":["20px",{"lineHeight":"30px","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-lg text-body-lg text-on-surface antialiased"><header class="fixed top-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-28 w-full px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md"><img alt="Coalsense Dispatch Emblem" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ALJJyrBC8dK4_mWN3uN1Zk_7LWSp-JmxvCBxaBdK7mlkAVmQBunMLfsvZ2HpobtkxVyqyc3tGzJgsVa2rF7wfwgAMx1wxIzNgMuIN4sA-TBYmwA8odxq7RPccOcRHR2_wiUGbtylsn6E8TRRlc-fbc_q7w_Z18NTOGaxTCrp0Ug4sAHL_peg6VHSFGZEZ9ufbBq4iWj0FWKDGPQSAYQryRewBVn3IQff2h2HLm5pmLHPYsdC"/><div class="flex flex-col"><span class="font-headline-md text-headline-md text-primary font-bold leading-tight">Coalsense Dispatch</span><span class="font-body-md text-body-md text-on-surface-variant font-medium">Autonomous Work Assistant / Asistente de Trabajo</span></div></div><nav class="flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-bold rounded-lg shadow-sm"><a aria-current="page" class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none bg-primary-container text-on-primary font-bold rounded-lg shadow-sm" data-path="home" href="#"><span class="font-label-lg text-label-lg">Home / Inicio</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "HOME"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="tasks" href="#"><span class="font-label-lg text-label-lg">Tasks / Tareas</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "TASKS"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="autonomy" href="#"><span class="font-label-lg text-label-lg">Autonomy / Autonomía</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "AUTONOMY"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="achievements" href="#"><span class="font-label-lg text-label-lg">Achievements / Logros</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "LOGROS"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="caregiver" href="#"><span class="font-label-lg text-label-lg">Caregiver / Cuidador</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "CAREGIVER"</span></a><a class="min-h-[64px] min-w-[64px] px-space-md py-space-xs inline-flex flex-col items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors focus:ring-4 focus:ring-primary focus:outline-none" data-path="settings" href="#"><span class="font-label-lg text-label-lg">Settings / Ajustes</span><span class="font-label-voice text-label-voice text-on-surface-variant uppercase tracking-wider">SAY: "SETTINGS"</span></a></nav><div class="flex items-center gap-space-md"><div class="min-h-[64px] px-space-sm bg-surface-container rounded-xl flex flex-col justify-center items-center"><div class="flex items-center gap-space-xs"><button aria-pressed="true" class="min-h-[44px] px-space-xs rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg" type="button">EN</button><span class="text-outline font-bold text-label-lg">|</span><button aria-pressed="false" class="min-h-[44px] px-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg" type="button">ES</button></div><span class="font-label-voice text-label-voice text-on-surface-variant mt-0.5">SAY: "ESPAÑOL" / "ENGLISH"</span></div><button class="min-h-[64px] min-w-[64px] px-space-sm bg-surface-container-low hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[24px]">contrast</span><span class="font-label-lg text-label-lg font-bold">Contrast</span></div><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "CONTRAST"</span></button><button class="min-h-[64px] px-space-md bg-surface-container-low hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[24px] text-primary">help</span><span class="font-label-lg text-label-lg font-bold">Help / Ayuda</span></div><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "HELP"</span></button><div class="flex items-center gap-space-xs pl-space-xs"><div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[24px]">person</span></div><div class="flex flex-col"><span class="font-label-lg text-label-lg font-bold text-on-surface">Alex M.</span><span class="font-label-voice text-label-voice text-tertiary font-bold">(Active)</span></div></div></div></div></header><main class="w-full pt-28 pb-60 bg-surface min-h-screen"><div class="w-full px-gutter-desktop mx-auto"><div class="flex flex-col w-full pb-16">
+<!-- Header Block: Single canonical section intro (Strict No-Border & Spacing Discipline) -->
+<header class="w-full mb-space-lg">
+<div class="flex flex-wrap items-end justify-between gap-space-md">
+<div class="max-w-3xl">
+<div class="inline-flex items-center gap-2 px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-voice text-label-voice uppercase tracking-widest mb-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
+          Step 02 • Sensor Alignment • Paso 02
+        </div>
+<h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
+          Gesture &amp; Motion Calibration
+        </h1>
+<p class="font-body-xl text-body-xl text-on-surface-variant mt-space-xs">
+          Fine-tune your sensitivity. We test each gesture before you begin.
+        </p>
+</div>
+<!-- Quick Session Mode Badge -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest p-space-sm rounded-xl shadow-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]">accessibility_new</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-voice text-label-voice text-on-surface-variant">TARGET LATENCY</span>
+<span class="font-headline-md text-headline-md text-primary leading-tight font-bold">&lt; 15 ms</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Split Layout: Two wide columns with 32px (space-lg) gap -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Live Camera Feed & Local Diagnostics (Lg: 6 Cols) -->
+<div class="lg:col-span-6 flex flex-col gap-space-md">
+<!-- Camera Preview Card -->
+<div class="relative w-full rounded-xl bg-surface-container-lowest p-space-sm shadow-md overflow-hidden">
+<!-- Privacy Lock Notification Banner (Top of camera feed) -->
+<div class="w-full mb-space-xs px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary flex items-center gap-space-xs shadow-sm">
+<span class="material-symbols-outlined text-[24px]">lock</span>
+<p class="font-body-md text-body-md font-semibold tracking-wide">
+            Camera stays on your device — Zero video or biometrics ever leaves this computer.
+          </p>
+</div>
+<!-- Camera Viewport Container (16:9 ratio, min 400px tall) -->
+<div class="relative w-full aspect-[16/9] min-h-[420px] rounded-lg bg-inverse-surface overflow-hidden flex items-center justify-center" id="camera-viewport">
+<!-- Background Ambient Feed Simulation -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#1c2321] via-[#101b1a] to-[#0a1110] opacity-95"></div>
+<!-- Stylized Neutral Face Silhouette and Face-Mesh Vector SVG -->
+<svg aria-label="Vector face mesh overlay" class="relative z-10 w-full h-full max-w-[420px] p-6 text-on-primary-container" fill="none" viewbox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+<!-- Subtle Face Outline (Stylized) -->
+<path d="M 120 140 C 120 70, 280 70, 280 140 C 280 230, 250 310, 200 330 C 150 310, 120 230, 120 140 Z" opacity="0.35" stroke="currentColor" stroke-dasharray="4 4" stroke-width="2"></path>
+<!-- Facial Contours -->
+<ellipse cx="200" cy="180" opacity="0.2" rx="90" ry="120" stroke="currentColor" stroke-width="1.5"></ellipse>
+<path d="M 160 190 Q 200 210 240 190" opacity="0.4" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1.5"></path>
+<!-- Tracking Wireframe Poly-lines -->
+<!-- Eyebrows tracking line -->
+<polyline opacity="0.85" points="145,130 165,124 185,128" stroke="#86d79c" stroke-width="2.5"></polyline>
+<polyline opacity="0.85" points="215,128 235,124 255,130" stroke="#86d79c" stroke-width="2.5"></polyline>
+<!-- Nose Bridge line -->
+<line opacity="0.6" stroke="#8fd2cb" stroke-width="2" x1="200" x2="200" y1="130" y2="200"></line>
+<line opacity="0.7" stroke="#8fd2cb" stroke-width="2" x1="188" x2="212" y1="205" y2="205"></line>
+<!-- Mouth Tracking Polygon -->
+<path d="M 168 245 Q 200 238 232 245 Q 200 268 168 245 Z" fill="#005f31" fill-opacity="0.2" stroke="#86d79c" stroke-width="2.5"></path>
+<!-- Real-time Active Green Tracking Nodes -->
+<!-- Eyebrow Nodes -->
+<circle class="animate-pulse" cx="145" cy="130" fill="#86d79c" r="5"></circle>
+<circle cx="165" cy="124" fill="#a2f5b7" r="5.5"></circle>
+<circle cx="185" cy="128" fill="#86d79c" r="5"></circle>
+<circle cx="215" cy="128" fill="#86d79c" r="5"></circle>
+<circle cx="235" cy="124" fill="#a2f5b7" r="5.5"></circle>
+<circle class="animate-pulse" cx="255" cy="130" fill="#86d79c" r="5"></circle>
+<!-- Nose Tracking Center Node -->
+<circle cx="200" cy="170" fill="#8fd2cb" r="6"></circle>
+<circle cx="200" cy="205" fill="#8fd2cb" r="4.5"></circle>
+<!-- Mouth Tracking Nodes -->
+<circle cx="168" cy="245" fill="#86d79c" id="mouth-node-left" r="5"></circle>
+<circle cx="200" cy="242" fill="#a2f5b7" id="mouth-node-center" r="5.5"></circle>
+<circle cx="232" cy="245" fill="#86d79c" id="mouth-node-right" r="5"></circle>
+<circle cx="200" cy="264" fill="#86d79c" id="mouth-node-bottom" r="5"></circle>
+<!-- Gaze Center Reticle -->
+<circle cx="200" cy="160" opacity="0.4" r="28" stroke="#feba49" stroke-dasharray="6 4" stroke-width="2"></circle>
+<circle cx="200" cy="160" fill="#feba49" r="3"></circle>
+</svg>
+<!-- Tracking Status Overlay (HUD overlay) -->
+<div class="absolute top-4 left-4 z-20 flex items-center gap-2 bg-inverse-surface/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-on-primary">
+<span class="w-3 h-3 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span class="font-label-voice text-label-voice tracking-wide">MESH LOCK: 468 LANDMARKS</span>
+</div>
+<!-- Dwell calibration target overlay -->
+<div class="absolute bottom-4 right-4 z-20 bg-inverse-surface/85 backdrop-blur-md px-space-sm py-1.5 rounded-lg text-on-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">center_focus_strong</span>
+<span class="font-label-voice text-label-voice">GAZE ZONE: CENTERED</span>
+</div>
+<!-- Disconnect Simulation Overlay (Hidden by Default) -->
+<div class="absolute inset-0 bg-surface-container-highest/95 backdrop-blur-sm z-30 hidden flex flex-col items-center justify-center p-space-lg text-center" id="disconnect-overlay">
+<span class="material-symbols-outlined text-error text-[54px] mb-2">videocam_off</span>
+<h3 class="font-headline-md text-headline-md text-error font-bold mb-1">Camera Feed Suspended</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-space-md">
+              Simulated sensor disconnect test. Fallback switch or head-array mode remains operational.
+            </p>
+<button class="min-h-[64px] px-space-lg rounded-xl bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:bg-primary-container focus:ring-4 focus:ring-primary focus:outline-none flex flex-col items-center justify-center" id="reconnect-btn" type="button">
+<span>Reconnect Camera Feed</span>
+<span class="font-label-voice text-label-voice text-on-primary/80 uppercase">SAY: "RECONNECT"</span>
+</button>
+</div>
+</div>
+<!-- Camera Diagnostics Strip -->
+<div class="w-full mt-space-xs px-space-md py-space-sm rounded-lg bg-surface-container flex flex-wrap items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface">
+<span class="material-symbols-outlined text-tertiary text-[24px]">videocam</span>
+<span class="font-label-lg text-label-lg font-bold">Camera 60 FPS</span>
+<span class="text-outline font-bold">•</span>
+<span class="font-body-md text-body-md text-on-surface-variant">12ms latency</span>
+<span class="text-outline font-bold">•</span>
+<span class="font-body-md text-body-md text-tertiary font-bold">Lighting optimal</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant">DEVICE: HD SENSOR 1080P</span>
+</div>
+</div>
+<!-- Diagnostic Error Simulation Toggle Button (>=64px height) -->
+<div class="w-full">
+<button class="w-full min-h-[64px] px-space-md py-space-xs rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-between shadow-sm transition-colors focus:ring-4 focus:ring-primary focus:outline-none" id="toggle-disconnect-btn" type="button">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[24px]">report</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">[Simulate Camera Disconnect]</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Verify emergency audio alerts &amp; switch mode switchboard</span>
+</div>
+</div>
+<div class="px-3 py-1 rounded bg-surface-container text-on-surface-variant font-label-voice text-label-voice uppercase">
+            SAY: "SIMULATE"
+          </div>
+</button>
+</div>
+<!-- Quick Guidance Information Note -->
+<div class="w-full p-space-md rounded-xl bg-surface-container-low flex gap-space-sm items-start">
+<span class="material-symbols-outlined text-primary text-[28px] mt-0.5">info</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-primary">Need a softer gesture threshold?</span>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Levels 1 and 2 detect subtle twitches with minimal muscular strain. Level 5 requires deliberate, full-displacement movements to prevent inadvertent firing during conversations.
+          </p>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Calibrated Gestures & Sensitivity Steppers (Lg: 6 Cols) -->
+<div class="lg:col-span-6 flex flex-col gap-space-md">
+<!-- GESTURE 1: Raise eyebrows -> Click -->
+<section aria-labelledby="heading-gesture-1" class="w-full rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div>
+<span class="font-label-voice text-label-voice text-primary tracking-widest uppercase font-bold">Gesture 01 • Click Action</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold mt-0.5" id="heading-gesture-1">
+              Raise eyebrows → Click
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Levator labii and frontalis contraction generates standard primary selection.
+            </p>
+</div>
+<!-- Voice Command Key Tag -->
+<div class="bg-surface-container px-space-xs py-1 rounded-lg text-on-surface-variant font-label-voice text-label-voice whitespace-nowrap">
+            CARD 01
+          </div>
+</div>
+<!-- Sensitivity Stepper: Strictly No Sliders -->
+<div class="flex flex-col gap-space-xs bg-surface-container-low p-space-sm rounded-xl">
+<label class="font-label-lg text-label-lg font-bold text-on-surface flex justify-between items-center">
+<span>Detection Sensitivity</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">STEPPER CONTROL</span>
+</label>
+<div class="flex items-center gap-space-md">
+<!-- Minus Button: >= 64x64px footprint -->
+<button aria-label="Decrease eyebrow sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g1', -1)" type="button">
+<span class="material-symbols-outlined text-[32px]">remove</span>
+<span class="font-label-voice text-[12px] uppercase">LESS</span>
+</button>
+<!-- Centrally Rendered Large Stepper Level Display -->
+<div class="flex-1 min-h-[64px] rounded-xl bg-surface-container-lowest flex flex-col items-center justify-center px-space-sm shadow-sm">
+<span class="font-headline-md text-headline-md text-primary font-bold" id="g1-level-label">Level 3 of 5</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">Balanced (42% displacement)</span>
+</div>
+<!-- Plus Button: >= 64x64px footprint -->
+<button aria-label="Increase eyebrow sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g1', 1)" type="button">
+<span class="material-symbols-outlined text-[32px]">add</span>
+<span class="font-label-voice text-[12px] uppercase">MORE</span>
+</button>
+</div>
+</div>
+<!-- Action Testing Area & Verification Badge -->
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<!-- Test Button: min 64px height, high visual affordance -->
+<button class="min-h-[64px] min-w-[210px] px-space-md py-space-xs rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center transition-all focus:ring-4 focus:ring-primary focus:outline-none shadow-sm active:scale-95" onclick="triggerTest('g1')" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">science</span>
+<span class="font-label-lg text-label-lg font-bold">Test it</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "TEST EYEBROWS"</span>
+</button>
+<!-- Result Badge: Soft Green (#3E8E5A theme equivalent tertiary) -->
+<div class="min-h-[64px] px-space-md py-space-xs rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-space-xs shadow-sm" id="g1-badge">
+<span class="material-symbols-outlined text-tertiary text-[28px]">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-tertiary leading-tight">✓ Verified Working</span>
+<span class="font-label-voice text-label-voice text-tertiary">Trigger threshold: 38ms</span>
+</div>
+</div>
+</div>
+</section>
+<!-- GESTURE 2: Open mouth -> Select -->
+<section aria-labelledby="heading-gesture-2" class="w-full rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div>
+<span class="font-label-voice text-label-voice text-primary tracking-widest uppercase font-bold">Gesture 02 • Secondary Trigger</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold mt-0.5" id="heading-gesture-2">
+              Open mouth → Select
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Vertical jaw displacement opens contextual menus and rapid selections.
+            </p>
+</div>
+<div class="bg-surface-container px-space-xs py-1 rounded-lg text-on-surface-variant font-label-voice text-label-voice whitespace-nowrap">
+            CARD 02
+          </div>
+</div>
+<!-- Sensitivity Stepper: Strictly No Sliders -->
+<div class="flex flex-col gap-space-xs bg-surface-container-low p-space-sm rounded-xl">
+<label class="font-label-lg text-label-lg font-bold text-on-surface flex justify-between items-center">
+<span>Detection Sensitivity</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">STEPPER CONTROL</span>
+</label>
+<div class="flex items-center gap-space-md">
+<!-- Minus Button -->
+<button aria-label="Decrease mouth trigger sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g2', -1)" type="button">
+<span class="material-symbols-outlined text-[32px]">remove</span>
+<span class="font-label-voice text-[12px] uppercase">LESS</span>
+</button>
+<!-- Level Display -->
+<div class="flex-1 min-h-[64px] rounded-xl bg-surface-container-lowest flex flex-col items-center justify-center px-space-sm shadow-sm">
+<span class="font-headline-md text-headline-md text-primary font-bold" id="g2-level-label">Level 4 of 5</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">High Sensitivity (25% drop)</span>
+</div>
+<!-- Plus Button -->
+<button aria-label="Increase mouth trigger sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g2', 1)" type="button">
+<span class="material-symbols-outlined text-[32px]">add</span>
+<span class="font-label-voice text-[12px] uppercase">MORE</span>
+</button>
+</div>
+</div>
+<!-- Action Testing Area & Verification Badge -->
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<button class="min-h-[64px] min-w-[210px] px-space-md py-space-xs rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center transition-all focus:ring-4 focus:ring-primary focus:outline-none shadow-sm active:scale-95" onclick="triggerTest('g2')" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">science</span>
+<span class="font-label-lg text-label-lg font-bold">Test it</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "TEST MOUTH"</span>
+</button>
+<div class="min-h-[64px] px-space-md py-space-xs rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-space-xs shadow-sm" id="g2-badge">
+<span class="material-symbols-outlined text-tertiary text-[28px]">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-tertiary leading-tight">✓ Verified Working</span>
+<span class="font-label-voice text-label-voice text-tertiary">Trigger threshold: 22ms</span>
+</div>
+</div>
+</div>
+</section>
+<!-- GESTURE 3: Head left/right -> Move cursor -->
+<section aria-labelledby="heading-gesture-3" class="w-full rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div>
+<span class="font-label-voice text-label-voice text-primary tracking-widest uppercase font-bold">Gesture 03 • Continuous Motion</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold mt-0.5" id="heading-gesture-3">
+              Head left/right → Move cursor
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Horizontal cervical yaw maps to smooth pointer vector coordinates.
+            </p>
+</div>
+<div class="bg-surface-container px-space-xs py-1 rounded-lg text-on-surface-variant font-label-voice text-label-voice whitespace-nowrap">
+            CARD 03
+          </div>
+</div>
+<!-- Sensitivity Stepper: Strictly No Sliders -->
+<div class="flex flex-col gap-space-xs bg-surface-container-low p-space-sm rounded-xl">
+<label class="font-label-lg text-label-lg font-bold text-on-surface flex justify-between items-center">
+<span>Detection Sensitivity</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">STEPPER CONTROL</span>
+</label>
+<div class="flex items-center gap-space-md">
+<!-- Minus Button -->
+<button aria-label="Decrease head movement sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g3', -1)" type="button">
+<span class="material-symbols-outlined text-[32px]">remove</span>
+<span class="font-label-voice text-[12px] uppercase">LESS</span>
+</button>
+<!-- Level Display -->
+<div class="flex-1 min-h-[64px] rounded-xl bg-surface-container-lowest flex flex-col items-center justify-center px-space-sm shadow-sm">
+<span class="font-headline-md text-headline-md text-primary font-bold" id="g3-level-label">Level 2 of 5</span>
+<span class="font-label-voice text-label-voice text-on-surface-variant">Firm/Dampened (55mm yaw)</span>
+</div>
+<!-- Plus Button -->
+<button aria-label="Increase head movement sensitivity" class="min-w-[64px] min-h-[64px] w-16 h-16 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" onclick="adjustLevel('g3', 1)" type="button">
+<span class="material-symbols-outlined text-[32px]">add</span>
+<span class="font-label-voice text-[12px] uppercase">MORE</span>
+</button>
+</div>
+</div>
+<!-- Action Testing Area & Verification Badge -->
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<button class="min-h-[64px] min-w-[210px] px-space-md py-space-xs rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex flex-col items-center justify-center transition-all focus:ring-4 focus:ring-primary focus:outline-none shadow-sm active:scale-95" onclick="triggerTest('g3')" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">science</span>
+<span class="font-label-lg text-label-lg font-bold">Test it</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "TEST HEAD"</span>
+</button>
+<div class="min-h-[64px] px-space-md py-space-xs rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-space-xs shadow-sm" id="g3-badge">
+<span class="material-symbols-outlined text-tertiary text-[28px]">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-tertiary leading-tight">✓ Verified Working</span>
+<span class="font-label-voice text-label-voice text-tertiary">Range of Motion: 110°</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- BOTTOM NAVIGATION AREA: Executive Actions (No sticky overlap with persistent App Shell aside) -->
+<div class="w-full mt-space-xl pt-space-md bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-wrap items-center justify-between gap-space-md">
+<!-- Secondary Action: Reset Sensitivity -->
+<div class="flex items-center gap-space-sm">
+<button class="min-h-[72px] min-w-[220px] px-space-lg bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl flex flex-col items-center justify-center transition-colors shadow-sm focus:ring-4 focus:ring-primary focus:outline-none" id="reset-sensitivity-btn" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[24px]">restart_alt</span>
+<span class="font-label-lg text-label-lg font-bold">Reset sensitivity</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "RESET"</span>
+</button>
+<span class="font-body-md text-body-md text-on-surface-variant hidden md:inline-block">
+        Returns all parameters to default median level 3.
+      </span>
+</div>
+<!-- Primary Action: Continue -->
+<div class="flex items-center gap-space-sm">
+<button class="min-h-[72px] min-w-[280px] px-space-xl bg-primary hover:bg-primary-container text-on-primary rounded-xl flex flex-col items-center justify-center transition-all shadow-md focus:ring-4 focus:ring-primary-fixed focus:outline-none active:scale-[0.98]" id="continue-calibration-btn" type="button">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-md text-headline-md font-bold tracking-wide">Looks good, continue</span>
+<span class="material-symbols-outlined text-[28px]">arrow_forward</span>
+</div>
+<span class="font-label-voice text-label-voice text-on-primary/80 uppercase">SAY: "CONTINUE"</span>
+</button>
+</div>
+</div>
+<!-- Interactive Logic for Steppers, Camera Disconnect & Micro-feedbacks -->
+<script>
+    const sensitivityState = {
+      g1: { level: 3, label: 'Balanced (42% displacement)' },
+      g2: { level: 4, label: 'High Sensitivity (25% drop)' },
+      g3: { level: 2, label: 'Firm/Dampened (55mm yaw)' }
+    };
+
+    function adjustLevel(gestureKey, change) {
+      const current = sensitivityState[gestureKey];
+      if (!current) return;
+      let newLevel = current.level + change;
+      if (newLevel < 1) newLevel = 1;
+      if (newLevel > 5) newLevel = 5;
+      current.level = newLevel;
+
+      const descriptorMap = {
+        1: 'Very Low (Requires deliberate hold)',
+        2: 'Firm/Dampened (Filtered tremors)',
+        3: 'Balanced (Median standard)',
+        4: 'High Sensitivity (Effortless)',
+        5: 'Ultra High (Micro-twitches only)'
+      };
+      
+      const labelEl = document.getElementById(`${gestureKey}-level-label`);
+      if (labelEl) {
+        labelEl.textContent = `Level ${newLevel} of 5`;
+        if (labelEl.nextElementSibling) {
+          labelEl.nextElementSibling.textContent = descriptorMap[newLevel];
+        }
+      }
+
+      // Visual flash on updated badge
+      const badge = document.getElementById(`${gestureKey}-badge`);
+      if (badge) {
+        badge.classList.add('bg-secondary-fixed');
+        setTimeout(() => {
+          badge.classList.remove('bg-secondary-fixed');
+        }, 300);
+      }
+    }
+
+    function triggerTest(gestureKey) {
+      const badge = document.getElementById(`${gestureKey}-badge`);
+      if (!badge) return;
+      
+      // Temporarily indicate testing in progress
+      badge.innerHTML = `
+        <span class="material-symbols-outlined text-primary text-[28px] animate-spin">refresh</span>
+        <div class="flex flex-col">
+          <span class="font-label-lg text-label-lg font-bold text-primary leading-tight">Listening for gesture...</span>
+          <span class="font-label-voice text-label-voice text-primary">Hold pose for 0.4s</span>
+        </div>
+      `;
+
+      setTimeout(() => {
+        badge.className = "min-h-[64px] px-space-md py-space-xs rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-space-xs shadow-sm";
+        badge.innerHTML = `
+          <span class="material-symbols-outlined text-tertiary text-[28px]">check_circle</span>
+          <div class="flex flex-col">
+            <span class="font-label-lg text-label-lg font-bold text-tertiary leading-tight">&check; Verified Working</span>
+            <span class="font-label-voice text-label-voice text-tertiary">Tested now &bull; Confidence 99%</span>
+          </div>
+        `;
+      }, 700);
+    }
+
+    // Camera disconnect toggle simulation
+    const disconnectBtn = document.getElementById('toggle-disconnect-btn');
+    const reconnectBtn = document.getElementById('reconnect-btn');
+    const overlay = document.getElementById('disconnect-overlay');
+
+    if (disconnectBtn && overlay) {
+      disconnectBtn.addEventListener('click', () => {
+        overlay.classList.toggle('hidden');
+      });
+    }
+
+    if (reconnectBtn && overlay) {
+      reconnectBtn.addEventListener('click', () => {
+        overlay.classList.add('hidden');
+      });
+    }
+
+    // Reset button logic
+    const resetBtn = document.getElementById('reset-sensitivity-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        sensitivityState.g1.level = 3;
+        sensitivityState.g2.level = 3;
+        sensitivityState.g3.level = 3;
+        ['g1', 'g2', 'g3'].forEach(k => {
+          const labelEl = document.getElementById(`${k}-level-label`);
+          if (labelEl) {
+            labelEl.textContent = 'Level 3 of 5';
+            if (labelEl.nextElementSibling) {
+              labelEl.nextElementSibling.textContent = 'Balanced (Median standard)';
+            }
+          }
+        });
+      });
+    }
+
+    // Continue navigation trigger
+    const continueBtn = document.getElementById('continue-calibration-btn');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        continueBtn.innerHTML = `
+          <div class="flex items-center gap-space-xs">
+            <span class="font-headline-md text-headline-md font-bold tracking-wide">Settings Saved &bull; Loading Tasks...</span>
+            <span class="material-symbols-outlined text-[28px] animate-pulse">check</span>
+          </div>
+          <span class="font-label-voice text-label-voice text-on-primary/80 uppercase">DISPATCH READY</span>
+        `;
+        setTimeout(() => {
+          window.location.hash = '#tasks';
+        }, 600);
+      });
+    }
+  </script>
+</div></div></main><aside class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"><div class="w-full px-gutter-desktop py-space-xs bg-surface-container-low flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-highest px-space-sm py-1.5 rounded-full"><span class="material-symbols-outlined text-primary text-[24px] animate-pulse">mic</span><span class="font-label-lg text-label-lg text-primary font-bold">Voice Engine Active</span></div><div class="flex items-baseline gap-space-xs"><span class="font-body-md text-body-md text-on-surface-variant font-medium">Recognized / Reconocido:</span><span class="font-headline-md text-headline-md text-on-surface font-bold bg-surface-bright px-space-xs py-0.5 rounded-lg">"Heard: open my tasks" / "Entendí: abre mis tareas"</span></div><span class="font-label-voice text-label-voice bg-tertiary-fixed text-on-tertiary-fixed px-space-xs py-1 rounded-full font-bold">98% confident</span></div><div class="flex items-center gap-space-sm"><button class="min-h-[48px] px-space-md rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center gap-space-xs transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="material-symbols-outlined text-[20px] text-error">cancel</span><span class="font-label-lg text-label-lg">Cancel Command</span><span class="font-label-voice text-label-voice text-on-surface-variant ml-1">SAY: "CANCEL"</span></button></div></div><div class="h-24 w-full px-gutter-desktop flex items-center justify-between gap-space-md bg-surface-container-lowest"><button class="min-h-[80px] min-w-[200px] px-space-lg bg-error hover:bg-error/95 text-on-error rounded-xl flex flex-col items-center justify-center shadow-md focus:ring-4 focus:ring-error-container focus:outline-none" type="button"><span class="font-headline-md text-headline-md tracking-wider font-bold">STOP / ALTO</span><span class="font-label-voice text-label-voice tracking-wide">SAY: "STOP"</span></button><div class="flex items-center gap-space-md px-space-lg py-space-xs bg-surface-container-low rounded-xl"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[32px]">visibility</span><span class="material-symbols-outlined text-primary text-[32px]">record_voice_over</span></div><div class="flex flex-col"><span class="font-headline-md text-headline-md font-bold text-on-surface">Input: Voice &amp; Head Gaze (Active)</span><span class="font-body-md text-body-md text-on-surface-variant">Modo: Voz y Cabeza</span></div><button class="min-h-[48px] px-space-md ml-space-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg flex flex-col items-center justify-center transition-colors focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="font-label-lg text-label-lg font-bold">Switch Mode</span><span class="font-label-voice text-label-voice text-on-surface-variant">SAY: "SWITCH"</span></button></div><button class="min-h-[80px] min-w-[200px] px-space-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl flex flex-col items-center justify-center shadow-md focus:ring-4 focus:ring-primary focus:outline-none" type="button"><span class="font-headline-md text-headline-md tracking-wider font-bold">UNDO / DESHACER</span><span class="font-label-voice text-label-voice tracking-wide text-on-surface-variant">SAY: "UNDO"</span></button></div></aside></body></html>

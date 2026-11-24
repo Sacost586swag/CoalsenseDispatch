@@ -7,7 +7,8 @@
 3. `status` / `confirm` / `reject`: el companion, con su `client_ref`, ve a qué cuenta se
    le pide vincularlo (pista: el correo enmascarado, p. ej. p***@e***) y el `claim_id` del
    reclamo pendiente. Confirma o rechaza en el propio equipo enviando ese `claim_id`; si no
-   coincide, falla con 409. Solo `confirm` crea la fila `device`; `reject` invalida el código.
+   coincide, falla con 409. Solo `confirm` crea la fila `device` y su credencial inicial (se
+   entrega una sola vez); `reject` invalida el código.
    El primer reclamo gana: mientras hay uno pendiente, los demás se rechazan (sin tiempo límite
    para que la persona decida) y gastan espera y cupo del código.
 
@@ -24,18 +25,19 @@ from .codes import hash_code, lookup, new_pairing_code, normalize_pairing_code
 from .errors import (
     claim_mismatch,
     code_gone,
-    device_not_found,
     pairing_busy,
     pairing_not_claimed,
 )
 from .ports import AuthDeps, CodeRecord, Device
+from .sessions import IssuedCredential, SessionService
 
 MAX_CLAIMS = 3  # [SUPUESTO] reclamos válidos por código antes de invalidarlo
 
 
 class PairingService:
-    def __init__(self, deps: AuthDeps) -> None:
+    def __init__(self, deps: AuthDeps, sessions: SessionService) -> None:
         self.deps = deps
+        self.sessions = sessions
 
     def start(self, client_ref: str, device_label: str, ip: str) -> str:
         """Genera un código para el companion.
@@ -113,20 +115,25 @@ class PairingService:
             account = d.repo.get_account(record.account_id)
             return "claimed", account.email_hint if account else "", record.claim_id
 
-    def confirm(self, client_ref: str, claim_id: str, ip: str) -> Device:
+    def confirm(self, client_ref: str, claim_id: str, ip: str) -> tuple[Device, IssuedCredential]:
         """El companion acepta vincularse a la cuenta del reclamo pendiente (`claim_id`)."""
         d = self.deps
         with d.lock:
             record = self._companion_code("auth.device.paired", client_ref, ip)
             self._check_claim(record, claim_id)
             assert record.account_id is not None
+            account = d.repo.get_account(record.account_id)
+            if account is None:
+                raise code_gone()
             now = d.clock.now_iso()
-            device = Device(new_id(), record.account_id, record.device_label or "", now)
+            device = Device(new_id(), account.id, record.device_label or "", now)
             d.repo.add_device(device)
+            issued = self.sessions.issue(account, device)
             record.used_at = now
             d.repo.update_code(record)
-            d.emit("auth.device.paired", "ok", record.account_id, device.id)
-            return device
+            d.limiter.reset(f"start:ip:{ip}")  # terminó bien: pedir otro código no espera
+            d.emit("auth.device.paired", "ok", account.id, device.id)
+            return device, issued
 
     def reject(self, client_ref: str, claim_id: str, ip: str) -> None:
         """La persona dice que no en el companion: el código se invalida y no hay dispositivo.
@@ -140,18 +147,8 @@ class PairingService:
             self._check_claim(record, claim_id)
             record.invalidated_at = d.clock.now_iso()
             d.repo.update_code(record)
+            d.limiter.reset(f"start:ip:{ip}")  # rechazar no debe escalar la espera de reinicio
             d.emit("auth.pairing.rejected", "ok", record.account_id)
-
-    def revoke(self, account_id: str, device_id: str) -> None:
-        d = self.deps
-        with d.lock:
-            device = d.repo.get_device(device_id)
-            if device is None or device.account_id != account_id or device.revoked_at:
-                d.emit("auth.device.revoked", "failed", account_id)
-                raise device_not_found()  # igual para ajeno e inexistente
-            device.revoked_at = d.clock.now_iso()
-            d.repo.update_device(device)
-            d.emit("auth.device.revoked", "ok", account_id, device_id)
 
     def _companion_code(
         self, event: str, client_ref: str, ip: str, *, count: bool = True
@@ -170,5 +167,8 @@ class PairingService:
     def _check_claim(self, record: CodeRecord, claim_id: str) -> None:
         if record.account_id is None or record.claim_id is None:
             raise pairing_not_claimed()
-        if not hmac.compare_digest(record.claim_id, claim_id):
+        # Bytes: `compare_digest` con str no ASCII lanza TypeError (sería un 500).
+        if not hmac.compare_digest(
+            record.claim_id.encode(), claim_id.encode("utf-8", "surrogatepass")
+        ):
             raise claim_mismatch()  # reclamo viejo o ajeno: no se vincula nada

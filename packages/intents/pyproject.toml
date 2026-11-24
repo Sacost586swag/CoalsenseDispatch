@@ -1,0 +1,16 @@
+[project]
+name = "coalsense-intents"
+version = "0.0.0"
+description = "Esquemas y tipos compartidos de intenciones y perfiles de capacidad."
+requires-python = "==3.12.*"
+dependencies = [
+    "jsonschema==4.26.0",
+    "rfc3339-validator==0.1.4",
+]
+
+[build-system]
+requires = ["uv_build==0.12.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "python"

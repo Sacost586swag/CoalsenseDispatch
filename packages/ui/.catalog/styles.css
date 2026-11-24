@@ -1,0 +1,51 @@
+html {
+  scroll-padding-bottom: calc(var(--stop-bar-reserved) + var(--space-md));
+}
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  line-height: var(--font-line-height);
+  overflow-wrap: anywhere;
+}
+header,
+nav,
+main {
+  padding: var(--space-md);
+  max-inline-size: 75ch;
+  margin-inline: auto;
+}
+header p {
+  max-inline-size: 65ch;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--target-gap);
+}
+nav .cs-link {
+  max-inline-size: 100%;
+}
+nav [aria-current="page"] {
+  font-weight: var(--font-bold);
+  text-decoration-thickness: var(--border-width);
+}
+main {
+  padding-block-end: calc(var(--stop-bar-reserved) + var(--space-xl));
+}
+h1,
+h2 {
+  text-wrap: balance;
+}
+:focus-visible {
+  scroll-margin-block: var(--space-md);
+}
+::selection {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+input {
+  caret-color: var(--color-foreground);
+}

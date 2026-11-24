@@ -158,6 +158,8 @@ export const view = <div className="layout" data-testid="view">
   <Button id="send" className="primary" variant="solid" size="sm" type="button" data-x="Enviar"
     aria-labelledby="titulo" role="button" value="send_now"
     name="step-3" testId="send" label={es["stop.label"]} />
+  <TextField autoCapitalize="none" label={es["stop.label"]} />
+  <StateScreen state="offline" />
 </div>;
 """,
     )

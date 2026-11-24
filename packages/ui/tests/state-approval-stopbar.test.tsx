@@ -335,10 +335,11 @@ describe("StopUndoBar", () => {
   it("registers its three controls in the navigation registry", () => {
     const registry = new NavTargetRegistry();
     rtlRender(
-      <NavTargetProvider registry={registry}>
+      <NavTargetProvider registry={registry} measure={() => new DOMRect(0, 0, 100, 64)}>
         <main>{bar()}</main>
       </NavTargetProvider>,
     );
+    registry.refresh();
     expect(
       registry
         .snapshot()

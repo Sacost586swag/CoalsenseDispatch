@@ -1,0 +1,21 @@
+{
+  "name": "@coalsense/intents",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./ts/src/types.ts",
+      "default": "./ts/src/types.ts"
+    }
+  },
+  "scripts": {
+    "generate": "uv run --locked python gen/generate.py",
+    "lint": "uv run --locked ruff check . && eslint ts tests && prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
+    "typecheck": "uv run --locked mypy python gen && tsc --noEmit",
+    "test": "uv run --locked pytest"
+  },
+  "devDependencies": {
+    "@coalsense/common-py": "workspace:*"
+  }
+}

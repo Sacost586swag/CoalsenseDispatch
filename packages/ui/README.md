@@ -6,11 +6,41 @@ Valores vinculantes: sección «Decisiones del orquestador» de MASTER.md. Las r
 
 Los tokens no tienen dependencias; los componentes requieren React 19 como peer.
 
+## Catálogo y pruebas en navegador (T-00-017)
+
+`pnpm --filter @coalsense/ui catalog` abre el catálogo local. Cada ejemplo tiene una
+URL `?case=...`; `&theme=contrast` usa alto contraste y `&mode=head` aumenta los
+objetivos a 64 px. Las acciones son de muestra: no envían ni publican contenido.
+
+`pnpm --filter @coalsense/ui exec playwright install chromium` prepara el navegador.
+`pnpm --filter @coalsense/ui test:a11y` compila el catálogo y ejecuta 59 casos:
+28 ejemplos en dos temas, axe-core con contraste activo, geometría mínima de
+44 px, control de rechazo de objetivos de 40 px, recorrido de diálogo por teclado,
+reflujo con texto al 200 % y objetivos de 64 px en modo cabeza. La prueba de diálogo
+también se expone como `test:integration`. CI instala Chromium y sus bibliotecas.
+
+`pnpm --filter @coalsense/ui build:catalog` genera `catalog-dist/`. Es una muestra
+del design system; no es todavía la aplicación web ni sustituye las pruebas
+manuales con personas reales.
+
 ## Tokens y temas (`@coalsense/ui`)
 
-Exportaciones: defaultTheme (también default), highContrast, reducedMotion,
+`StopUndoBar` mide su altura y publica `--stop-bar-reserved`. También expone
+`data-cs-compact` cuando el ancho resulta menor que 16 veces la fuente del control
+[SUPUESTO]. La web usa esa señal para reorganizar las barras sin reducir texto ni
+objetivos. El cálculo depende de ancho y fuente, no de la altura que cambia al
+reorganizarse. El catálogo conserva su distribución de referencia y sus pruebas.
+
+Exportaciones: defaultTheme (también default), stitchTheme, highContrast, reducedMotion,
 defineTheme, toCssVariables, contrastRatio, relativeLuminance, tokens base y el
 catálogo `es`.
+
+`stitchTheme` aplica la referencia aprobada de `Stitch UI-UX`: verde profundo,
+fondo cálido y Atkinson Hyperlegible Next con base de 20 px. La web lo selecciona
+explícitamente; no reemplaza el tema histórico del catálogo. La tipografía Next
+variable de 200–800 se sirve desde `src/fonts`, con licencia `OFL-Next.txt` y
+atribución en `THIRD_PARTY.md`. Las reglas de objetivos, foco y contraste siguen
+siendo las del paquete compartido.
 
 defineTheme clona el tema y valida el clon (un getter hostil no puede colar un valor
 bajo después de la validación), exige objetivos min/head >= 44 CSS px, gap >= 16,

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "rules": {
+    "read": { "id": "default.read", "decision": "allow" },
+    "internal_write": { "id": "default.internal_write", "decision": "allow" },
+    "external_effect": { "id": "default.external_effect", "decision": "require_approval" }
+  }
+}

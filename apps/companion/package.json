@@ -6,5 +6,9 @@
     "lint": "uv run --locked ruff check .",
     "typecheck": "uv run --locked mypy src",
     "test": "uv run --locked pytest"
+  },
+  "dependencies": {
+    "@coalsense/common-py": "workspace:*",
+    "@coalsense/intents": "workspace:*"
   }
 }

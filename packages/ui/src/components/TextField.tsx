@@ -1,5 +1,6 @@
-import { useId, type InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type Ref } from "react";
 import { es } from "../i18n/es.ts";
+import { useNavTarget } from "../nav/useNavTarget.ts";
 
 export interface TextFieldProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -12,6 +13,8 @@ export interface TextFieldProps extends Omit<
   error?: string;
   /** `disabled` keeps focus (aria-disabled + readOnly); this catalog key says why. */
   disabledReason?: keyof typeof es;
+  /** Merged with the navigation-target registration (React 19 passes `ref` as a prop). */
+  ref?: Ref<HTMLInputElement>;
 }
 
 export function TextField({
@@ -23,10 +26,13 @@ export function TextField({
   id,
   className,
   "aria-describedby": describedByProp,
+  ref,
   ...rest
 }: TextFieldProps) {
   const generated = useId();
   const inputId = id ?? generated;
+  // The name is the visible <label>; the registry never reads the field's value.
+  const navRef = useNavTarget<HTMLInputElement>({ id: inputId, role: "textbox", ref });
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
   const reasonId = `${inputId}-reason`;
@@ -46,6 +52,7 @@ export function TextField({
       )}
       <input
         {...rest}
+        ref={navRef}
         id={inputId}
         className={["cs-input", error && "cs-input--error", className].filter(Boolean).join(" ")}
         readOnly={disabled || rest.readOnly}

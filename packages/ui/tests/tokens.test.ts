@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   defaultTheme,
+  stitchTheme,
   highContrast,
   reducedMotion,
   defineTheme,
@@ -90,7 +91,7 @@ test("WCAG reference values, symmetry and invalid input", () => {
   assert.throws(() => relativeLuminance("not a color"), /hex/i);
 });
 
-for (const [name, theme] of Object.entries({ defaultTheme, highContrast })) {
+for (const [name, theme] of Object.entries({ defaultTheme, stitchTheme, highContrast })) {
   test(`${name}: every semantic text and component pair meets WCAG`, () => {
     const c = theme.color;
     for (const [fg, bg] of [

@@ -26,7 +26,17 @@ export function StopUndoBar({ onStop, onUndo, onHelp, undoAvailable }: StopUndoB
     const bar = ref.current;
     if (!bar) return;
     const root = document.documentElement;
-    const publish = (): void => root.style.setProperty(RESERVED, `${bar.offsetHeight}px`);
+    const publish = (): void => {
+      const control = bar.querySelector("button") ?? bar;
+      const controlFont = Number.parseFloat(window.getComputedStyle(control).fontSize);
+      // [SUPUESTO] below 16 control-font units, three columns split even short labels.
+      // Width/font does not depend on row height, so the reflow cannot oscillate.
+      bar.toggleAttribute(
+        "data-cs-compact",
+        Number.isFinite(controlFont) && bar.clientWidth < controlFont * 16,
+      );
+      root.style.setProperty(RESERVED, `${bar.offsetHeight}px`);
+    };
     publish();
     // shortcut: without ResizeObserver (jsdom, old WebViews) only the first measure applies.
     const observer =

@@ -3,7 +3,7 @@ name = "coalsense-companion"
 version = "0.0.0"
 description = "Companion de escritorio: adaptadores de entrada, calibración y actuador."
 requires-python = "==3.12.*"
-dependencies = []
+dependencies = ["coalsense-common", "coalsense-intents"]
 
 [build-system]
 requires = ["uv_build==0.12.13"]

@@ -1,0 +1,5 @@
+python/
+gen/
+schema/catalog.yaml
+ts/src/types.ts
+*.toml

@@ -1,0 +1,1076 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coalsense:capability-profile:1",
+  "title": "CapabilityProfile",
+  "$ref": "#/$defs/CapabilityProfile",
+  "$defs": {
+    "VoiceTrigger": {
+      "type": "object",
+      "properties": {
+        "phrase": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["phrase"],
+      "additionalProperties": false
+    },
+    "GestureTrigger": {
+      "type": "object",
+      "properties": {
+        "gesture": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["gesture"],
+      "additionalProperties": false
+    },
+    "KeyboardTrigger": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["keys"],
+      "additionalProperties": false
+    },
+    "GazeTrigger": {
+      "type": "object",
+      "properties": {
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dwell_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["target_id", "dwell_ms"],
+      "additionalProperties": false
+    },
+    "SwitchTrigger": {
+      "type": "object",
+      "properties": {
+        "switch": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["switch"],
+      "additionalProperties": false
+    },
+    "Binding": {
+      "type": "object",
+      "properties": {
+        "modality": {
+          "enum": ["voice", "head_gesture", "keyboard_mouse", "gaze", "switch_scan"]
+        },
+        "trigger": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/VoiceTrigger"
+            },
+            {
+              "$ref": "#/$defs/GestureTrigger"
+            },
+            {
+              "$ref": "#/$defs/KeyboardTrigger"
+            },
+            {
+              "$ref": "#/$defs/GazeTrigger"
+            },
+            {
+              "$ref": "#/$defs/SwitchTrigger"
+            }
+          ]
+        },
+        "intent": {
+          "enum": [
+            "control.stop",
+            "control.undo",
+            "help.request_human",
+            "approval.approve",
+            "approval.reject",
+            "pointer.move",
+            "pointer.click",
+            "pointer.double_click",
+            "pointer.drag_toggle",
+            "pointer.scroll",
+            "key.press",
+            "text.insert",
+            "text.dictation",
+            "nav.next",
+            "nav.previous",
+            "nav.select",
+            "nav.back",
+            "ui.show_numbers",
+            "ui.show_grid",
+            "ui.select_target",
+            "mode.set",
+            "input.pause",
+            "input.resume",
+            "profile.switch",
+            "calibration.request",
+            "command.invoke"
+          ]
+        }
+      },
+      "required": ["modality", "trigger", "intent"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "voice"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trigger": {
+                "$ref": "#/$defs/VoiceTrigger"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "head_gesture"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trigger": {
+                "$ref": "#/$defs/GestureTrigger"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "keyboard_mouse"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trigger": {
+                "$ref": "#/$defs/KeyboardTrigger"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "gaze"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trigger": {
+                "$ref": "#/$defs/GazeTrigger"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modality": {
+                "const": "switch_scan"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trigger": {
+                "$ref": "#/$defs/SwitchTrigger"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "GestureSettings": {
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "off": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "hold_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cooldown_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["on", "off", "hold_ms", "cooldown_ms"],
+      "additionalProperties": false
+    },
+    "NeutralPose": {
+      "type": "object",
+      "properties": {
+        "yaw": {
+          "type": "number"
+        },
+        "pitch": {
+          "type": "number"
+        }
+      },
+      "required": ["yaw", "pitch"],
+      "additionalProperties": false
+    },
+    "VoiceSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "gain": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "isolation_silence_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ambiguity_margin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "HeadGestureSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "pointer_mode": {
+          "enum": ["rate", "absolute"]
+        },
+        "dead_zone": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "max_speed": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tremor_filter": {
+          "type": "boolean"
+        },
+        "camera_roll_deg": {
+          "type": "number"
+        },
+        "neutral_pose": {
+          "$ref": "#/$defs/NeutralPose"
+        },
+        "gestures": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/GestureSettings"
+          }
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "KeyboardMouseSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "GazeSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "dwell_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "approval_dwell_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "SwitchScanSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "interval_ms": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "FeedbackSettings": {
+      "type": "object",
+      "properties": {
+        "visual": {
+          "type": "boolean"
+        },
+        "audio": {
+          "type": "boolean"
+        }
+      },
+      "required": ["visual", "audio"],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "visual": {
+              "const": true
+            }
+          }
+        },
+        {
+          "properties": {
+            "audio": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "DeclaredCondition": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consent_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "const": "special"
+        }
+      },
+      "required": ["text", "consent_ref", "category"],
+      "additionalProperties": false
+    },
+    "ModalitySettings": {
+      "type": "object",
+      "properties": {
+        "voice": {
+          "$ref": "#/$defs/VoiceSettings"
+        },
+        "head_gesture": {
+          "$ref": "#/$defs/HeadGestureSettings"
+        },
+        "keyboard_mouse": {
+          "$ref": "#/$defs/KeyboardMouseSettings"
+        },
+        "gaze": {
+          "$ref": "#/$defs/GazeSettings"
+        },
+        "switch_scan": {
+          "$ref": "#/$defs/SwitchScanSettings"
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1,
+      "anyOf": [
+        {
+          "required": ["voice"],
+          "properties": {
+            "voice": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": ["head_gesture"],
+          "properties": {
+            "head_gesture": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": ["keyboard_mouse"],
+          "properties": {
+            "keyboard_mouse": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": ["gaze"],
+          "properties": {
+            "gaze": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "required": ["switch_scan"],
+          "properties": {
+            "switch_scan": {
+              "properties": {
+                "enabled": {
+                  "const": true
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CapabilityProfile": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "const": "es-EC"
+        },
+        "modalities": {
+          "$ref": "#/$defs/ModalitySettings"
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Binding"
+          },
+          "minItems": 3
+        },
+        "approval_min_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "min_target_px": {
+          "type": "integer",
+          "minimum": 44
+        },
+        "feedback": {
+          "$ref": "#/$defs/FeedbackSettings"
+        },
+        "declared_condition": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/DeclaredCondition"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "label",
+        "language",
+        "modalities",
+        "bindings",
+        "approval_min_confidence",
+        "min_target_px",
+        "feedback"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["voice"],
+                "properties": {
+                  "voice": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "voice"
+                    },
+                    "intent": {
+                      "const": "control.stop"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["voice"],
+                "properties": {
+                  "voice": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "voice"
+                    },
+                    "intent": {
+                      "const": "control.undo"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["voice"],
+                "properties": {
+                  "voice": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "voice"
+                    },
+                    "intent": {
+                      "const": "help.request_human"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["head_gesture"],
+                "properties": {
+                  "head_gesture": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "head_gesture"
+                    },
+                    "intent": {
+                      "const": "control.stop"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["head_gesture"],
+                "properties": {
+                  "head_gesture": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "head_gesture"
+                    },
+                    "intent": {
+                      "const": "control.undo"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["head_gesture"],
+                "properties": {
+                  "head_gesture": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "head_gesture"
+                    },
+                    "intent": {
+                      "const": "help.request_human"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["keyboard_mouse"],
+                "properties": {
+                  "keyboard_mouse": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "keyboard_mouse"
+                    },
+                    "intent": {
+                      "const": "control.stop"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["keyboard_mouse"],
+                "properties": {
+                  "keyboard_mouse": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "keyboard_mouse"
+                    },
+                    "intent": {
+                      "const": "control.undo"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["keyboard_mouse"],
+                "properties": {
+                  "keyboard_mouse": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "keyboard_mouse"
+                    },
+                    "intent": {
+                      "const": "help.request_human"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["gaze"],
+                "properties": {
+                  "gaze": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "gaze"
+                    },
+                    "intent": {
+                      "const": "control.stop"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["gaze"],
+                "properties": {
+                  "gaze": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "gaze"
+                    },
+                    "intent": {
+                      "const": "control.undo"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["gaze"],
+                "properties": {
+                  "gaze": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "gaze"
+                    },
+                    "intent": {
+                      "const": "help.request_human"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["switch_scan"],
+                "properties": {
+                  "switch_scan": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "switch_scan"
+                    },
+                    "intent": {
+                      "const": "control.stop"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["switch_scan"],
+                "properties": {
+                  "switch_scan": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "switch_scan"
+                    },
+                    "intent": {
+                      "const": "control.undo"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "modalities": {
+                "required": ["switch_scan"],
+                "properties": {
+                  "switch_scan": {
+                    "properties": {
+                      "enabled": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "bindings": {
+                "contains": {
+                  "properties": {
+                    "modality": {
+                      "const": "switch_scan"
+                    },
+                    "intent": {
+                      "const": "help.request_human"
+                    }
+                  },
+                  "required": ["modality", "intent"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -133,7 +133,12 @@ def python_license(name: str, version: str) -> str | None:
         return None
     if dist.version != version:
         return ""
-    expression = dist.metadata.get("License-Expression") or dist.metadata.get("License") or ""
+    spdx = dist.metadata.get("License-Expression")
+    legacy = (dist.metadata.get("License") or "").strip()
+    # Nombres históricos exactos, verificados contra los textos instalados de
+    # rfc3339-validator 0.1.4 y sortedcontainers 2.4.0. No hay coincidencias parciales.
+    aliases = {"MIT license": "MIT", "Apache 2.0": "Apache-2.0"}
+    expression = spdx or aliases.get(legacy, legacy)
     if expression.strip() and expression.strip() != "UNKNOWN":
         return expression.strip()
     # Unambiguous classifiers only; generic BSD is resolved from the license text.

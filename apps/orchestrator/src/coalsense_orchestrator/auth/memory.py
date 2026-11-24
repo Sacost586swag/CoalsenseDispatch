@@ -1,6 +1,6 @@
 """Implementaciones en memoria para pruebas y desarrollo. La BD real llega en H2."""
 
-from .ports import Account, AuthEvent, CodeRecord, Device, Kind
+from .ports import Account, AuthEvent, CodeRecord, Device, Kind, Session
 
 
 class InMemoryAuditSink:
@@ -15,6 +15,7 @@ class InMemoryAuthRepository:
     def __init__(self) -> None:
         self.accounts: dict[str, Account] = {}
         self.devices: dict[str, Device] = {}
+        self.sessions: dict[str, Session] = {}
         self.codes: list[CodeRecord] = []
 
     def get_account_by_lookup(self, lookup: str) -> Account | None:
@@ -34,6 +35,28 @@ class InMemoryAuthRepository:
 
     def update_device(self, device: Device) -> None:
         self.devices[device.id] = device
+
+    def add_session(self, session: Session) -> None:
+        self.sessions[session.id] = session
+
+    def get_session(self, session_id: str) -> Session | None:
+        return self.sessions.get(session_id)
+
+    def find_session(self, credential_hash: str) -> Session | None:
+        return next(
+            (
+                s
+                for s in self.sessions.values()
+                if credential_hash in (s.credential_hash, s.previous_hash)
+            ),
+            None,
+        )
+
+    def session_of_device(self, device_id: str) -> Session | None:
+        return next((s for s in self.sessions.values() if s.device_id == device_id), None)
+
+    def update_session(self, session: Session) -> None:
+        self.sessions[session.id] = session
 
     def save_code(self, record: CodeRecord) -> None:
         for old in self.codes:

@@ -1,0 +1,1087 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coalsense:intent:1",
+  "title": "Intent",
+  "description": "Intención normalizada. El núcleo fija actor, adaptador, modalidad y prioridad desde la sesión autenticada.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ControlStopIntent"
+    },
+    {
+      "$ref": "#/$defs/ControlUndoIntent"
+    },
+    {
+      "$ref": "#/$defs/HelpRequestHumanIntent"
+    },
+    {
+      "$ref": "#/$defs/ApprovalApproveIntent"
+    },
+    {
+      "$ref": "#/$defs/ApprovalRejectIntent"
+    },
+    {
+      "$ref": "#/$defs/PointerMoveIntent"
+    },
+    {
+      "$ref": "#/$defs/PointerClickIntent"
+    },
+    {
+      "$ref": "#/$defs/PointerDoubleClickIntent"
+    },
+    {
+      "$ref": "#/$defs/PointerDragToggleIntent"
+    },
+    {
+      "$ref": "#/$defs/PointerScrollIntent"
+    },
+    {
+      "$ref": "#/$defs/KeyPressIntent"
+    },
+    {
+      "$ref": "#/$defs/TextInsertIntent"
+    },
+    {
+      "$ref": "#/$defs/TextDictationIntent"
+    },
+    {
+      "$ref": "#/$defs/NavNextIntent"
+    },
+    {
+      "$ref": "#/$defs/NavPreviousIntent"
+    },
+    {
+      "$ref": "#/$defs/NavSelectIntent"
+    },
+    {
+      "$ref": "#/$defs/NavBackIntent"
+    },
+    {
+      "$ref": "#/$defs/UiShowNumbersIntent"
+    },
+    {
+      "$ref": "#/$defs/UiShowGridIntent"
+    },
+    {
+      "$ref": "#/$defs/UiSelectTargetIntent"
+    },
+    {
+      "$ref": "#/$defs/ModeSetIntent"
+    },
+    {
+      "$ref": "#/$defs/InputPauseIntent"
+    },
+    {
+      "$ref": "#/$defs/InputResumeIntent"
+    },
+    {
+      "$ref": "#/$defs/ProfileSwitchIntent"
+    },
+    {
+      "$ref": "#/$defs/CalibrationRequestIntent"
+    },
+    {
+      "$ref": "#/$defs/CommandInvokeIntent"
+    }
+  ],
+  "$defs": {
+    "Modality": {
+      "enum": ["voice", "head_gesture", "keyboard_mouse", "gaze", "switch_scan"]
+    },
+    "ActorOrigin": {
+      "enum": ["person", "caregiver", "system"]
+    },
+    "Priority": {
+      "enum": ["preemptive", "normal"]
+    },
+    "Envelope": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "modality": {
+          "$ref": "#/$defs/Modality"
+        },
+        "adapter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "actor_origin": {
+          "$ref": "#/$defs/ActorOrigin"
+        },
+        "monotonic_ts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "[SUPUESTO] Microsegundos del reloj monotónico local (monotonic_ns // 1000), exactos en JSON y JavaScript; no persistir entre arranques.",
+          "maximum": 9007199254740991
+        },
+        "wall_ts": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "modality", "adapter", "actor_origin", "monotonic_ts", "wall_ts"]
+    },
+    "EmptyPayload": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "PointerMovePayload": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": ["relative", "absolute"]
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": ["mode", "x", "y"],
+      "additionalProperties": false
+    },
+    "PointerButtonPayload": {
+      "type": "object",
+      "properties": {
+        "button": {
+          "enum": ["left", "right", "middle"]
+        }
+      },
+      "required": ["button"],
+      "additionalProperties": false
+    },
+    "PointerScrollPayload": {
+      "type": "object",
+      "properties": {
+        "dx": {
+          "type": "number"
+        },
+        "dy": {
+          "type": "number"
+        }
+      },
+      "required": ["dx", "dy"],
+      "additionalProperties": false
+    },
+    "KeyPressPayload": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["keys"],
+      "additionalProperties": false
+    },
+    "TextInsertPayload": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": ["text"],
+      "additionalProperties": false
+    },
+    "TextDictationPayload": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "final": {
+          "type": "boolean"
+        },
+        "segment_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["text", "final"],
+      "additionalProperties": false
+    },
+    "NavSelectPayload": {
+      "type": "object",
+      "properties": {
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "UiNumbersPayload": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "UiGridPayload": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cell": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "UiSelectPayload": {
+      "type": "object",
+      "properties": {
+        "by": {
+          "enum": ["number", "label", "id", "grid"]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["by", "value"],
+      "additionalProperties": false
+    },
+    "ModeSetPayload": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": ["command", "dictation", "sleep"]
+        }
+      },
+      "required": ["mode"],
+      "additionalProperties": false
+    },
+    "InputPausePayload": {
+      "type": "object",
+      "properties": {
+        "modality": {
+          "enum": ["voice", "head_gesture", "keyboard_mouse", "gaze", "switch_scan"]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ProfileSwitchPayload": {
+      "type": "object",
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": ["profile_id"],
+      "additionalProperties": false
+    },
+    "CalibrationRequestPayload": {
+      "type": "object",
+      "properties": {
+        "modality": {
+          "enum": ["voice", "head_gesture", "keyboard_mouse", "gaze", "switch_scan"]
+        }
+      },
+      "required": ["modality"],
+      "additionalProperties": false
+    },
+    "CommandInvokePayload": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "parameters": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": ["string", "number", "boolean", "null"]
+          }
+        }
+      },
+      "required": ["name", "parameters"],
+      "additionalProperties": false
+    },
+    "ControlStopIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "control.stop"
+            },
+            "priority": {
+              "const": "preemptive"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ControlUndoIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "control.undo"
+            },
+            "priority": {
+              "const": "preemptive"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "HelpRequestHumanIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "help.request_human"
+            },
+            "priority": {
+              "const": "preemptive"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ApprovalApproveIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "approval.approve"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "pending_action_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "content_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "type",
+            "priority",
+            "payload",
+            "pending_action_id",
+            "content_digest",
+            "confidence"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ApprovalRejectIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "approval.reject"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "pending_action_id": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            "content_digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "type",
+            "priority",
+            "payload",
+            "pending_action_id",
+            "content_digest",
+            "confidence"
+          ]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "PointerMoveIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointer.move"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/PointerMovePayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "PointerClickIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointer.click"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/PointerButtonPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "PointerDoubleClickIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointer.double_click"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/PointerButtonPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "PointerDragToggleIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointer.drag_toggle"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/PointerButtonPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "PointerScrollIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointer.scroll"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/PointerScrollPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "KeyPressIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "key.press"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/KeyPressPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "TextInsertIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "text.insert"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/TextInsertPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "TextDictationIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "text.dictation"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/TextDictationPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NavNextIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "nav.next"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NavPreviousIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "nav.previous"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NavSelectIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "nav.select"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/NavSelectPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NavBackIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "nav.back"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/EmptyPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "UiShowNumbersIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "ui.show_numbers"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/UiNumbersPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "UiShowGridIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "ui.show_grid"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/UiGridPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "UiSelectTargetIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "ui.select_target"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/UiSelectPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ModeSetIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "mode.set"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/ModeSetPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "InputPauseIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "input.pause"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/InputPausePayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "InputResumeIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "input.resume"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/InputPausePayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ProfileSwitchIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "profile.switch"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/ProfileSwitchPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "CalibrationRequestIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "calibration.request"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/CalibrationRequestPayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "CommandInvokeIntent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Envelope"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "command.invoke"
+            },
+            "priority": {
+              "const": "normal"
+            },
+            "payload": {
+              "$ref": "#/$defs/CommandInvokePayload"
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": ["type", "priority", "payload"]
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

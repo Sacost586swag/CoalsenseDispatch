@@ -84,6 +84,22 @@ class Device:
 
 
 @dataclass
+class Session:
+    """Sesión de un dispositivo (T-00-011). No tiene vencimiento: ni por inactividad ni por tiempo.
+
+    Solo se guarda el HMAC de la credencial vigente y de la anterior (gracia de un uso).
+    """
+
+    id: str
+    device_id: str
+    scopes: frozenset[str]
+    credential_hash: str = field(repr=False)
+    rotated_at: str
+    previous_hash: str | None = field(default=None, repr=False)
+    revoked_at: str | None = None
+
+
+@dataclass
 class CodeRecord:
     """Fila de `pairing_code`. Activo = sin `used_at` ni `invalidated_at`."""
 
@@ -113,6 +129,18 @@ class AuthRepository(Protocol):
     def get_device(self, device_id: str) -> Device | None: ...
 
     def update_device(self, device: Device) -> None: ...
+
+    def add_session(self, session: Session) -> None: ...
+
+    def get_session(self, session_id: str) -> Session | None: ...
+
+    def find_session(self, credential_hash: str) -> Session | None:
+        """Busca por la credencial vigente o por la anterior (gracia de un uso)."""
+        ...
+
+    def session_of_device(self, device_id: str) -> Session | None: ...
+
+    def update_session(self, session: Session) -> None: ...
 
     def save_code(self, record: CodeRecord) -> None:
         """Guarda el código e invalida el activo anterior del mismo (kind, subject_lookup)."""

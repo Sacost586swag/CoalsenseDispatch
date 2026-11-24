@@ -1,0 +1,28 @@
+{
+  "name": "@coalsense/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "lint": "eslint . && prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --test tests/unit/*.test.ts",
+    "test:a11y": "playwright test",
+    "test:integration": "playwright test"
+  },
+  "dependencies": {
+    "@coalsense/ui": "workspace:*",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "axe-core": "4.14.0"
+  }
+}
